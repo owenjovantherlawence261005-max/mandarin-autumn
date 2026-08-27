@@ -6,6 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Serif+SC:wght@600;900&display=swap" rel="stylesheet">
   
+  <!-- Library PDF.js untuk Ekstraksi PDF Naskah -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
   <style>
     :root {
       --bg-main: #140b07;
@@ -74,6 +77,7 @@
       margin-bottom: 20px;
     }
 
+    /* Logo Autumn dapat diklik 3x untuk membuka panel CRUD */
     .brand-icon {
       width: 44px;
       height: 44px;
@@ -86,7 +90,11 @@
       font-size: 22px;
       color: #fff;
       box-shadow: 0 4px 12px var(--terracotta-glow);
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.15s ease;
     }
+    .brand-icon:active { transform: scale(0.92); }
 
     .brand-text h1 { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
     .brand-text p { font-size: 11px; color: var(--gold-autumn); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
@@ -519,6 +527,80 @@
     .bottom-nav-btn.active { color: var(--gold-autumn); }
     .bottom-nav-btn span.icon { font-size: 18px; }
 
+    /* =========================================================================
+       MODAL PANEL CRUD RAHASIA (KLIK 3X LOGO AUTUMN)
+       ========================================================================= */
+    #admin-crud-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 5, 3, 0.85);
+      backdrop-filter: blur(18px);
+      z-index: 9999;
+      overflow-y: auto;
+      padding: 30px 16px;
+    }
+    .crud-modal-content {
+      max-width: 720px;
+      margin: 0 auto;
+      background: #23140d;
+      border: 2px solid var(--gold-autumn);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+    }
+    .crud-tab-header {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--amber-border);
+      padding-bottom: 12px;
+    }
+    .crud-tab-btn {
+      padding: 10px 18px;
+      background: transparent;
+      border: 1px solid var(--amber-border);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 13.5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .crud-tab-btn.active {
+      background: var(--terracotta);
+      border-color: var(--terracotta);
+      color: #fff;
+    }
+    .crud-form-group {
+      margin-bottom: 16px;
+    }
+    .crud-form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gold-autumn);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .crud-form-group input, .crud-form-group textarea, .crud-form-group select {
+      width: 100%;
+      padding: 10px 14px;
+      background: #180d08;
+      border: 1px solid var(--amber-border);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 13.5px;
+      outline: none;
+    }
+    .crud-form-group input:focus, .crud-form-group textarea:focus, .crud-form-group select:focus {
+      border-color: var(--gold-autumn);
+    }
+
     @media (max-width: 860px) {
       .sidebar { display: none; }
       .bottom-nav { display: flex; }
@@ -549,7 +631,8 @@
   <div class="app-container">
     <aside class="sidebar">
       <div class="brand-box">
-        <div class="brand-icon">秋</div>
+        <!-- KLIK 3X LOGO AUTUMN DI BAWAH INI UNTUK BUKA PANEL CRUD -->
+        <div class="brand-icon" title="Klik 3x untuk Panel Admin CRUD" onclick="handleLogoTripleClick()">秋</div>
         <div class="brand-text">
           <h1>ZETTBOT HSK</h1>
           <p>Autumn Edition 1-6</p>
@@ -559,9 +642,12 @@
         <li class="nav-item"><button class="active" onclick="switchTab('dashboard')"><span class="nav-icon">🍂</span> Beranda</button></li>
         <li class="nav-item"><button onclick="switchTab('dictionary')"><span class="nav-icon">📖</span> Kamus HSK 1-6</button></li>
         <li class="nav-item"><button onclick="switchTab('stroke')"><span class="nav-icon">✍️</span> Menulis Hanzi</button></li>
+        <li class="nav-item"><button onclick="switchTab('workbook')"><span class="nav-icon">📝</span> Workbook Interaktif</button></li>
         <li class="nav-item"><button onclick="switchTab('speaking')"><span class="nav-icon">🎙️</span> Speaking AI Roleplay</button></li>
+        <li class="nav-item"><button onclick="switchTab('grammar')"><span class="nav-icon">📚</span> Ensiklopedia Tata Bahasa</button></li>
         <li class="nav-item"><button onclick="switchTab('srs')"><span class="nav-icon">🎴</span> SRS Flashcards</button></li>
         <li class="nav-item"><button onclick="switchTab('placement')"><span class="nav-icon">🎯</span> Placement Test</button></li>
+        <li class="nav-item"><button onclick="switchTab('certificate')"><span class="nav-icon">📜</span> Rapor & Sertifikat</button></li>
       </ul>
     </aside>
 
@@ -581,7 +667,7 @@
           <div style="display: flex; gap: 12px; flex-wrap: wrap;">
             <button class="btn-autumn-primary" onclick="switchTab('speaking')">Simulasi Speaking AI</button>
             <button class="pill-btn" onclick="switchTab('dictionary')">Buka Kamus Kosakata</button>
-            <button class="pill-btn" onclick="switchTab('stroke')">Latihan Menulis Hanzi</button>
+            <button class="pill-btn" onclick="switchTab('workbook')">Kerjakan Workbook</button>
           </div>
         </div>
       </section>
@@ -649,19 +735,41 @@
         </div>
       </section>
 
-      <!-- 4. SPEAKING AI ROLEPLAY -->
+      <!-- 4. WORKBOOK INTERAKTIF (TAMPILAN SISWA) -->
+      <section id="view-workbook" class="view-section">
+        <div class="header-group">
+          <span class="badge">Official Standard Workbook</span>
+          <h2>Workbook Interaktif per Level</h2>
+          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dari database Spreadsheet.</p>
+        </div>
+
+        <div class="toolbar-row">
+          <div class="filter-pills">
+            <button class="pill-btn active" onclick="loadWorkbookQuestions('ALL', this)">Semua Soal</button>
+            <button class="pill-btn" onclick="loadWorkbookQuestions('HSK 1', this)">HSK 1</button>
+            <button class="pill-btn" onclick="loadWorkbookQuestions('HSK 2', this)">HSK 2</button>
+            <button class="pill-btn" onclick="loadWorkbookQuestions('HSK 3', this)">HSK 3</button>
+            <button class="pill-btn" onclick="loadWorkbookQuestions('HSK 4', this)">HSK 4</button>
+          </div>
+        </div>
+
+        <div id="workbook-cards-container"></div>
+      </section>
+
+      <!-- 5. SPEAKING AI ROLEPLAY (TAMPILAN SISWA) -->
       <section id="view-speaking" class="view-section">
         <div class="header-group">
           <span class="badge">Zettbot Speech Engine</span>
           <h2>Speaking AI Roleplay</h2>
-          <p>Simulasi percakapan interaktif dengan pengenalan suara otomatis.</p>
+          <p>Simulasi percakapan dua arah interaktif berbasis Web Speech API.</p>
         </div>
 
-        <div class="glass-card">
+        <div class="glass-card" style="margin-bottom: 20px;">
           <div class="roleplay-box">
-            <div class="role-switcher">
-              <button class="role-btn active" id="btn-role-b" onclick="setUserRole('B')">Saya Berperan: Karakter B (AI Karakter A)</button>
-              <button class="role-btn" id="btn-role-a" onclick="setUserRole('A')">Saya Berperan: Karakter A (AI Karakter B)</button>
+            <!-- Pilihan Karakter Otomatis Disesuaikan dengan Naskah Aktif -->
+            <div class="role-switcher" id="role-selector-container">
+              <button class="role-btn active" id="btn-role-b" onclick="setUserRole('B')">Saya Perankan: Karakter B (AI Karakter A)</button>
+              <button class="role-btn" id="btn-role-a" onclick="setUserRole('A')">Saya Perankan: Karakter A (AI Karakter B)</button>
             </div>
 
             <div class="chat-scroller" id="roleplay-chat-box"></div>
@@ -678,7 +786,18 @@
         </div>
       </section>
 
-      <!-- 5. SPACED REPETITION FLASHCARDS (SRS) -->
+      <!-- 6. ENSIKLOPEDIA TATA BAHASA -->
+      <section id="view-grammar" class="view-section">
+        <div class="header-group">
+          <span class="badge">Comprehensive Grammar Encyclopedia</span>
+          <h2>Ensiklopedia Tata Bahasa & Pola Kalimat</h2>
+          <p>Panduan mendalam struktur kalimat esensial: modal kata kerja, aspek partikel, pola kalimat 是 dan 有.</p>
+        </div>
+
+        <div id="grammar-cards-container"></div>
+      </section>
+
+      <!-- 7. SPACED REPETITION FLASHCARDS (SRS) -->
       <section id="view-srs" class="view-section">
         <div class="header-group">
           <span class="badge">Leitner Memory Engine</span>
@@ -700,20 +819,20 @@
               </div>
               <div class="card-face back">
                 <div style="font-size: 20px; font-weight: 700; color: var(--gold-autumn); margin-bottom: 8px;" id="srs-card-py">wǒ</div>
-                <div style="font-size: 18px; color: #fff; font-weight: 600; margin-bottom: 8px;" id="srs-card-in">Saya / Aku</div>
-                <div style="font-size: 12.5px; color: var(--text-muted); font-style: italic;" id="srs-card-pos">Kata Ganti</div>
+                <div style="font-size: 18px; color: #fff; font-weight: 600; margin-bottom: 16px;" id="srs-card-in">Saya / Aku</div>
+                <div style="font-size: 12.5px; color: var(--text-muted); font-style: italic;" id="srs-card-pos">[Kata Ganti]</div>
               </div>
             </div>
           </div>
 
           <div class="srs-actions">
-            <button class="srs-btn btn-fail" onclick="answerSrs(false)">❌ Belum Hapal</button>
-            <button class="srs-btn btn-pass" onclick="answerSrs(true)">✅ Sudah Hapal</button>
+            <button class="srs-btn btn-fail" onclick="answerSrs(false)">❌ Belum Hapal (Ulangi)</button>
+            <button class="srs-btn btn-pass" onclick="answerSrs(true)">✅ Sudah Hapal (Lanjut)</button>
           </div>
         </div>
       </section>
 
-      <!-- 6. PLACEMENT TEST -->
+      <!-- 8. PLACEMENT TEST -->
       <section id="view-placement" class="view-section">
         <div class="header-group">
           <span class="badge">Diagnostic Skill Assessment</span>
@@ -723,27 +842,166 @@
 
         <div id="placement-test-container" class="glass-card">
           <div id="placement-intro-box" style="text-align: center; padding: 20px;">
-            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;">Ujian mandiri berbasis database kosakata Anda.</p>
-            <button class="btn-autumn-primary" onclick="startPlacementTest()">Mulai Placement Test</button>
+            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;">Tes mandiri diagnostik berbasis database soal Spreadsheet.</p>
+            <button class="btn-autumn-primary" onclick="startPlacementTest()">Mulai Ujian Placement Test</button>
           </div>
           <div id="placement-quiz-box" style="display: none;"></div>
+        </div>
+      </section>
+
+      <!-- 9. RAPOR & SERTIFIKAT -->
+      <section id="view-certificate" class="view-section">
+        <div class="header-group">
+          <span class="badge">Official PDF Certification</span>
+          <h2>Rapor Hasil Belajar & Sertifikat</h2>
+          <p>Terbitkan sertifikat pencapaian kelulusan resmi dalam format dokumen PDF berstandar tinggi.</p>
+        </div>
+
+        <div class="glass-card" style="text-align: center; padding: 40px 20px;">
+          <div style="font-size: 60px; margin-bottom: 16px;">🏆</div>
+          <h3 style="font-size: 24px; color: #fff; margin-bottom: 8px;">Cetak Sertifikat Kelulusan HSK</h3>
+          <p style="font-size: 14px; color: var(--text-muted); max-width: 500px; margin: 0 auto 24px auto;">Masukkan nama lengkap Anda untuk mengonversi hasil pembelajaran menjadi lembar sertifikat resmi PDF.</p>
+          
+          <div style="max-width: 360px; margin: 0 auto 20px auto;">
+            <input type="text" id="cert-user-name" placeholder="Nama Lengkap Anda..." style="width: 100%; padding: 12px 16px; background: rgba(20, 11, 7, 0.7); border: 1px solid var(--amber-border); border-radius: 8px; color: #fff; font-size: 14px; text-align: center;">
+          </div>
+
+          <button class="btn-autumn-primary" onclick="requestCertificatePdf()">Unduh Sertifikat PDF Resmi</button>
+          <div id="cert-status-msg" style="margin-top: 16px; font-size: 13px; color: var(--gold-autumn);"></div>
         </div>
       </section>
 
     </main>
   </div>
 
+  <!-- =========================================================================
+       MODAL CRUD RAHASIA (MUNCUL SETELAH KLIK 3X LOGO AUTUMN)
+       ========================================================================= -->
+  <div id="admin-crud-modal">
+    <div class="crud-modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 24px;">🍁</span>
+          <div>
+            <h3 style="font-size: 18px; color: #fff;">Panel Admin & CRUD Khusus</h3>
+            <p style="font-size: 11px; color: var(--gold-autumn);">Kelola Speaking AI (PDF 2 Orang) & Soal Workbook</p>
+          </div>
+        </div>
+        <button onclick="closeAdminCrudModal()" style="background: none; border: none; color: #fca5a5; font-size: 24px; cursor: pointer;">✕</button>
+      </div>
+
+      <div class="crud-tab-header">
+        <button class="crud-tab-btn active" id="crud-tab-spk" onclick="switchCrudTab('spk')">🎙️ CRUD Speaking AI (PDF 2 Orang)</button>
+        <button class="crud-tab-btn" id="crud-tab-wb" onclick="switchCrudTab('wb')">📝 CRUD Soal Workbook</button>
+      </div>
+
+      <!-- TAB 1: CRUD SPEAKING AI (UPLOAD PDF & FORM DIALOG) -->
+      <div id="crud-section-spk">
+        <div class="crud-form-group" style="background: rgba(234, 88, 12, 0.15); padding: 14px; border-radius: 10px; border: 1px dashed var(--gold-autumn);">
+          <label>Unggah Naskah PDF Khusus Percakapan 2 Orang:</label>
+          <input type="file" id="pdf-crud-file-input" accept="application/pdf" onchange="handleCrudPdfUpload(event)" style="padding: 6px;">
+          <div id="crud-pdf-status" style="font-size: 12px; color: var(--gold-autumn); margin-top: 6px;">Pilih file PDF (.pdf) percakapan 2 orang. Sistem akan otomatis membedah giliran bicara.</div>
+        </div>
+
+        <div class="crud-form-group">
+          <label>Judul Skenario Percakapan:</label>
+          <input type="text" id="crud-spk-title" placeholder="Contoh: Membeli Tiket Kereta Api">
+        </div>
+
+        <div style="display: flex; gap: 12px;">
+          <div class="crud-form-group" style="flex: 1;">
+            <label>Tingkat HSK:</label>
+            <select id="crud-spk-hsk">
+              <option value="HSK 1">HSK 1</option>
+              <option value="HSK 2">HSK 2</option>
+              <option value="HSK 3">HSK 3</option>
+              <option value="HSK 4">HSK 4</option>
+              <option value="HSK 5">HSK 5</option>
+              <option value="HSK 6">HSK 6</option>
+            </select>
+          </div>
+          <div class="crud-form-group" style="flex: 1;">
+            <label>Nama Karakter 1 (A):</label>
+            <input type="text" id="crud-spk-role-a" placeholder="Contoh: Petugas">
+          </div>
+          <div class="crud-form-group" style="flex: 1;">
+            <label>Nama Karakter 2 (B):</label>
+            <input type="text" id="crud-spk-role-b" placeholder="Contoh: Penumpang">
+          </div>
+        </div>
+
+        <div class="crud-form-group">
+          <label>Isi Naskah Percakapan (Format: A: Hanzi | Pinyin | Terjemahan):</label>
+          <textarea id="crud-spk-lines" rows="6" placeholder="A: 你好，你要去哪儿？ | Nǐ hǎo, nǐ yào qù nǎr? | Halo, Anda mau pergi ke mana?&#10;B: 我要去北京。 | Wǒ yào qù Běijīng. | Saya mau ke Beijing."></textarea>
+        </div>
+
+        <button class="btn-autumn-primary" onclick="submitCrudSpeakingDialogue()" style="width: 100%;">💾 Simpan Skenario ke Database & Terapkan</button>
+      </div>
+
+      <!-- TAB 2: CRUD SOAL WORKBOOK -->
+      <div id="crud-section-wb" style="display: none;">
+        <div style="display: flex; gap: 12px;">
+          <div class="crud-form-group" style="flex: 1;">
+            <label>Jenjang HSK:</label>
+            <select id="crud-wb-hsk">
+              <option value="HSK 1">HSK 1</option>
+              <option value="HSK 2">HSK 2</option>
+              <option value="HSK 3">HSK 3</option>
+              <option value="HSK 4">HSK 4</option>
+              <option value="HSK 5">HSK 5</option>
+              <option value="HSK 6">HSK 6</option>
+            </select>
+          </div>
+          <div class="crud-form-group" style="flex: 1;">
+            <label>Tipe Soal:</label>
+            <select id="crud-wb-type">
+              <option value="Pilihan Ganda">Pilihan Ganda</option>
+              <option value="Kalimat Rumpang">Kalimat Rumpang (选词填空)</option>
+              <option value="Menyusun Kalimat">Menyusun Kalimat (排序组句)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="crud-form-group">
+          <label>Pertanyaan / Soal:</label>
+          <textarea id="crud-wb-prompt" rows="3" placeholder="Contoh: Pilihlah arti yang tepat untuk kata: 苹果 (píngguǒ)"></textarea>
+        </div>
+
+        <div class="crud-form-group">
+          <label>Pilihan Jawaban (Pisahkan dengan tanda koma):</label>
+          <input type="text" id="crud-wb-options" placeholder="Contoh: Apel, Pisang, Jeruk, Mangga">
+        </div>
+
+        <div class="crud-form-group">
+          <label>Kunci Jawaban yang Benar:</label>
+          <input type="text" id="crud-wb-correct" placeholder="Harus sama persis dengan salah satu pilihan di atas (Contoh: Apel)">
+        </div>
+
+        <div class="crud-form-group">
+          <label>Pembahasan / Penjelasan:</label>
+          <input type="text" id="crud-wb-explanation" placeholder="Contoh: 苹果 (píngguǒ) berarti buah apel.">
+        </div>
+
+        <button class="btn-autumn-primary" onclick="submitCrudWorkbookQuestion()" style="width: 100%;">💾 Tambah Soal ke WORKBOOK_BANK</button>
+      </div>
+
+    </div>
+  </div>
+
   <nav class="bottom-nav">
     <button class="bottom-nav-btn active" onclick="switchTab('dashboard')"><span class="icon">🍂</span>Beranda</button>
     <button class="bottom-nav-btn" onclick="switchTab('dictionary')"><span class="icon">📖</span>Kamus</button>
     <button class="bottom-nav-btn" onclick="switchTab('speaking')"><span class="icon">🎙️</span>Roleplay</button>
+    <button class="bottom-nav-btn" onclick="switchTab('workbook')"><span class="icon">📝</span>Workbook</button>
     <button class="bottom-nav-btn" onclick="switchTab('srs')"><span class="icon">🎴</span>SRS</button>
   </nav>
 
   <script>
-    // =========================================================================
-    // TEMPELKAN URL WEB APP APPS SCRIPT ANDA DI SINI JIKA MENGGUNAKAN GITHUB PAGES
-    // =========================================================================
+    if (typeof pdfjsLib !== 'undefined') {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+
+    // URL Web App Deployment Apps Script Anda
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqpb8Pxfr5K_xT_vLQoQD1Gl_f9C2pRYzqWmCy9JUVcvC84WJ4O225MhKQtdWKKRQn9A/exec"; 
 
     var allVocabularies = [];
@@ -754,28 +1012,280 @@
     var currentPracticeChar = '你';
 
     var currentUserRole = 'B';
-    var activeDialogueFlow = [
-      { role: "A", speaker: "Pelayan", hanzi: "你好，请问你想吃点什么？", pinyin: "Nǐ hǎo, qǐngwèn nǐ xiǎng chī diǎn shénme?", translation: "Halo, numpang tanya mau makan apa?" },
-      { role: "B", speaker: "Pelanggan", hanzi: "我要一份炒饭和一杯茶。", pinyin: "Wǒ yào yí fèn chǎofàn hé yì bēi chá.", translation: "Saya mau seporsi nasi goreng dan segelas teh." },
-      { role: "A", speaker: "Pelayan", hanzi: "好的，请稍等一下。", pinyin: "Hǎo de, qǐng shāo děng yíxià.", translation: "Baiklah, tolong tunggu sebentar." },
-      { role: "B", speaker: "Pelanggan", hanzi: "太谢谢你了！", pinyin: "Tài xièxie nǐ le!", translation: "Terima kasih banyak!" }
-    ];
+    var activeDialogueFlow = [];
+    var characterAName = "Pelayan";
+    var characterBName = "Pelanggan";
     var currentDialogueStep = 0;
     var recognition = null;
     var isListening = false;
 
-    var srsIndex = 0;
+    var srsCardsQueue = [];
+    var currentSrsIndex = 0;
+
     var placementQuestions = [];
-    var placementStep = 0;
+    var currentPlacementStep = 0;
     var placementScore = 0;
+
+    // Triple Click Tracking untuk Logo Autumn
+    var logoClickCount = 0;
+    var logoClickTimer = null;
 
     window.addEventListener('DOMContentLoaded', function() {
       initFallingLeaves();
       initTianZiGeCanvas();
       loadDatabaseVocab();
-      initSpeakingDialogue();
+      initPracticeCharacters();
+      loadGrammarGuidesView();
+      loadSpeakingDialoguesView();
+      initSrsEngine();
     });
 
+    // Handler Klik 3x Logo
+    function handleLogoTripleClick() {
+      logoClickCount++;
+      clearTimeout(logoClickTimer);
+      if (logoClickCount === 3) {
+        logoClickCount = 0;
+        openAdminCrudModal();
+      } else {
+        logoClickTimer = setTimeout(function() {
+          logoClickCount = 0;
+        }, 1200);
+      }
+    }
+
+    function openAdminCrudModal() {
+      document.getElementById('admin-crud-modal').style.display = 'block';
+    }
+
+    function closeAdminCrudModal() {
+      document.getElementById('admin-crud-modal').style.display = 'none';
+    }
+
+    function switchCrudTab(tab) {
+      document.getElementById('crud-tab-spk').classList.toggle('active', tab === 'spk');
+      document.getElementById('crud-tab-wb').classList.toggle('active', tab === 'wb');
+      document.getElementById('crud-section-spk').style.display = (tab === 'spk' ? 'block' : 'none');
+      document.getElementById('crud-section-wb').style.display = (tab === 'wb' ? 'block' : 'none');
+    }
+
+    // =========================================================================
+    // CRUD SPEAKING AI (UPLOAD PDF & SAVE TO SPREADSHEET)
+    // =========================================================================
+    async function handleCrudPdfUpload(event) {
+      const file = event.target.files[0];
+      if (!file || file.type !== "application/pdf") {
+        alert("Mohon pilih file berekstensi PDF (.pdf).");
+        return;
+      }
+
+      const statusBox = document.getElementById('crud-pdf-status');
+      statusBox.innerHTML = `⏳ <b>Membaca PDF:</b> ${file.name}...`;
+
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let extractedLines = [];
+
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          const pageText = content.items.map(item => item.str.trim()).filter(s => s.length > 0);
+          extractedLines.push(...pageText);
+        }
+
+        const parsed = parseDialogueFromLines(extractedLines);
+
+        if (parsed.length < 2) {
+          statusBox.innerHTML = "⚠️ Naskah kurang dari 2 baris atau format percakapan tidak terbaca.";
+          return;
+        }
+
+        document.getElementById('crud-spk-title').value = file.name.replace(/\.[^/.]+$/, "");
+        document.getElementById('crud-spk-role-a').value = characterAName;
+        document.getElementById('crud-spk-role-b').value = characterBName;
+
+        let rawFormatted = parsed.map(p => `${p.role}: ${p.hanzi} | ${p.pinyin} | ${p.translation}`).join('\n');
+        document.getElementById('crud-spk-lines').value = rawFormatted;
+
+        statusBox.innerHTML = `✅ <b>Berhasil Mengekstrak ${parsed.length} Baris Dialog!</b> Silakan tinjau dan klik Simpan.`;
+
+      } catch (err) {
+        statusBox.innerHTML = "❌ Terjadi kendala memproses PDF: " + err.message;
+      }
+    }
+
+    function parseDialogueFromLines(lines) {
+      let flow = [];
+      let detectedSpeakers = new Set();
+
+      for (let i = 0; i < lines.length; i++) {
+        let line = lines[i];
+        if (!line) continue;
+
+        let role = "A";
+        let speaker = "";
+        let content = line;
+
+        let colonMatch = line.match(/^([A-Za-z0-9\u4e00-\u9fa5]+)\s*[:：|]\s*(.*)/);
+
+        if (colonMatch) {
+          speaker = colonMatch[1].trim();
+          content = colonMatch[2].trim();
+        } else {
+          role = (flow.length % 2 === 0) ? "A" : "B";
+          speaker = (role === "A") ? "Karakter A" : "Karakter B";
+        }
+
+        if (speaker) {
+          detectedSpeakers.add(speaker);
+          const speakerArr = Array.from(detectedSpeakers);
+          if (speaker === speakerArr[0]) {
+            role = "A";
+            characterAName = speaker;
+          } else {
+            role = "B";
+            characterBName = speaker;
+          }
+        }
+
+        let parts = content.split(/[|\t]/).map(s => s.trim());
+        let hanzi = parts[0] || content;
+        let pinyin = parts[1] || "";
+        let trans = parts[2] || "";
+
+        flow.push({
+          role: role,
+          speaker: (role === "A" ? characterAName : characterBName),
+          hanzi: hanzi,
+          pinyin: pinyin,
+          translation: trans
+        });
+      }
+
+      const spkList = Array.from(detectedSpeakers);
+      if (spkList.length >= 2) {
+        characterAName = spkList[0];
+        characterBName = spkList[1];
+      }
+
+      return flow;
+    }
+
+    function submitCrudSpeakingDialogue() {
+      const title = document.getElementById('crud-spk-title').value.trim() || "Percakapan Baru";
+      const hskLvl = document.getElementById('crud-spk-hsk').value;
+      const roleA = document.getElementById('crud-spk-role-a').value.trim() || "Karakter A";
+      const roleB = document.getElementById('crud-spk-role-b').value.trim() || "Karakter B";
+      const linesRaw = document.getElementById('crud-spk-lines').value.trim();
+
+      if (!linesRaw) {
+        alert("Mohon isi naskah percakapan terlebih dahulu.");
+        return;
+      }
+
+      const parsedLines = parseDialogueFromLines(linesRaw.split('\n'));
+      characterAName = roleA;
+      characterBName = roleB;
+      activeDialogueFlow = parsedLines;
+
+      // Update UI Roleplay
+      updateRoleSwitcherButtons();
+      initSpeakingDialogue();
+
+      // Simpan ke Spreadsheet via API / Apps Script
+      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+        fetch(SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "saveSpeakingDialogue",
+            hskLevel: hskLvl,
+            scenarioTitle: title,
+            roleA: roleA,
+            roleB: roleB,
+            scriptFlow: parsedLines
+          })
+        })
+        .then(res => res.json())
+        .then(res => {
+          alert("✅ Skenario percakapan berhasil disimpan ke Spreadsheet!");
+          closeAdminCrudModal();
+        })
+        .catch(err => {
+          alert("Naskah aktif di sesi ini (Gagal simpan ke sheet: " + err.message + ")");
+          closeAdminCrudModal();
+        });
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function() {
+            alert("✅ Skenario percakapan berhasil disimpan ke sheet SPEAKING_DIALOGUES!");
+            closeAdminCrudModal();
+          })
+          .saveNewSpeakingDialogue(hskLvl, title, roleA, roleB, parsedLines);
+      } else {
+        alert("✅ Naskah berhasil diterapkan ke sesi aktif!");
+        closeAdminCrudModal();
+      }
+    }
+
+    // =========================================================================
+    // CRUD WORKBOOK (TAMBAH SOAL KE SPREADSHEET)
+    // =========================================================================
+    function submitCrudWorkbookQuestion() {
+      const hskLvl = document.getElementById('crud-wb-hsk').value;
+      const qType = document.getElementById('crud-wb-type').value;
+      const prompt = document.getElementById('crud-wb-prompt').value.trim();
+      const rawOpts = document.getElementById('crud-wb-options').value.trim();
+      const correct = document.getElementById('crud-wb-correct').value.trim();
+      const explain = document.getElementById('crud-wb-explanation').value.trim();
+
+      if (!prompt || !rawOpts || !correct) {
+        alert("Mohon lengkapi pertanyaan, opsi pilihan, dan kunci jawaban.");
+        return;
+      }
+
+      const options = rawOpts.split(',').map(s => s.trim()).filter(s => s.length > 0);
+
+      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+        fetch(SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "saveWorkbookQuestion",
+            hskLevel: hskLvl,
+            questionType: qType,
+            questionPrompt: prompt,
+            options: options,
+            correctAnswer: correct,
+            explanation: explain
+          })
+        })
+        .then(res => res.json())
+        .then(res => {
+          alert("✅ Soal Workbook berhasil ditambahkan ke Spreadsheet!");
+          closeAdminCrudModal();
+          loadWorkbookQuestions(hskLvl);
+        })
+        .catch(err => {
+          alert("Gagal menyimpan ke Spreadsheet: " + err.message);
+        });
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function() {
+            alert("✅ Soal Workbook berhasil ditambahkan ke sheet WORKBOOK_BANK!");
+            closeAdminCrudModal();
+            loadWorkbookQuestions(hskLvl);
+          })
+          .saveNewWorkbookQuestion(hskLvl, qType, prompt, options, correct, explain);
+      } else {
+        alert("Fitur simpan membutuhkan koneksi ke Google Apps Script.");
+      }
+    }
+
+    // =========================================================================
+    // FALLING LEAVES & UTILITIES
+    // =========================================================================
     function initFallingLeaves() {
       var canvas = document.getElementById('leaves-canvas');
       var ctx = canvas.getContext('2d');
@@ -845,42 +1355,44 @@
       var navButtons = document.querySelectorAll('.nav-item button, .bottom-nav-btn');
       for (var j = 0; j < navButtons.length; j++) navButtons[j].classList.remove('active');
       window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (viewId === 'workbook') loadWorkbookQuestions('ALL');
     }
 
-   function loadDatabaseVocab() {
-  if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
-    fetch(SCRIPT_URL + "?action=getVocab&level=ALL")
-      .then(function(res) {
-        return res.json();
-      })
-      .then(function(data) {
-        if (data && data.length > 0) {
-          allVocabularies = data;
-          renderVocabUI();
-          initPracticeCharacters();
-          renderCurrentSrsCard();
-        } else {
-          console.warn("Data sheet VOCABULARY kosong.");
-          useFallbackVocab();
-        }
-      })
-      .catch(function(err) {
-        console.error("Gagal mengambil data Spreadsheet:", err);
+    // Vocabulary & Tian Zi Ge
+    function loadDatabaseVocab() {
+      var container = document.getElementById('vocab-cards-container');
+      container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--gold-autumn);">Memuat data dari Spreadsheet Database... 🍂</div>';
+
+      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+        fetch(SCRIPT_URL + "?action=getVocab&level=ALL")
+          .then(res => res.json())
+          .then(data => {
+            allVocabularies = data;
+            renderVocabUI();
+            initPracticeCharacters();
+            renderCurrentSrsCard();
+          })
+          .catch(err => useFallbackVocab());
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            allVocabularies = res.items || res || [];
+            renderVocabUI();
+            initPracticeCharacters();
+            renderCurrentSrsCard();
+          })
+          .getVocabPage(currentDictPage, 12, currentDictLevel, currentDictSearch, 'all');
+      } else {
         useFallbackVocab();
-      });
-  } else {
-    useFallbackVocab();
-  }
-}
+      }
+    }
 
     function useFallbackVocab() {
       allVocabularies = [
         {hanzi:"我", pinyin:"wǒ", indonesian:"Saya / Aku", partOfSpeech:"Kata Ganti", level:"1"},
         {hanzi:"我们", pinyin:"wǒmen", indonesian:"Kami / Kita", partOfSpeech:"Kata Ganti", level:"1"},
         {hanzi:"你", pinyin:"nǐ", indonesian:"Kamu / Anda", partOfSpeech:"Kata Ganti", level:"1"},
-        {hanzi:"你们", pinyin:"nǐmen", indonesian:"Kalian", partOfSpeech:"Kata Ganti", level:"1"},
-        {hanzi:"他", pinyin:"tā", indonesian:"Dia (Laki-laki)", partOfSpeech:"Kata Ganti", level:"1"},
-        {hanzi:"这", pinyin:"zhè", indonesian:"Ini", partOfSpeech:"Kata Penunjuk", level:"1"},
         {hanzi:"准备", pinyin:"zhǔnbèi", indonesian:"Mempersiapkan", partOfSpeech:"Kata Kerja", level:"2"},
         {hanzi:"简单", pinyin:"jiǎndān", indonesian:"Sederhana / Mudah", partOfSpeech:"Kata Sifat", level:"3"}
       ];
@@ -894,11 +1406,11 @@
       container.innerHTML = '';
 
       var filtered = allVocabularies.filter(function(v) {
-        var matchLvl = (currentDictLevel === 'ALL' || v.level === currentDictLevel);
+        var matchLvl = (currentDictLevel === 'ALL' || v.level === currentDictLevel || (v.hskLevel && v.hskLevel.includes(currentDictLevel)));
         var matchSearch = (!currentDictSearch || 
-          v.hanzi.toLowerCase().includes(currentDictSearch.toLowerCase()) || 
-          v.pinyin.toLowerCase().includes(currentDictSearch.toLowerCase()) || 
-          v.indonesian.toLowerCase().includes(currentDictSearch.toLowerCase())
+          (v.hanzi && v.hanzi.toLowerCase().includes(currentDictSearch.toLowerCase())) || 
+          (v.pinyin && v.pinyin.toLowerCase().includes(currentDictSearch.toLowerCase())) || 
+          (v.indonesian && v.indonesian.toLowerCase().includes(currentDictSearch.toLowerCase()))
         );
         return matchLvl && matchSearch;
       });
@@ -918,11 +1430,11 @@
           card.innerHTML = 
             '<div class="vocab-head">' +
               '<div class="vocab-hanzi">' + item.hanzi + '</div>' +
-              '<div class="vocab-level-tag">HSK ' + item.level + '</div>' +
+              '<div class="vocab-level-tag">HSK ' + (item.level || item.hskLevel || '1') + '</div>' +
             '</div>' +
             '<div class="vocab-pinyin">' + item.pinyin + '</div>' +
             '<div class="vocab-indo">' + item.indonesian + '</div>' +
-            '<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px;">[' + item.partOfSpeech + ']</div>' +
+            '<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px;">[' + (item.partOfSpeech || 'Umum') + ']</div>' +
             '<div class="vocab-actions">' +
               '<button class="icon-action-btn" onclick="speakText(\'' + item.hanzi + '\')">🔊 Dengar</button>' +
               '<button class="icon-action-btn" onclick="selectCharForWriting(\'' + item.hanzi.charAt(0) + '\')">✍️ Tulis</button>' +
@@ -1048,7 +1560,67 @@
       switchTab('stroke');
     }
 
-    // Roleplay & Speaking Engine
+    // Roleplay & Speaking
+    function loadSpeakingDialoguesView() {
+      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+        fetch(SCRIPT_URL + "?action=getDialogues&level=ALL")
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.length > 0) {
+              activeDialogueFlow = data[0].scriptFlow || [];
+              characterAName = data[0].roleAName || "Karakter A";
+              characterBName = data[0].roleBName || "Karakter B";
+              updateRoleSwitcherButtons();
+              initSpeakingDialogue();
+            } else {
+              useDefaultDialogue();
+            }
+          })
+          .catch(err => useDefaultDialogue());
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(dialogues) {
+            if (dialogues && dialogues.length > 0) {
+              activeDialogueFlow = dialogues[0].scriptFlow || [];
+              characterAName = dialogues[0].roleAName || "Karakter A";
+              characterBName = dialogues[0].roleBName || "Karakter B";
+              updateRoleSwitcherButtons();
+              initSpeakingDialogue();
+            } else {
+              useDefaultDialogue();
+            }
+          })
+          .getSpeakingDialogues('HSK 1');
+      } else {
+        useDefaultDialogue();
+      }
+    }
+
+    function useDefaultDialogue() {
+      characterAName = "Pelayan (服务员)";
+      characterBName = "Pelanggan (顾客)";
+      activeDialogueFlow = [
+        { role: "A", speaker: characterAName, hanzi: "你好，请问你想吃点什么？", pinyin: "Nǐ hǎo, qǐngwèn nǐ xiǎng chī diǎn shénme?", translation: "Halo, mau makan apa?" },
+        { role: "B", speaker: characterBName, hanzi: "我要一份炒饭和一杯茶。", pinyin: "Wǒ yào yí fèn chǎofàn hé yì bēi chá.", translation: "Saya mau seporsi nasi goreng dan segelas teh." },
+        { role: "A", speaker: characterAName, hanzi: "好的，请稍等一下。", pinyin: "Hǎo de, qǐng shāo děng yíxià.", translation: "Baiklah, tolong tunggu sebentar." },
+        { role: "B", speaker: characterBName, hanzi: "太谢谢你了！", pinyin: "Tài xièxie nǐ le!", translation: "Terima kasih banyak!" }
+      ];
+      updateRoleSwitcherButtons();
+      initSpeakingDialogue();
+    }
+
+    function updateRoleSwitcherButtons() {
+      const container = document.getElementById('role-selector-container');
+      container.innerHTML = `
+        <button class="role-btn ${currentUserRole === 'B' ? 'active' : ''}" id="btn-role-b" onclick="setUserRole('B')">
+          Saya Perankan: <b>${characterBName}</b> (AI: ${characterAName})
+        </button>
+        <button class="role-btn ${currentUserRole === 'A' ? 'active' : ''}" id="btn-role-a" onclick="setUserRole('A')">
+          Saya Perankan: <b>${characterAName}</b> (AI: ${characterBName})
+        </button>
+      `;
+    }
+
     function initSpeakingDialogue() {
       currentDialogueStep = 0;
       renderDialogueChat();
@@ -1065,25 +1637,25 @@
         bubble.className = 'chat-bubble ' + (d.role === 'A' ? 'role-a' : 'role-b');
         bubble.id = 'chat-bubble-' + i;
         bubble.innerHTML = 
-          '<div class="speaker-lbl">' + d.speaker + ' (' + d.role + ')</div>' +
+          '<div class="speaker-lbl">' + d.speaker + '</div>' +
           '<div class="bubble-hz">' + d.hanzi + '</div>' +
-          '<div class="bubble-py">' + d.pinyin + '</div>' +
-          '<div class="bubble-tr">' + d.translation + '</div>';
+          (d.pinyin ? '<div class="bubble-py">' + d.pinyin + '</div>' : '') +
+          (d.translation ? '<div class="bubble-tr">' + d.translation + '</div>' : '');
         chatBox.appendChild(bubble);
       }
     }
 
     function setUserRole(role) {
       currentUserRole = role;
-      document.getElementById('btn-role-a').classList.toggle('active', role === 'A');
-      document.getElementById('btn-role-b').classList.toggle('active', role === 'B');
+      updateRoleSwitcherButtons();
       currentDialogueStep = 0;
       checkTurnAndAct();
     }
 
     function checkTurnAndAct() {
+      if (!activeDialogueFlow || activeDialogueFlow.length === 0) return;
       if (currentDialogueStep >= activeDialogueFlow.length) {
-        document.getElementById('transcript-display').innerHTML = '🎉 <b>Skenario Selesai!</b> Anda telah menuntaskan percakapan ini.';
+        document.getElementById('transcript-display').innerHTML = '🎉 <b>Skenario Percakapan Selesai!</b> Kerja bagus!';
         return;
       }
 
@@ -1093,13 +1665,13 @@
       highlightChatBubble(currentDialogueStep);
 
       if (isAiTurn) {
-        document.getElementById('transcript-display').innerHTML = '🤖 <i>Zettbot sedang berbicara...</i>';
+        document.getElementById('transcript-display').innerHTML = `🤖 <i>${currentLine.speaker} (AI) sedang berbicara...</i>`;
         speakText(currentLine.hanzi, function() {
           currentDialogueStep++;
           checkTurnAndAct();
         });
       } else {
-        document.getElementById('transcript-display').innerHTML = '👉 <b>Giliran Anda!</b> Ucapkan: <i>"' + currentLine.hanzi + '"</i>';
+        document.getElementById('transcript-display').innerHTML = `👉 <b>Giliran Anda (${currentLine.speaker})!</b> Ucapkan: <i>"${currentLine.hanzi}"</i>`;
       }
     }
 
@@ -1113,13 +1685,13 @@
     }
 
     function playCurrentAiTurn() {
-      if (currentDialogueStep < activeDialogueFlow.length) {
+      if (activeDialogueFlow && currentDialogueStep < activeDialogueFlow.length) {
         speakText(activeDialogueFlow[currentDialogueStep].hanzi);
       }
     }
 
     function skipUserTurn() {
-      if (currentDialogueStep < activeDialogueFlow.length) {
+      if (activeDialogueFlow && currentDialogueStep < activeDialogueFlow.length) {
         currentDialogueStep++;
         checkTurnAndAct();
       }
@@ -1140,7 +1712,6 @@
       window.speechSynthesis.speak(utterance);
     }
 
-    // Speech Recognition
     function toggleSpeechRecognition() {
       var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
       var micBtn = document.getElementById('mic-btn');
@@ -1186,7 +1757,7 @@
         recognition.onerror = function(e) {
           isListening = false;
           micBtn.classList.remove('listening');
-          statusBox.innerHTML = '⚠️ <i>Izin mikrofon belum aktif atau dibatasi. Gunakan <b>Lanjut Giliran</b>.</i>';
+          statusBox.innerHTML = '⚠️ <i>Izin mikrofon dibatasi. Klik <b>Lanjut Giliran</b>.</i>';
         };
 
         recognition.onend = function() {
@@ -1198,84 +1769,253 @@
       } catch (err) {
         isListening = false;
         micBtn.classList.remove('listening');
-        statusBox.innerHTML = '⚠️ <i>Gagal menyalakan mic. Gunakan <b>Lanjut Giliran</b>.</i>';
+        statusBox.innerHTML = '⚠️ <i>Gagal menyalakan mic. Klik <b>Lanjut Giliran</b>.</i>';
       }
     }
 
-    // SRS Flashcards
-    function renderCurrentSrsCard() {
-      document.getElementById('srs-card-element').classList.remove('flipped');
-      if (allVocabularies.length === 0) return;
+    // Workbook Viewer
+    function loadWorkbookQuestions(hskLevel, btn) {
+      if (btn) {
+        var buttons = btn.parentElement.querySelectorAll('.pill-btn');
+        for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove('active');
+        btn.classList.add('active');
+      }
 
-      var v = allVocabularies[srsIndex % allVocabularies.length];
-      document.getElementById('srs-card-level').innerText = 'HSK ' + v.level;
+      var container = document.getElementById('workbook-cards-container');
+      container.innerHTML = '<div style="text-align:center; padding: 30px; color: var(--gold-autumn);">Memuat Soal dari Spreadsheet... 🍁</div>';
+
+      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+        fetch(SCRIPT_URL + "?action=getWorkbook&level=" + (hskLevel || "ALL"))
+          .then(res => res.json())
+          .then(data => renderWorkbookCards(data))
+          .catch(err => renderWorkbookCards([]));
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(renderWorkbookCards)
+          .getWorkbookQuestions(hskLevel, 'ALL');
+      }
+    }
+
+    function renderWorkbookCards(questions) {
+      var container = document.getElementById('workbook-cards-container');
+      container.innerHTML = '';
+
+      if (!questions || questions.length === 0) {
+        container.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 30px;">Belum ada butir soal di sheet WORKBOOK_BANK untuk level ini. Gunakan panel CRUD untuk menambahkannya!</div>';
+        return;
+      }
+
+      questions.forEach(function(q) {
+        var card = document.createElement('div');
+        card.className = 'glass-card';
+
+        var optHtml = '';
+        if (q.options) {
+          q.options.forEach(function(opt) {
+            optHtml += '<button class="pill-btn" style="text-align:left; padding: 10px 14px;" onclick="checkWorkbookAnswer(\'' + q.questionId + '\', \'' + opt + '\', \'' + q.correctAnswer + '\', this)">' + opt + '</button>';
+          });
+        }
+
+        card.innerHTML = 
+          '<div style="display: flex; justify-content: space-between; margin-bottom: 10px;">' +
+            '<span class="badge">' + q.hskLevel + ' - ' + q.questionType + '</span>' +
+          '</div>' +
+          '<div style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 14px; line-height: 1.5;">' + q.questionPrompt.replace(/\n/g, '<br>') + '</div>' +
+          '<div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">' + optHtml + '</div>' +
+          '<div id="wb-fb-' + q.questionId + '" style="display:none; padding: 10px; border-radius: 8px; font-size: 13px; margin-top: 10px;"></div>';
+
+        container.appendChild(card);
+      });
+    }
+
+    function checkWorkbookAnswer(qId, selectedOpt, correctOpt, btnElement) {
+      var parent = btnElement.parentElement;
+      var buttons = parent.querySelectorAll('.pill-btn');
+      for (var i = 0; i < buttons.length; i++) buttons[i].disabled = true;
+
+      var feedbackBox = document.getElementById('wb-fb-' + qId);
+      feedbackBox.style.display = 'block';
+
+      if (selectedOpt === correctOpt) {
+        btnElement.style.background = '#16a34a';
+        btnElement.style.color = '#fff';
+        feedbackBox.style.background = 'rgba(220, 38, 38, 0.2)';
+        feedbackBox.style.border = '1px solid #16a34a';
+        feedbackBox.style.color = '#86efac';
+        feedbackBox.innerHTML = '🎉 <b>Benar Sekali!</b> Jawaban Anda tepat.';
+      } else {
+        btnElement.style.background = '#dc2626';
+        btnElement.style.color = '#fff';
+        feedbackBox.style.background = 'rgba(220, 38, 38, 0.2)';
+        feedbackBox.style.border = '1px solid #dc2626';
+        feedbackBox.style.color = '#fca5a5';
+        feedbackBox.innerHTML = '❌ <b>Kurang Tepat.</b> Kunci jawaban: <b>' + correctOpt + '</b>';
+      }
+    }
+
+    // Grammar, SRS, Placement & Certificate
+    function loadGrammarGuidesView() {
+      var container = document.getElementById('grammar-cards-container');
+      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+        fetch(SCRIPT_URL + "?action=getGrammar&level=ALL")
+          .then(res => res.json())
+          .then(data => renderGrammarGuides(data))
+          .catch(err => renderGrammarGuides([]));
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(renderGrammarGuides)
+          .getGrammarGuides('ALL');
+      }
+    }
+
+    function renderGrammarGuides(guides) {
+      var container = document.getElementById('grammar-cards-container');
+      container.innerHTML = '';
+
+      if (!guides || guides.length === 0) {
+        container.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 30px;">Belum ada data materi di sheet GRAMMAR_GUIDE.</div>';
+        return;
+      }
+
+      guides.forEach(function(g) {
+        var card = document.createElement('div');
+        card.className = 'glass-card';
+
+        var exHtml = '';
+        if (g.examples) {
+          g.examples.forEach(function(ex) {
+            exHtml += '<div style="margin-bottom: 6px;"><b>' + ex.hanzi + '</b> <span style="color:var(--gold-autumn);">(' + ex.pinyin + ')</span> : ' + ex.indo + '</div>';
+          });
+        }
+
+        card.innerHTML = 
+          '<div style="display:flex; justify-content:space-between; margin-bottom: 8px;">' +
+            '<span class="badge">' + g.hskLevel + ' - ' + g.topic + '</span>' +
+          '</div>' +
+          '<h3 style="font-size: 18px; color: #fff; margin-bottom: 8px;">' + g.ruleTitle + '</h3>' +
+          '<div style="background: rgba(20, 11, 7, 0.6); padding: 10px; border-radius: 6px; border-left: 3px solid var(--gold-autumn); font-family: monospace; font-size: 13px; color: #fed7aa; margin-bottom: 12px;">' + g.formula + '</div>' +
+          '<p style="font-size: 13.5px; color: var(--text-main); margin-bottom: 14px; line-height: 1.6;">' + g.explanationIndo + '</p>' +
+          '<div style="background: rgba(40, 24, 16, 0.6); padding: 12px; border-radius: 8px; font-size: 12.5px; color: var(--text-muted);">' + exHtml + '</div>';
+
+        container.appendChild(card);
+      });
+    }
+
+    function initSrsEngine() {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(cards) {
+            srsCardsQueue = cards || [];
+            currentSrsIndex = 0;
+            renderCurrentSrsCard();
+          })
+          .getSrsCards("User Active");
+      }
+    }
+
+    function renderCurrentSrsCard() {
+      var cardEl = document.getElementById('srs-card-element');
+      cardEl.classList.remove('flipped');
+
+      if (allVocabularies.length === 0) return;
+      var v = allVocabularies[currentSrsIndex % allVocabularies.length];
+
+      document.getElementById('srs-card-level').innerText = 'HSK ' + (v.level || v.hskLevel || '1');
       document.getElementById('srs-card-hz').innerText = v.hanzi;
       document.getElementById('srs-card-py').innerText = v.pinyin;
       document.getElementById('srs-card-in').innerText = v.indonesian;
-      document.getElementById('srs-card-pos').innerText = '[' + v.partOfSpeech + ']';
+      document.getElementById('srs-card-pos').innerText = '[' + (v.partOfSpeech || 'Umum') + ']';
     }
 
     function flipFlashcard() {
       document.getElementById('srs-card-element').classList.toggle('flipped');
     }
 
-    function answerSrs(pass) {
-      srsIndex++;
+    function answerSrs(isCorrect) {
+      currentSrsIndex++;
       renderCurrentSrsCard();
     }
 
-    // Placement Test
     function startPlacementTest() {
       document.getElementById('placement-intro-box').style.display = 'none';
       var quizBox = document.getElementById('placement-quiz-box');
       quizBox.style.display = 'block';
 
       placementQuestions = [
-        { q: "Apa arti dari karakter '我' (wǒ)?", opts: ["Saya / Aku", "Kamu", "Dia", "Buku"], ans: "Saya / Aku", lvl: "HSK 1" },
-        { q: "Pilihlah pinyin yang benar untuk '谢谢':", opts: ["zàijiàn", "xièxie", "nǐ hǎo", "duìbuqǐ"], ans: "xièxie", lvl: "HSK 1" },
-        { q: "Apa makna dari kata '准备' (zhǔnbèi)?", opts: ["Mempersiapkan", "Menjawab", "Beristirahat", "Membeli"], ans: "Mempersiapkan", lvl: "HSK 2" },
-        { q: "Karakter '简单' (jiǎndān) memiliki arti:", opts: ["Sederhana / Mudah", "Rumit", "Mahal", "Panjang"], ans: "Sederhana / Mudah", lvl: "HSK 3" },
-        { q: "Apa arti dari '成功' (chénggōng)?", opts: ["Sukses / Berhasil", "Gagal", "Menyerah", "Bekerja"], ans: "Sukses / Berhasil", lvl: "HSK 4" }
+        { questionText: "Apa arti dari karakter '我' (wǒ)?", options: ["Saya / Aku", "Kamu", "Dia", "Buku"], correctAnswer: "Saya / Aku", hskLevel: "HSK 1", scoreWeight: 20 },
+        { questionText: "Pilihlah pinyin yang benar untuk '谢谢':", options: ["zàijiàn", "xièxie", "nǐ hǎo", "duìbuqǐ"], correctAnswer: "xièxie", hskLevel: "HSK 1", scoreWeight: 20 },
+        { questionText: "Apa makna dari kata '准备' (zhǔnbèi)?", options: ["Mempersiapkan", "Menjawab", "Beristirahat", "Membeli"], correctAnswer: "Mempersiapkan", hskLevel: "HSK 2", scoreWeight: 20 },
+        { questionText: "Karakter '简单' (jiǎndān) memiliki arti:", options: ["Sederhana / Mudah", "Rumit", "Mahal", "Panjang"], correctAnswer: "Sederhana / Mudah", hskLevel: "HSK 3", scoreWeight: 20 },
+        { questionText: "Apa arti dari '成功' (chénggōng)?", options: ["Sukses / Berhasil", "Gagal", "Menyerah", "Bekerja"], correctAnswer: "Sukses / Berhasil", hskLevel: "HSK 4", scoreWeight: 20 }
       ];
-      placementStep = 0;
+      currentPlacementStep = 0;
       placementScore = 0;
       renderPlacementStep();
     }
 
     function renderPlacementStep() {
       var quizBox = document.getElementById('placement-quiz-box');
-      if (placementStep >= placementQuestions.length) {
-        var est = placementScore >= 80 ? "HSK 4 - 5" : (placementScore >= 40 ? "HSK 2 - 3" : "HSK 1");
+      if (currentPlacementStep >= placementQuestions.length) {
+        var estimated = (placementScore >= 40 ? 'HSK 2 - 3' : 'HSK 1');
         quizBox.innerHTML = 
           '<div style="text-align:center; padding: 20px;">' +
             '<div style="font-size: 50px;">🎯</div>' +
-            '<h3 style="font-size: 22px; color: #fff; margin: 10px 0;">Hasil Diagnostic Test</h3>' +
-            '<p style="font-size: 15px; color: var(--gold-autumn);">Estimasi Kesiapan: <b>' + est + '</b> (Skor: ' + placementScore + '/100)</p>' +
+            '<h3 style="font-size: 22px; color: #fff; margin: 10px 0;">Hasil Diagnostic Placement Test</h3>' +
+            '<p style="font-size: 15px; color: var(--gold-autumn);">Estimasi Level: <b>' + estimated + '</b> (Skor: ' + placementScore + ')</p>' +
             '<button class="btn-autumn-primary" style="margin-top: 20px;" onclick="startPlacementTest()">Ulangi Tes</button>' +
           '</div>';
         return;
       }
 
-      var q = placementQuestions[placementStep];
+      var q = placementQuestions[currentPlacementStep];
       var optHtml = '';
-      q.opts.forEach(function(opt) {
-        optHtml += '<button class="pill-btn" style="text-align:left; padding: 12px;" onclick="answerPlacement(\'' + opt + '\')">' + opt + '</button>';
-      });
+      if (q.options) {
+        q.options.forEach(function(opt) {
+          optHtml += '<button class="pill-btn" style="text-align:left; padding: 12px;" onclick="answerPlacementQuestion(\'' + opt + '\')">' + opt + '</button>';
+        });
+      }
 
       quizBox.innerHTML = 
         '<div style="display:flex; justify-content:space-between; margin-bottom: 12px;">' +
-          '<span class="badge">Soal ' + (placementStep + 1) + ' / ' + placementQuestions.length + '</span>' +
-          '<span style="font-size: 12px; color: var(--gold-autumn);">' + q.lvl + '</span>' +
+          '<span class="badge">Soal ' + (currentPlacementStep + 1) + ' / ' + placementQuestions.length + '</span>' +
+          '<span style="font-size: 12px; color: var(--gold-autumn);">' + q.hskLevel + '</span>' +
         '</div>' +
-        '<div style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 16px;">' + q.q + '</div>' +
+        '<div style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 16px;">' + q.questionText + '</div>' +
         '<div style="display: flex; flex-direction: column; gap: 8px;">' + optHtml + '</div>';
     }
 
-    function answerPlacement(sel) {
-      var q = placementQuestions[placementStep];
-      if (sel === q.ans) placementScore += 20;
-      placementStep++;
+    function answerPlacementQuestion(selected) {
+      var q = placementQuestions[currentPlacementStep];
+      if (selected === q.correctAnswer) {
+        placementScore += (q.scoreWeight || 20);
+      }
+      currentPlacementStep++;
       renderPlacementStep();
+    }
+
+    function requestCertificatePdf() {
+      var name = document.getElementById('cert-user-name').value;
+      if (!name.trim()) {
+        alert('Mohon masukkan nama Anda untuk terbitan sertifikat.');
+        return;
+      }
+
+      var status = document.getElementById('cert-status-msg');
+      status.innerHTML = '⏳ <i>Memproses dokumen PDF resmi Zettbot Academy...</i>';
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (res.success) {
+              status.innerHTML = '✅ <b>Sertifikat Berhasil Diterbitkan!</b> Mengunduh file...';
+              var link = document.createElement('a');
+              link.href = 'data:application/pdf;base64,' + res.pdfBase64;
+              link.download = res.fileName;
+              link.click();
+            }
+          })
+          .generateCertificatePdf(name, 'HSK 1 - 6 Autumn Curriculum', 100);
+      }
     }
   </script>
 </body>
