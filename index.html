@@ -1415,75 +1415,77 @@
       renderCurrentSrsCard();
     }
 
-    function renderVocabUI() {
-      var container = document.getElementById('vocab-cards-container');
-      if (!container) return;
-      container.innerHTML = '';
+   function renderVocabUI() {
+  var container = document.getElementById('vocab-cards-container');
+  if (!container) return;
+  container.innerHTML = '';
 
-      var filtered = allVocabularies.filter(function(v) {
-        var userTarget = currentDictLevel.toString().replace(/[^0-9]/g, '').trim();
-        var itemLvl = (v.level || '').toString().replace(/[^0-9]/g, '').trim();
-        var itemRawHsk = (v.hskLevel || '').toString().replace(/[^0-9]/g, '').trim();
+  var filtered = allVocabularies.filter(function(v) {
+    // 1. Normalisasi level agar "HSK 1" dan "1" dianggap sama
+    var targetLvl = currentDictLevel.toString().replace(/[^0-9]/g, '').trim();
+    var itemLvl = (v.level || '').toString().replace(/[^0-9]/g, '').trim();
+    var itemHsk = (v.hskLevel || '').toString().replace(/[^0-9]/g, '').trim();
 
-        var matchLvl = (currentDictLevel === 'ALL' || userTarget === itemLvl || userTarget === itemRawHsk);
+    var matchLvl = (currentDictLevel === 'ALL' || targetLvl === '' || targetLvl === itemLvl || targetLvl === itemHsk);
 
-        var sTerm = currentDictSearch.toLowerCase().trim();
-        var matchSearch = (!sTerm || 
-          (v.hanzi && v.hanzi.toLowerCase().includes(sTerm)) || 
-          (v.pinyin && v.pinyin.toLowerCase().includes(sTerm)) || 
-          (v.indonesian && v.indonesian.toLowerCase().includes(sTerm))
-        );
-        return matchLvl && matchSearch;
-      });
+    // 2. Pencarian kata
+    var sTerm = currentDictSearch.toLowerCase().trim();
+    var matchSearch = (!sTerm || 
+      (v.hanzi && v.hanzi.toLowerCase().includes(sTerm)) || 
+      (v.pinyin && v.pinyin.toLowerCase().includes(sTerm)) || 
+      (v.indonesian && v.indonesian.toLowerCase().includes(sTerm))
+    );
 
-      var pageSize = 12;
-      var totalPages = Math.ceil(filtered.length / pageSize) || 1;
-      currentDictPage = Math.max(1, Math.min(currentDictPage, totalPages));
+    return matchLvl && matchSearch;
+  });
 
-      var pagedItems = filtered.slice((currentDictPage - 1) * pageSize, currentDictPage * pageSize);
+  var pageSize = 12;
+  var totalPages = Math.ceil(filtered.length / pageSize) || 1;
+  currentDictPage = Math.max(1, Math.min(currentDictPage, totalPages));
 
-      if (pagedItems.length === 0) {
-        container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--text-muted);">Tidak ada kosakata yang cocok.</div>';
-      } else {
-        pagedItems.forEach(function(item) {
-          var card = document.createElement('div');
-          card.className = 'vocab-card';
-          card.innerHTML = 
-            '<div class="vocab-head">' +
-              '<div class="vocab-hanzi">' + item.hanzi + '</div>' +
-              '<div class="vocab-level-tag">HSK ' + (item.level || item.hskLevel || '1') + '</div>' +
-            '</div>' +
-            '<div class="vocab-pinyin">' + item.pinyin + '</div>' +
-            '<div class="vocab-indo">' + item.indonesian + '</div>' +
-            '<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px;">[' + (item.partOfSpeech || 'Umum') + ']</div>' +
-            '<div class="vocab-actions">' +
-              '<button class="icon-action-btn" onclick="speakText(\'' + item.hanzi + '\')">🔊 Dengar</button>' +
-              '<button class="icon-action-btn" onclick="selectCharForWriting(\'' + item.hanzi.charAt(0) + '\')">✍️ Tulis</button>' +
-            '</div>';
-          container.appendChild(card);
-        });
-      }
+  var pagedItems = filtered.slice((currentDictPage - 1) * pageSize, currentDictPage * pageSize);
 
-      var elPage = document.getElementById('dict-page-indicator');
-      var elPrev = document.getElementById('btn-prev-page');
-      var elNext = document.getElementById('btn-next-page');
+  if (pagedItems.length === 0) {
+    container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--text-muted);">Tidak ada kosakata yang cocok.</div>';
+  } else {
+    pagedItems.forEach(function(item) {
+      var card = document.createElement('div');
+      card.className = 'vocab-card';
+      card.innerHTML = 
+        '<div class="vocab-head">' +
+          '<div class="vocab-hanzi">' + item.hanzi + '</div>' +
+          '<div class="vocab-level-tag">HSK ' + item.level + '</div>' +
+        '</div>' +
+        '<div class="vocab-pinyin">' + item.pinyin + '</div>' +
+        '<div class="vocab-indo">' + item.indonesian + '</div>' +
+        '<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px;">[' + (item.partOfSpeech || 'Umum') + ']</div>' +
+        '<div class="vocab-actions">' +
+          '<button class="icon-action-btn" onclick="speakText(\'' + item.hanzi + '\')">🔊 Dengar</button>' +
+          '<button class="icon-action-btn" onclick="selectCharForWriting(\'' + item.hanzi.charAt(0) + '\')">✍️ Tulis</button>' +
+        '</div>';
+      container.appendChild(card);
+    });
+  }
 
-      if (elPage) elPage.innerText = 'Halaman ' + currentDictPage + ' / ' + totalPages;
-      if (elPrev) elPrev.disabled = (currentDictPage <= 1);
-      if (elNext) elNext.disabled = (currentDictPage >= totalPages);
-    }
+  var elPage = document.getElementById('dict-page-indicator');
+  var elPrev = document.getElementById('btn-prev-page');
+  var elNext = document.getElementById('btn-next-page');
 
-    window.filterDictLevel = function(lvl, btn) {
-      currentDictLevel = lvl;
-      currentDictPage = 1;
-      if (btn && btn.parentElement) {
-        var buttons = btn.parentElement.querySelectorAll('.pill-btn');
-        for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove('active');
-        btn.classList.add('active');
-      }
-      renderVocabUI();
-    };
+  if (elPage) elPage.innerText = 'Halaman ' + currentDictPage + ' / ' + totalPages;
+  if (elPrev) elPrev.disabled = (currentDictPage <= 1);
+  if (elNext) elNext.disabled = (currentDictPage >= totalPages);
+}
 
+window.filterDictLevel = function(lvl, btn) {
+  currentDictLevel = lvl;
+  currentDictPage = 1;
+  if (btn && btn.parentElement) {
+    var buttons = btn.parentElement.querySelectorAll('.pill-btn');
+    for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove('active');
+    btn.classList.add('active');
+  }
+  renderVocabUI();
+};
     window.handleSearchDebounce = function() {
       clearTimeout(searchDebounceTimer);
       searchDebounceTimer = setTimeout(function() {
