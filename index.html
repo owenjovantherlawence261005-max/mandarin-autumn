@@ -743,7 +743,7 @@
         <div class="header-group">
           <span class="badge">Official Standard Workbook</span>
           <h2>Workbook Interaktif per Level</h2>
-          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dari database Spreadsheet.</p>
+          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dari database Spreadsheet[cite: 2].</p>
         </div>
 
         <div class="toolbar-row">
@@ -877,7 +877,7 @@
   </div>
 
   <!-- =========================================================================
-       MODAL PANEL CRUD RAHASIA (MUNCUL SETELAH KLIK 3X LOGO AUTUMN)
+       MODAL PANEL CRUD RAHASIA (KLIK 3X LOGO AUTUMN)
        ========================================================================= -->
   <div id="admin-crud-modal">
     <div class="crud-modal-content">
@@ -1008,7 +1008,7 @@
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
 
-    // Masukkan URL Deployment Apps Script Anda jika menggunakan GitHub Pages
+    // GANTI DENGAN URL DEPLOYMENT APPS SCRIPT ANDA JIKA MENGGUNAKAN GITHUB PAGES
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqpb8Pxfr5K_xT_vLQoQD1Gl_f9C2pRYzqWmCy9JUVcvC84WJ4O225MhKQtdWKKRQn9A/exec"; 
 
     var allVocabularies = [];
@@ -1046,7 +1046,7 @@
       initSrsEngine();
     });
 
-    // Deteksi Klik 3x Cepat Logo Autumn
+    // Deteksi Klik 3x Cepat Logo Autumn (Terkoneksi Langsung ke Onclick HTML)
     window.handleLogoTripleClick = function() {
       logoClickCount++;
       clearTimeout(logoClickTimer);
@@ -1499,7 +1499,7 @@
       renderVocabUI();
     };
 
-    // Tian Zi Ge
+    // Tian Zi Ge Canvas
     var canvas, ctx, isDrawing = false;
     function initTianZiGeCanvas() {
       canvas = document.getElementById('tianzige-canvas');
