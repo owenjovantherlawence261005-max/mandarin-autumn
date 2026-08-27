@@ -1420,17 +1420,17 @@ function renderVocabUI() {
   container.innerHTML = '';
 
   var filtered = allVocabularies.filter(function(v) {
-    // Normalisasi level target (tombol) dan level data (spreadsheet)
-    var userTarget = currentDictLevel.toString().replace(/[^0-9]/g, '').trim();
-    var itemLvl = (v.level || '').toString().replace(/[^0-9]/g, '').trim();
-    var itemRawHsk = (v.hskLevel || '').toString().replace(/[^0-9]/g, '').trim();
+    // Normalisasi level target (dari tombol) dan level data (dari spreadsheet)
+    var targetLvl = currentDictLevel.toString().toUpperCase().replace(/\s+/g, '').trim();
+    var itemLvl = (v.level || '').toString().toUpperCase().replace(/\s+/g, '').trim();
+    var itemHsk = (v.hskLevel || '').toString().toUpperCase().replace(/\s+/g, '').trim();
 
-    // Logika pencocokan level yang lebih longgar
+    // Cocokkan secara fleksibel (bisa 'ALL', 'HSK 1', maupun angka '1')
     var matchLvl = false;
-    if (currentDictLevel === 'ALL' || userTarget === '') {
-        matchLvl = true;
-    } else if (itemLvl === userTarget || itemRawHsk === userTarget) {
-        matchLvl = true;
+    if (currentDictLevel === 'ALL' || targetLvl === 'ALL' || targetLvl === '') {
+      matchLvl = true;
+    } else if (itemHsk === targetLvl || itemHsk === 'HSK' + targetLvl || itemLvl === targetLvl.replace(/[^0-9]/g, '')) {
+      matchLvl = true;
     }
 
     var sTerm = currentDictSearch.toLowerCase().trim();
@@ -1453,16 +1453,15 @@ function renderVocabUI() {
     container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--text-muted);">Tidak ada kosakata yang cocok.</div>';
   } else {
     pagedItems.forEach(function(item) {
-      // Pastikan level selalu ada angkanya
-      var displayLevel = item.level || item.hskLevel || '1';
-      displayLevel = displayLevel.toString().replace(/[^0-9]/g, '') || '1';
+      var rawLvl = (item.hskLevel || item.level || '1').toString();
+      var displayTag = rawLvl.toUpperCase().includes('HSK') ? rawLvl : ('HSK ' + rawLvl);
 
       var card = document.createElement('div');
       card.className = 'vocab-card';
       card.innerHTML = 
         '<div class="vocab-head">' +
           '<div class="vocab-hanzi">' + (item.hanzi || '') + '</div>' +
-          '<div class="vocab-level-tag">HSK ' + displayLevel + '</div>' +
+          '<div class="vocab-level-tag">' + displayTag + '</div>' +
         '</div>' +
         '<div class="vocab-pinyin">' + (item.pinyin || '') + '</div>' +
         '<div class="vocab-indo">' + (item.indonesian || '') + '</div>' +
