@@ -1366,16 +1366,15 @@
 
       if (viewId === 'workbook') loadWorkbookQuestions('ALL');
     };
-
 function loadDatabaseVocab() {
   var container = document.getElementById('vocab-cards-container');
   if (container) container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--gold-autumn);">Memuat data dari Spreadsheet Database... 🍂</div>';
 
-  // Mengambil data langsung secara lokal dari Google Apps Script (Sesuai Code.gs Anda)
   if (typeof google !== 'undefined' && google.script && google.script.run) {
+    // Panggil langsung fungsi getVocabularyData('ALL') agar seluruh data langsung ditarik tanpa filter ganda
     google.script.run
-      .withSuccessHandler(function(res) {
-        allVocabularies = res.items || res || [];
+      .withSuccessHandler(function(data) {
+        allVocabularies = Array.isArray(data) ? data : (data.items || []);
         renderVocabUI();
         initPracticeCharacters();
         renderCurrentSrsCard();
@@ -1384,7 +1383,7 @@ function loadDatabaseVocab() {
         console.error("Gagal load database:", err);
         useFallbackVocab();
       })
-      .getVocabPage(currentDictPage, 12, currentDictLevel, currentDictSearch, 'all');
+      .getVocabularyData('ALL');
   } else {
     useFallbackVocab();
   }
