@@ -1367,40 +1367,42 @@
       if (viewId === 'workbook') loadWorkbookQuestions('ALL');
     };
 
-    function loadDatabaseVocab() {
-      var container = document.getElementById('vocab-cards-container');
-      if (container) container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--gold-autumn);">Memuat data dari Spreadsheet Database... 🍂</div>';
+  function loadDatabaseVocab() {
+  var container = document.getElementById('vocab-cards-container');
+  if (container) container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--gold-autumn);">Memuat data dari Spreadsheet Database... 🍂</div>';
 
-      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
-        fetch(SCRIPT_URL + "?action=getVocab&level=ALL")
-          .then(res => res.json())
-          .then(data => {
-            if (data && Array.isArray(data) && data.length > 0) {
-              allVocabularies = data;
-              renderVocabUI();
-              initPracticeCharacters();
-              renderCurrentSrsCard();
-            } else {
-              useFallbackVocab();
-            }
-          })
-          .catch(err => {
-            console.error("Gagal load API:", err);
-            useFallbackVocab();
-          });
-      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler(function(res) {
-            allVocabularies = res.items || res || [];
-            renderVocabUI();
-            initPracticeCharacters();
-            renderCurrentSrsCard();
-          })
-          .getVocabPage(currentDictPage, 12, currentDictLevel, currentDictSearch, 'all');
-      } else {
+  if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+    fetch(SCRIPT_URL + "?action=getVocab&level=ALL")
+      .then(res => {
+        if (!res.ok) throw new Error("Network response was not ok");
+        return res.json();
+      })
+      .then(data => {
+        // PERBAIKAN: Tangani berbagai bentuk struktur respon dari Apps Script
+        let extractedData = [];
+        if (Array.isArray(data)) {
+          extractedData = data;
+        } else if (data && data.items && Array.isArray(data.items)) {
+          extractedData = data.items;
+        }
+
+        if (extractedData.length > 0) {
+          allVocabularies = extractedData;
+          renderVocabUI();
+          initPracticeCharacters();
+          renderCurrentSrsCard();
+        } else {
+          useFallbackVocab();
+        }
+      })
+      .catch(err => {
+        console.error("Gagal load API:", err);
         useFallbackVocab();
-      }
-    }
+      });
+  } else {
+    useFallbackVocab();
+  }
+}
 
     function useFallbackVocab() {
       allVocabularies = [
@@ -1414,28 +1416,32 @@
       initPracticeCharacters();
       renderCurrentSrsCard();
     }
-
-   function renderVocabUI() {
+function renderVocabUI() {
   var container = document.getElementById('vocab-cards-container');
   if (!container) return;
   container.innerHTML = '';
 
   var filtered = allVocabularies.filter(function(v) {
-    // 1. Normalisasi level agar "HSK 1" dan "1" dianggap sama
-    var targetLvl = currentDictLevel.toString().replace(/[^0-9]/g, '').trim();
+    // Normalisasi level target (tombol) dan level data (spreadsheet)
+    var userTarget = currentDictLevel.toString().replace(/[^0-9]/g, '').trim();
     var itemLvl = (v.level || '').toString().replace(/[^0-9]/g, '').trim();
-    var itemHsk = (v.hskLevel || '').toString().replace(/[^0-9]/g, '').trim();
+    var itemRawHsk = (v.hskLevel || '').toString().replace(/[^0-9]/g, '').trim();
 
-    var matchLvl = (currentDictLevel === 'ALL' || targetLvl === '' || targetLvl === itemLvl || targetLvl === itemHsk);
+    // Logika pencocokan level yang lebih longgar
+    var matchLvl = false;
+    if (currentDictLevel === 'ALL' || userTarget === '') {
+        matchLvl = true;
+    } else if (itemLvl === userTarget || itemRawHsk === userTarget) {
+        matchLvl = true;
+    }
 
-    // 2. Pencarian kata
     var sTerm = currentDictSearch.toLowerCase().trim();
     var matchSearch = (!sTerm || 
       (v.hanzi && v.hanzi.toLowerCase().includes(sTerm)) || 
       (v.pinyin && v.pinyin.toLowerCase().includes(sTerm)) || 
       (v.indonesian && v.indonesian.toLowerCase().includes(sTerm))
     );
-
+    
     return matchLvl && matchSearch;
   });
 
@@ -1449,19 +1455,23 @@
     container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--text-muted);">Tidak ada kosakata yang cocok.</div>';
   } else {
     pagedItems.forEach(function(item) {
+      // Pastikan level selalu ada angkanya
+      var displayLevel = item.level || item.hskLevel || '1';
+      displayLevel = displayLevel.toString().replace(/[^0-9]/g, '') || '1';
+
       var card = document.createElement('div');
       card.className = 'vocab-card';
       card.innerHTML = 
         '<div class="vocab-head">' +
-          '<div class="vocab-hanzi">' + item.hanzi + '</div>' +
-          '<div class="vocab-level-tag">HSK ' + item.level + '</div>' +
+          '<div class="vocab-hanzi">' + (item.hanzi || '') + '</div>' +
+          '<div class="vocab-level-tag">HSK ' + displayLevel + '</div>' +
         '</div>' +
-        '<div class="vocab-pinyin">' + item.pinyin + '</div>' +
-        '<div class="vocab-indo">' + item.indonesian + '</div>' +
+        '<div class="vocab-pinyin">' + (item.pinyin || '') + '</div>' +
+        '<div class="vocab-indo">' + (item.indonesian || '') + '</div>' +
         '<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px;">[' + (item.partOfSpeech || 'Umum') + ']</div>' +
         '<div class="vocab-actions">' +
-          '<button class="icon-action-btn" onclick="speakText(\'' + item.hanzi + '\')">🔊 Dengar</button>' +
-          '<button class="icon-action-btn" onclick="selectCharForWriting(\'' + item.hanzi.charAt(0) + '\')">✍️ Tulis</button>' +
+          '<button class="icon-action-btn" onclick="speakText(\'' + (item.hanzi || '') + '\')">🔊 Dengar</button>' +
+          '<button class="icon-action-btn" onclick="selectCharForWriting(\'' + (item.hanzi ? item.hanzi.charAt(0) : '') + '\')">✍️ Tulis</button>' +
         '</div>';
       container.appendChild(card);
     });
@@ -1475,7 +1485,6 @@
   if (elPrev) elPrev.disabled = (currentDictPage <= 1);
   if (elNext) elNext.disabled = (currentDictPage >= totalPages);
 }
-
 window.filterDictLevel = function(lvl, btn) {
   currentDictLevel = lvl;
   currentDictPage = 1;
