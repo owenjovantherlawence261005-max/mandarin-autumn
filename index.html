@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Serif+SC:wght@600;900&display=swap" rel="stylesheet">
   
-  <!-- Library PDF.js untuk Ekstraksi PDF Naskah -->
+  <!-- Library PDF.js untuk Ekstraksi Naskah PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
   <style>
@@ -77,7 +77,7 @@
       margin-bottom: 20px;
     }
 
-    /* Logo Autumn Interaktif */
+    /* Logo Autumn: Klik 3x Cepat untuk Buka Panel Admin CRUD */
     .brand-icon {
       width: 44px;
       height: 44px;
@@ -92,7 +92,6 @@
       box-shadow: 0 4px 12px var(--terracotta-glow);
       cursor: pointer;
       user-select: none;
-      touch-action: manipulation;
       transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
     .brand-icon:active { 
@@ -500,7 +499,7 @@
     }
     .btn-fail { background: rgba(220, 38, 38, 0.25); border: 1px solid #dc2626; color: #fca5a5; }
     .btn-fail:hover { background: #dc2626; color: #fff; }
-    .btn-pass { background: rgba(22, 163, 74, 0.25); border: 1px solid #16a34a; color: #86efac; }
+    .btn-pass { background: rgba(220, 38, 38, 0.25); border: 1px solid #16a34a; color: #86efac; }
     .btn-pass:hover { background: #16a34a; color: #fff; }
 
     .bottom-nav {
@@ -548,7 +547,7 @@
       padding: 30px 16px;
     }
     .crud-modal-content {
-      max-width: 720px;
+      max-width: 760px;
       margin: 0 auto;
       background: #23140d;
       border: 2px solid var(--gold-autumn);
@@ -635,8 +634,8 @@
   <div class="app-container">
     <aside class="sidebar">
       <div class="brand-box">
-        <!-- LOGO AUTUMN DENGAN LISTENER RAHASIA KLIK 3X -->
-        <div class="brand-icon" id="autumn-logo-btn" title="Klik 3x Cepat untuk Buka Panel CRUD">秋</div>
+        <!-- LOGO AUTUMN (KLIK 3X UNTUK PANEL CRUD) -->
+        <div class="brand-icon" id="autumn-logo-btn" onclick="handleLogoTripleClick()" title="Klik 3x Cepat untuk Buka Panel CRUD">秋</div>
         <div class="brand-text">
           <h1>ZETTBOT HSK</h1>
           <p>Autumn Edition 1-6</p>
@@ -878,7 +877,7 @@
   </div>
 
   <!-- =========================================================================
-       MODAL CRUD RAHASIA (MUNCUL SETELAH KLIK 3X LOGO AUTUMN)
+       MODAL PANEL CRUD RAHASIA (MUNCUL SETELAH KLIK 3X LOGO AUTUMN)
        ========================================================================= -->
   <div id="admin-crud-modal">
     <div class="crud-modal-content">
@@ -887,7 +886,7 @@
           <span style="font-size: 24px;">🍁</span>
           <div>
             <h3 style="font-size: 18px; color: #fff;">Panel Admin & CRUD Khusus</h3>
-            <p style="font-size: 11px; color: var(--gold-autumn);">Kelola Speaking AI (PDF 2 Orang) & Soal Workbook</p>
+            <p style="font-size: 11px; color: var(--gold-autumn);">Sinkronisasi Otomatis ke Sheet SPEAKING_DIALOGUES & WORKBOOK_BANK[cite: 3, 4]</p>
           </div>
         </div>
         <button onclick="closeAdminCrudModal()" style="background: none; border: none; color: #fca5a5; font-size: 24px; cursor: pointer;">✕</button>
@@ -903,42 +902,47 @@
         <div class="crud-form-group" style="background: rgba(234, 88, 12, 0.15); padding: 14px; border-radius: 10px; border: 1px dashed var(--gold-autumn);">
           <label>Unggah Naskah PDF Khusus Percakapan 2 Orang:</label>
           <input type="file" id="pdf-crud-file-input" accept="application/pdf" onchange="handleCrudPdfUpload(event)" style="padding: 6px;">
-          <div id="crud-pdf-status" style="font-size: 12px; color: var(--gold-autumn); margin-top: 6px;">Pilih file PDF (.pdf) percakapan 2 orang. Sistem akan otomatis membedah giliran bicara.</div>
+          <div id="crud-pdf-status" style="font-size: 12px; color: var(--gold-autumn); margin-top: 6px;">Sistem akan membedah Hanzi, Pinyin, dan Terjemahan Indonesia secara otomatis sesuai rumus JSON database[cite: 3].</div>
         </div>
 
         <div class="crud-form-group">
-          <label>Judul Skenario Percakapan:</label>
-          <input type="text" id="crud-spk-title" placeholder="Contoh: Membeli Tiket Kereta Api">
+          <label>Judul Skenario Percakapan (scenario_title):</label>
+          <input type="text" id="crud-spk-title" placeholder="Contoh: Memesan Makanan di Restoran">
         </div>
 
         <div style="display: flex; gap: 12px;">
           <div class="crud-form-group" style="flex: 1;">
-            <label>Tingkat HSK:</label>
+            <label>Tingkat HSK (hsk_level):</label>
             <select id="crud-spk-hsk">
               <option value="HSK 1">HSK 1</option>
               <option value="HSK 2">HSK 2</option>
-              <option value="HSK 3">HSK 3</option>
+              <option value="HSK 3" selected>HSK 3</option>
               <option value="HSK 4">HSK 4</option>
               <option value="HSK 5">HSK 5</option>
               <option value="HSK 6">HSK 6</option>
             </select>
           </div>
           <div class="crud-form-group" style="flex: 1;">
-            <label>Nama Karakter 1 (A):</label>
-            <input type="text" id="crud-spk-role-a" placeholder="Contoh: Petugas">
+            <label>Nama Karakter 1 (role_a_name):</label>
+            <input type="text" id="crud-spk-role-a" placeholder="Contoh: 小明 / Pelayan Restoran">
           </div>
           <div class="crud-form-group" style="flex: 1;">
-            <label>Nama Karakter 2 (B):</label>
-            <input type="text" id="crud-spk-role-b" placeholder="Contoh: Penumpang">
+            <label>Nama Karakter 2 (role_b_name):</label>
+            <input type="text" id="crud-spk-role-b" placeholder="Contoh: 小红 / Pelanggan">
           </div>
         </div>
 
         <div class="crud-form-group">
-          <label>Isi Naskah Percakapan (Format: A: Hanzi | Pinyin | Terjemahan):</label>
-          <textarea id="crud-spk-lines" rows="6" placeholder="A: 你好，你要去哪儿？ | Nǐ hǎo, nǐ yào qù nǎr? | Halo, Anda mau pergi ke mana?&#10;B: 我要去北京。 | Wǒ yào qù Běijīng. | Saya mau ke Beijing."></textarea>
+          <label>Naskah Terpisah Otomatis (Format: Karakter: Hanzi | Pinyin | Terjemahan):</label>
+          <textarea id="crud-spk-lines" rows="6" placeholder="小明: 周末你有什么打算？ | Zhōumò nǐ yǒu shénme dǎsuàn? | Akhir pekan ini kamu punya rencana apa?&#10;小红: 我打算和朋友去爬山... | Wǒ dǎsuàn... | Saya berencana..."></textarea>
         </div>
 
-        <button class="btn-autumn-primary" onclick="submitCrudSpeakingDialogue()" style="width: 100%;">💾 Simpan Skenario ke Database & Terapkan</button>
+        <div class="crud-form-group">
+          <label style="color: #86efac;">Pratinjau JSON Database (script_flow_json):</label>
+          <textarea id="crud-spk-json-preview" rows="4" readonly style="font-family: monospace; font-size: 11.5px; background: #120905; color: #86efac; border-color: rgba(134, 239, 172, 0.3);"></textarea>
+        </div>
+
+        <button class="btn-autumn-primary" onclick="submitCrudSpeakingDialogue()" style="width: 100%;">💾 Simpan ke Sheet SPEAKING_DIALOGUES & Terapkan[cite: 3, 4]</button>
       </div>
 
       <!-- TAB 2: CRUD SOAL WORKBOOK -->
@@ -985,7 +989,7 @@
           <input type="text" id="crud-wb-explanation" placeholder="Contoh: 苹果 (píngguǒ) berarti buah apel.">
         </div>
 
-        <button class="btn-autumn-primary" onclick="submitCrudWorkbookQuestion()" style="width: 100%;">💾 Tambah Soal ke WORKBOOK_BANK</button>
+        <button class="btn-autumn-primary" onclick="submitCrudWorkbookQuestion()" style="width: 100%;">💾 Tambah Soal ke WORKBOOK_BANK[cite: 4]</button>
       </div>
 
     </div>
@@ -1004,7 +1008,7 @@
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
 
-    // URL Web App Deployment Apps Script Anda
+    // Masukkan URL Deployment Apps Script Anda jika menggunakan GitHub Pages
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqpb8Pxfr5K_xT_vLQoQD1Gl_f9C2pRYzqWmCy9JUVcvC84WJ4O225MhKQtdWKKRQn9A/exec"; 
 
     var allVocabularies = [];
@@ -1016,7 +1020,7 @@
 
     var currentUserRole = 'B';
     var activeDialogueFlow = [];
-    var characterAName = "Pelayan";
+    var characterAName = "Pelayan Restoran";
     var characterBName = "Pelanggan";
     var currentDialogueStep = 0;
     var recognition = null;
@@ -1029,8 +1033,8 @@
     var currentPlacementStep = 0;
     var placementScore = 0;
 
-    // Logika Time-Window Tracker untuk Deteksi Klik 3x yang 100% Akurat
-    var logoClickTimestamps = [];
+    var logoClickCount = 0;
+    var logoClickTimer = null;
 
     window.addEventListener('DOMContentLoaded', function() {
       initFallingLeaves();
@@ -1040,54 +1044,49 @@
       loadGrammarGuidesView();
       loadSpeakingDialoguesView();
       initSrsEngine();
-      setupLogoTripleClickEngine();
     });
 
-    function setupLogoTripleClickEngine() {
-      var logoBtn = document.getElementById('autumn-logo-btn');
-      if (!logoBtn) return;
-
-      function onLogoTap(e) {
-        if (e) e.preventDefault();
-        var now = Date.now();
-        logoClickTimestamps.push(now);
-
-        // Hanya hitung klik yang terjadi dalam jendela waktu 1.5 detik terakhir
-        logoClickTimestamps = logoClickTimestamps.filter(function(t) {
-          return now - t <= 1500;
-        });
-
-        if (logoClickTimestamps.length >= 3) {
-          logoClickTimestamps = [];
-          openAdminCrudModal();
-        }
+    // Deteksi Klik 3x Cepat Logo Autumn
+    window.handleLogoTripleClick = function() {
+      logoClickCount++;
+      clearTimeout(logoClickTimer);
+      if (logoClickCount >= 3) {
+        logoClickCount = 0;
+        openAdminCrudModal();
+      } else {
+        logoClickTimer = setTimeout(function() {
+          logoClickCount = 0;
+        }, 900);
       }
+    };
 
-      logoBtn.addEventListener('click', onLogoTap);
-      logoBtn.addEventListener('touchend', onLogoTap);
-    }
-
-    function openAdminCrudModal() {
+    window.openAdminCrudModal = function() {
       var modal = document.getElementById('admin-crud-modal');
       if (modal) modal.style.display = 'block';
-    }
+    };
 
-    function closeAdminCrudModal() {
+    window.closeAdminCrudModal = function() {
       var modal = document.getElementById('admin-crud-modal');
       if (modal) modal.style.display = 'none';
-    }
+    };
 
-    function switchCrudTab(tab) {
-      document.getElementById('crud-tab-spk').classList.toggle('active', tab === 'spk');
-      document.getElementById('crud-tab-wb').classList.toggle('active', tab === 'wb');
-      document.getElementById('crud-section-spk').style.display = (tab === 'spk' ? 'block' : 'none');
-      document.getElementById('crud-section-wb').style.display = (tab === 'wb' ? 'block' : 'none');
-    }
+    window.switchCrudTab = function(tab) {
+      var tSpk = document.getElementById('crud-tab-spk');
+      var tWb = document.getElementById('crud-tab-wb');
+      var sSpk = document.getElementById('crud-section-spk');
+      var sWb = document.getElementById('crud-section-wb');
+      if (tSpk && tWb && sSpk && sWb) {
+        tSpk.classList.toggle('active', tab === 'spk');
+        tWb.classList.toggle('active', tab === 'wb');
+        sSpk.style.display = (tab === 'spk' ? 'block' : 'none');
+        sWb.style.display = (tab === 'wb' ? 'block' : 'none');
+      }
+    };
 
     // =========================================================================
-    // CRUD SPEAKING AI (UPLOAD PDF & SAVE TO SPREADSHEET)
+    // SMART PDF PARSER: SPATIAL CLUSTERING & PEMBAGIAN SKEMA DATABASE
     // =========================================================================
-    async function handleCrudPdfUpload(event) {
+    window.handleCrudPdfUpload = async function(event) {
       const file = event.target.files[0];
       if (!file || file.type !== "application/pdf") {
         alert("Mohon pilih file berekstensi PDF (.pdf).");
@@ -1095,7 +1094,7 @@
       }
 
       const statusBox = document.getElementById('crud-pdf-status');
-      statusBox.innerHTML = `⏳ <b>Membaca PDF:</b> ${file.name}...`;
+      if (statusBox) statusBox.innerHTML = `⏳ <b>Membaca dan menganalisis PDF:</b> ${file.name}...`;
 
       try {
         const arrayBuffer = await file.arrayBuffer();
@@ -1105,94 +1104,156 @@
         for (let i = 1; i <= pdf.numPages; i++) {
           const page = await pdf.getPage(i);
           const content = await page.getTextContent();
-          const pageText = content.items.map(item => item.str.trim()).filter(s => s.length > 0);
-          extractedLines.push(...pageText);
+          
+          let linesMap = {};
+          content.items.forEach(item => {
+            if (!item.str || item.str.trim() === '') return;
+            let y = Math.round(item.transform[5]); 
+            let matchedY = Object.keys(linesMap).find(k => Math.abs(Number(k) - y) <= 4);
+            if (matchedY !== undefined) {
+              linesMap[matchedY].push(item);
+            } else {
+              linesMap[y] = [item];
+            }
+          });
+
+          let sortedY = Object.keys(linesMap).sort((a, b) => Number(b) - Number(a));
+          sortedY.forEach(y => {
+            let lineItems = linesMap[y].sort((a, b) => a.transform[4] - b.transform[4]);
+            let lineStr = lineItems.map(it => it.str).join(' ').trim();
+            lineStr = lineStr.replace(/\s+/g, ' ');
+            if (lineStr) extractedLines.push(lineStr);
+          });
         }
 
         const parsed = parseDialogueFromLines(extractedLines);
 
         if (parsed.length < 2) {
-          statusBox.innerHTML = "⚠️ Naskah kurang dari 2 baris atau format percakapan tidak terbaca.";
+          if (statusBox) statusBox.innerHTML = "⚠️ Naskah kurang dari 2 baris atau format percakapan tidak terbaca.";
           return;
         }
 
-        document.getElementById('crud-spk-title').value = file.name.replace(/\.[^/.]+$/, "");
-        document.getElementById('crud-spk-role-a').value = characterAName;
-        document.getElementById('crud-spk-role-b').value = characterBName;
+        var inTitle = document.getElementById('crud-spk-title');
+        var inRoleA = document.getElementById('crud-spk-role-a');
+        var inRoleB = document.getElementById('crud-spk-role-b');
+        var inLines = document.getElementById('crud-spk-lines');
+        var inPreview = document.getElementById('crud-spk-json-preview');
 
-        let rawFormatted = parsed.map(p => `${p.role}: ${p.hanzi} | ${p.pinyin} | ${p.translation}`).join('\n');
-        document.getElementById('crud-spk-lines').value = rawFormatted;
+        if (inTitle) inTitle.value = file.name.replace(/\.[^/.]+$/, "");
+        if (inRoleA) inRoleA.value = characterAName;
+        if (inRoleB) inRoleB.value = characterBName;
 
-        statusBox.innerHTML = `✅ <b>Berhasil Mengekstrak ${parsed.length} Baris Dialog!</b> Silakan tinjau dan klik Simpan.`;
+        let rawFormatted = parsed.map(p => `${p.speaker}: ${p.hanzi} | ${p.pinyin} | ${p.indo}`).join('\n');
+        if (inLines) inLines.value = rawFormatted;
+        if (inPreview) inPreview.value = JSON.stringify(parsed, null, 2);
+
+        if (statusBox) statusBox.innerHTML = `✅ <b>Berhasil Terpisah Rapi!</b> Ditemukan ${parsed.length} giliran bicara antara <b>${characterAName}</b> dan <b>${characterBName}</b>.`;
 
       } catch (err) {
-        statusBox.innerHTML = "❌ Terjadi kendala memproses PDF: " + err.message;
+        if (statusBox) statusBox.innerHTML = "❌ Terjadi kendala memproses PDF: " + err.message;
       }
-    }
+    };
 
     function parseDialogueFromLines(lines) {
-      let flow = [];
-      let detectedSpeakers = new Set();
+      const speakerRegex = /^([A-Za-z0-9\u4e00-\u9fa5\s\(\)]{1,15})\s*[:：]\s*(.*)/;
+      let mergedTurns = [];
 
       for (let i = 0; i < lines.length; i++) {
-        let line = lines[i];
+        let line = lines[i].trim();
         if (!line) continue;
 
-        let role = "A";
+        if (speakerRegex.test(line)) {
+          mergedTurns.push(line);
+        } else {
+          if (mergedTurns.length > 0) {
+            mergedTurns[mergedTurns.length - 1] += " " + line;
+          } else {
+            mergedTurns.push(line);
+          }
+        }
+      }
+
+      let flow = [];
+      let detectedSpeakers = [];
+
+      for (let i = 0; i < mergedTurns.length; i++) {
+        let line = mergedTurns[i].trim();
+        if (!line) continue;
+
         let speaker = "";
         let content = line;
 
-        let colonMatch = line.match(/^([A-Za-z0-9\u4e00-\u9fa5]+)\s*[:：|]\s*(.*)/);
-
+        let colonMatch = line.match(speakerRegex);
         if (colonMatch) {
           speaker = colonMatch[1].trim();
           content = colonMatch[2].trim();
+        }
+
+        if (speaker && !detectedSpeakers.includes(speaker)) {
+          detectedSpeakers.push(speaker);
+        }
+
+        let role = "A";
+        if (speaker) {
+          role = (detectedSpeakers.indexOf(speaker) === 0) ? "A" : "B";
         } else {
           role = (flow.length % 2 === 0) ? "A" : "B";
-          speaker = (role === "A") ? "Karakter A" : "Karakter B";
         }
 
-        if (speaker) {
-          detectedSpeakers.add(speaker);
-          const speakerArr = Array.from(detectedSpeakers);
-          if (speaker === speakerArr[0]) {
-            role = "A";
-            characterAName = speaker;
-          } else {
-            role = "B";
-            characterBName = speaker;
-          }
-        }
+        content = content.replace(/｜/g, '|');
+        let parts = content.split('|').map(s => s.trim());
 
-        let parts = content.split(/[|\t]/).map(s => s.trim());
-        let hanzi = parts[0] || content;
+        let hanzi = parts[0] || "";
         let pinyin = parts[1] || "";
-        let trans = parts[2] || "";
+        let indo = parts[2] || "";
 
-        flow.push({
-          role: role,
-          speaker: (role === "A" ? characterAName : characterBName),
-          hanzi: hanzi,
-          pinyin: pinyin,
-          translation: trans
-        });
+        if (parts.length === 1 && !pinyin && !indo) {
+          hanzi = content;
+        }
+
+        if (hanzi) {
+          flow.push({
+            role: role,
+            speaker: speaker || (role === "A" ? (detectedSpeakers[0] || "Karakter A") : (detectedSpeakers[1] || "Karakter B")),
+            hanzi: hanzi,
+            pinyin: pinyin,
+            indo: indo
+          });
+        }
       }
 
-      const spkList = Array.from(detectedSpeakers);
-      if (spkList.length >= 2) {
-        characterAName = spkList[0];
-        characterBName = spkList[1];
+      if (detectedSpeakers.length >= 2) {
+        characterAName = detectedSpeakers[0];
+        characterBName = detectedSpeakers[1];
+      } else if (detectedSpeakers.length === 1) {
+        characterAName = detectedSpeakers[0];
+        characterBName = "Karakter B";
+      } else {
+        characterAName = "Pelayan Restoran";
+        characterBName = "Pelanggan";
       }
+
+      flow.forEach(item => {
+        if (!item.speaker || item.speaker === "Karakter A" || item.speaker === "Karakter B") {
+          item.speaker = (item.role === "A" ? characterAName : characterBName);
+        }
+      });
 
       return flow;
     }
 
-    function submitCrudSpeakingDialogue() {
-      const title = document.getElementById('crud-spk-title').value.trim() || "Percakapan Baru";
-      const hskLvl = document.getElementById('crud-spk-hsk').value;
-      const roleA = document.getElementById('crud-spk-role-a').value.trim() || "Karakter A";
-      const roleB = document.getElementById('crud-spk-role-b').value.trim() || "Karakter B";
-      const linesRaw = document.getElementById('crud-spk-lines').value.trim();
+    window.submitCrudSpeakingDialogue = function() {
+      const inTitle = document.getElementById('crud-spk-title');
+      const inHsk = document.getElementById('crud-spk-hsk');
+      const inRoleA = document.getElementById('crud-spk-role-a');
+      const inRoleB = document.getElementById('crud-spk-role-b');
+      const inLines = document.getElementById('crud-spk-lines');
+
+      const title = (inTitle ? inTitle.value.trim() : "") || "Memesan Makanan";
+      const hskLvl = (inHsk ? inHsk.value : "HSK 1");
+      const roleA = (inRoleA ? inRoleA.value.trim() : "") || "Pelayan Restoran";
+      const roleB = (inRoleB ? inRoleB.value.trim() : "") || "Pelanggan";
+      const linesRaw = inLines ? inLines.value.trim() : "";
 
       if (!linesRaw) {
         alert("Mohon isi naskah percakapan terlebih dahulu.");
@@ -1222,11 +1283,11 @@
         })
         .then(res => res.json())
         .then(res => {
-          alert("✅ Skenario percakapan berhasil disimpan ke Spreadsheet!");
+          alert("✅ Skenario percakapan berhasil disimpan ke sheet SPEAKING_DIALOGUES!");
           closeAdminCrudModal();
         })
         .catch(err => {
-          alert("Naskah aktif di sesi ini (Gagal simpan ke sheet: " + err.message + ")");
+          alert("Naskah aktif di sesi ini (Terkendala simpan ke sheet: " + err.message + ")");
           closeAdminCrudModal();
         });
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
@@ -1240,18 +1301,25 @@
         alert("✅ Naskah berhasil diterapkan ke sesi aktif!");
         closeAdminCrudModal();
       }
-    }
+    };
 
     // =========================================================================
-    // CRUD WORKBOOK (TAMBAH SOAL KE SPREADSHEET)
+    // CRUD WORKBOOK
     // =========================================================================
-    function submitCrudWorkbookQuestion() {
-      const hskLvl = document.getElementById('crud-wb-hsk').value;
-      const qType = document.getElementById('crud-wb-type').value;
-      const prompt = document.getElementById('crud-wb-prompt').value.trim();
-      const rawOpts = document.getElementById('crud-wb-options').value.trim();
-      const correct = document.getElementById('crud-wb-correct').value.trim();
-      const explain = document.getElementById('crud-wb-explanation').value.trim();
+    window.submitCrudWorkbookQuestion = function() {
+      const inHsk = document.getElementById('crud-wb-hsk');
+      const inType = document.getElementById('crud-wb-type');
+      const inPrompt = document.getElementById('crud-wb-prompt');
+      const inOpts = document.getElementById('crud-wb-options');
+      const inCorrect = document.getElementById('crud-wb-correct');
+      const inExplain = document.getElementById('crud-wb-explanation');
+
+      const hskLvl = inHsk ? inHsk.value : "HSK 1";
+      const qType = inType ? inType.value : "Pilihan Ganda";
+      const prompt = inPrompt ? inPrompt.value.trim() : "";
+      const rawOpts = inOpts ? inOpts.value.trim() : "";
+      const correct = inCorrect ? inCorrect.value.trim() : "";
+      const explain = inExplain ? inExplain.value.trim() : "";
 
       if (!prompt || !rawOpts || !correct) {
         alert("Mohon lengkapi pertanyaan, opsi pilihan, dan kunci jawaban.");
@@ -1294,14 +1362,27 @@
       } else {
         alert("Fitur simpan membutuhkan koneksi ke Google Apps Script.");
       }
-    }
+    };
 
     // =========================================================================
-    // VOCABULARY & WORKBOOK VIEWERS
+    // NAVIGATION & VOCABULARY VIEWERS
     // =========================================================================
+    window.switchTab = function(viewId) {
+      var views = document.querySelectorAll('.view-section');
+      for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+      var target = document.getElementById('view-' + viewId);
+      if (target) target.classList.add('active');
+
+      var navButtons = document.querySelectorAll('.nav-item button, .bottom-nav-btn');
+      for (var j = 0; j < navButtons.length; j++) navButtons[j].classList.remove('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (viewId === 'workbook') loadWorkbookQuestions('ALL');
+    };
+
     function loadDatabaseVocab() {
       var container = document.getElementById('vocab-cards-container');
-      container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--gold-autumn);">Memuat data dari Spreadsheet Database... 🍂</div>';
+      if (container) container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--gold-autumn);">Memuat data dari Spreadsheet Database... 🍂</div>';
 
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
         fetch(SCRIPT_URL + "?action=getVocab&level=ALL")
@@ -1329,11 +1410,11 @@
 
     function useFallbackVocab() {
       allVocabularies = [
-        {hanzi:"我", pinyin:"wǒ", indonesian:"Saya / Aku", partOfSpeech:"Kata Ganti", level:"1"},
-        {hanzi:"我们", pinyin:"wǒmen", indonesian:"Kami / Kita", partOfSpeech:"Kata Ganti", level:"1"},
-        {hanzi:"你", pinyin:"nǐ", indonesian:"Kamu / Anda", partOfSpeech:"Kata Ganti", level:"1"},
-        {hanzi:"准备", pinyin:"zhǔnbèi", indonesian:"Mempersiapkan", partOfSpeech:"Kata Kerja", level:"2"},
-        {hanzi:"简单", pinyin:"jiǎndān", indonesian:"Sederhana / Mudah", partOfSpeech:"Kata Sifat", level:"3"}
+        {hanzi:"我", pinyin:"wǒ", indonesian:"saya", partOfSpeech:"Kata Ganti", level:"1"},
+        {hanzi:"你", pinyin:"nǐ", indonesian:"kamu", partOfSpeech:"Kata Ganti", level:"1"},
+        {hanzi:"他", pinyin:"tā", indonesian:"dia (laki-laki)", partOfSpeech:"Kata Ganti", level:"1"},
+        {hanzi:"准备", pinyin:"zhǔnbèi", indonesian:"mempersiapkan", partOfSpeech:"Kata Kerja", level:"2"},
+        {hanzi:"简单", pinyin:"jiǎndān", indonesian:"sederhana / mudah", partOfSpeech:"Kata Sifat", level:"3"}
       ];
       renderVocabUI();
       initPracticeCharacters();
@@ -1342,6 +1423,7 @@
 
     function renderVocabUI() {
       var container = document.getElementById('vocab-cards-container');
+      if (!container) return;
       container.innerHTML = '';
 
       var filtered = allVocabularies.filter(function(v) {
@@ -1382,38 +1464,46 @@
         });
       }
 
-      document.getElementById('dict-page-indicator').innerText = 'Halaman ' + currentDictPage + ' / ' + totalPages;
-      document.getElementById('btn-prev-page').disabled = (currentDictPage <= 1);
-      document.getElementById('btn-next-page').disabled = (currentDictPage >= totalPages);
+      var elPage = document.getElementById('dict-page-indicator');
+      var elPrev = document.getElementById('btn-prev-page');
+      var elNext = document.getElementById('btn-next-page');
+
+      if (elPage) elPage.innerText = 'Halaman ' + currentDictPage + ' / ' + totalPages;
+      if (elPrev) elPrev.disabled = (currentDictPage <= 1);
+      if (elNext) elNext.disabled = (currentDictPage >= totalPages);
     }
 
-    function filterDictLevel(lvl, btn) {
+    window.filterDictLevel = function(lvl, btn) {
       currentDictLevel = lvl;
       currentDictPage = 1;
-      var buttons = btn.parentElement.querySelectorAll('.pill-btn');
-      for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove('active');
-      btn.classList.add('active');
+      if (btn && btn.parentElement) {
+        var buttons = btn.parentElement.querySelectorAll('.pill-btn');
+        for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove('active');
+        btn.classList.add('active');
+      }
       renderVocabUI();
-    }
+    };
 
-    function handleSearchDebounce() {
+    window.handleSearchDebounce = function() {
       clearTimeout(searchDebounceTimer);
       searchDebounceTimer = setTimeout(function() {
-        currentDictSearch = document.getElementById('dict-search-input').value;
+        var inSearch = document.getElementById('dict-search-input');
+        currentDictSearch = inSearch ? inSearch.value : '';
         currentDictPage = 1;
         renderVocabUI();
       }, 250);
-    }
+    };
 
-    function changeVocabPage(delta) {
+    window.changeVocabPage = function(delta) {
       currentDictPage += delta;
       renderVocabUI();
-    }
+    };
 
-    // Tian Zi Ge Canvas
+    // Tian Zi Ge
     var canvas, ctx, isDrawing = false;
     function initTianZiGeCanvas() {
       canvas = document.getElementById('tianzige-canvas');
+      if (!canvas) return;
       ctx = canvas.getContext('2d');
       drawTianZiGeGrid();
 
@@ -1439,6 +1529,7 @@
     }
 
     function drawTianZiGeGrid() {
+      if (!canvas || !ctx) return;
       var w = canvas.width, h = canvas.height;
       ctx.clearRect(0, 0, w, h);
       ctx.strokeStyle = '#fcd34d';
@@ -1475,10 +1566,11 @@
       ctx.stroke();
     }
     function stopDraw() { isDrawing = false; }
-    function clearCanvas() { drawTianZiGeGrid(); }
+    window.clearCanvas = function() { drawTianZiGeGrid(); };
 
     function initPracticeCharacters() {
       var container = document.getElementById('char-selector-box');
+      if (!container) return;
       container.innerHTML = '';
       var pool = allVocabularies.slice(0, 10);
       pool.forEach(function(v) {
@@ -1492,12 +1584,13 @@
       });
     }
 
-    function selectCharForWriting(char) {
+    window.selectCharForWriting = function(char) {
       currentPracticeChar = char;
-      document.getElementById('active-char-display').innerText = char;
-      clearCanvas();
+      var el = document.getElementById('active-char-display');
+      if (el) el.innerText = char;
+      drawTianZiGeGrid();
       switchTab('stroke');
-    }
+    };
 
     // Roleplay Engine
     function loadSpeakingDialoguesView() {
@@ -1507,8 +1600,8 @@
           .then(data => {
             if (data && data.length > 0) {
               activeDialogueFlow = data[0].scriptFlow || [];
-              characterAName = data[0].roleAName || "Karakter A";
-              characterBName = data[0].roleBName || "Karakter B";
+              characterAName = data[0].roleAName || "Pelayan Restoran";
+              characterBName = data[0].roleBName || "Pelanggan";
               updateRoleSwitcherButtons();
               initSpeakingDialogue();
             } else {
@@ -1521,8 +1614,8 @@
           .withSuccessHandler(function(dialogues) {
             if (dialogues && dialogues.length > 0) {
               activeDialogueFlow = dialogues[0].scriptFlow || [];
-              characterAName = dialogues[0].roleAName || "Karakter A";
-              characterBName = dialogues[0].roleBName || "Karakter B";
+              characterAName = dialogues[0].roleAName || "Pelayan Restoran";
+              characterBName = dialogues[0].roleBName || "Pelanggan";
               updateRoleSwitcherButtons();
               initSpeakingDialogue();
             } else {
@@ -1536,13 +1629,12 @@
     }
 
     function useDefaultDialogue() {
-      characterAName = "Pelayan (服务员)";
-      characterBName = "Pelanggan (顾客)";
+      characterAName = "Pelayan Restoran";
+      characterBName = "Pelanggan";
       activeDialogueFlow = [
-        { role: "A", speaker: characterAName, hanzi: "你好，请问你想吃点什么？", pinyin: "Nǐ hǎo, qǐngwèn nǐ xiǎng chī diǎn shénme?", translation: "Halo, mau makan apa?" },
-        { role: "B", speaker: characterBName, hanzi: "我要一份炒饭和一杯茶。", pinyin: "Wǒ yào yí fèn chǎofàn hé yì bēi chá.", translation: "Saya mau seporsi nasi goreng dan segelas teh." },
-        { role: "A", speaker: characterAName, hanzi: "好的，请稍等一下。", pinyin: "Hǎo de, qǐng shāo děng yíxià.", translation: "Baiklah, tolong tunggu sebentar." },
-        { role: "B", speaker: characterBName, hanzi: "太谢谢你了！", pinyin: "Tài xièxie nǐ le!", translation: "Terima kasih banyak!" }
+        { role: "A", speaker: characterAName, hanzi: "你好！请问你想吃什么？", pinyin: "Nǐ hǎo! Qǐngwèn xiǎng chī shénme?", indo: "Halo! Permisi mau makan apa?" },
+        { role: "B", speaker: characterBName, hanzi: "我要一份炒饭和一杯茶。", pinyin: "Wǒ yào yí fèn chǎofàn hé yì bēi chá.", indo: "Saya mau seporsi nasi goreng dan segelas teh." },
+        { role: "A", speaker: characterAName, hanzi: "好的，请稍等一下。", pinyin: "Hǎo de, qǐng shāo děng yíxià.", indo: "Baiklah, tolong tunggu sebentar." }
       ];
       updateRoleSwitcherButtons();
       initSpeakingDialogue();
@@ -1550,6 +1642,7 @@
 
     function updateRoleSwitcherButtons() {
       const container = document.getElementById('role-selector-container');
+      if (!container) return;
       container.innerHTML = `
         <button class="role-btn ${currentUserRole === 'B' ? 'active' : ''}" id="btn-role-b" onclick="setUserRole('B')">
           Saya Perankan: <b>${characterBName}</b> (AI: ${characterAName})
@@ -1568,6 +1661,7 @@
 
     function renderDialogueChat() {
       var chatBox = document.getElementById('roleplay-chat-box');
+      if (!chatBox) return;
       chatBox.innerHTML = '';
 
       for (var i = 0; i < activeDialogueFlow.length; i++) {
@@ -1579,22 +1673,23 @@
           '<div class="speaker-lbl">' + d.speaker + '</div>' +
           '<div class="bubble-hz">' + d.hanzi + '</div>' +
           (d.pinyin ? '<div class="bubble-py">' + d.pinyin + '</div>' : '') +
-          (d.translation ? '<div class="bubble-tr">' + d.translation + '</div>' : '');
+          (d.indo || d.translation ? '<div class="bubble-tr">' + (d.indo || d.translation) + '</div>' : '');
         chatBox.appendChild(bubble);
       }
     }
 
-    function setUserRole(role) {
+    window.setUserRole = function(role) {
       currentUserRole = role;
       updateRoleSwitcherButtons();
       currentDialogueStep = 0;
       checkTurnAndAct();
-    }
+    };
 
     function checkTurnAndAct() {
+      var display = document.getElementById('transcript-display');
       if (!activeDialogueFlow || activeDialogueFlow.length === 0) return;
       if (currentDialogueStep >= activeDialogueFlow.length) {
-        document.getElementById('transcript-display').innerHTML = '🎉 <b>Skenario Percakapan Selesai!</b> Kerja bagus!';
+        if (display) display.innerHTML = '🎉 <b>Skenario Percakapan Selesai!</b> Kerja bagus!';
         return;
       }
 
@@ -1604,13 +1699,13 @@
       highlightChatBubble(currentDialogueStep);
 
       if (isAiTurn) {
-        document.getElementById('transcript-display').innerHTML = `🤖 <i>${currentLine.speaker} (AI) sedang berbicara...</i>`;
+        if (display) display.innerHTML = `🤖 <i>${currentLine.speaker} (AI) sedang berbicara...</i>`;
         speakText(currentLine.hanzi, function() {
           currentDialogueStep++;
           checkTurnAndAct();
         });
       } else {
-        document.getElementById('transcript-display').innerHTML = `👉 <b>Giliran Anda (${currentLine.speaker})!</b> Ucapkan: <i>"${currentLine.hanzi}"</i>`;
+        if (display) display.innerHTML = `👉 <b>Giliran Anda (${currentLine.speaker})!</b> Ucapkan: <i>"${currentLine.hanzi}"</i>`;
       }
     }
 
@@ -1623,20 +1718,20 @@
       if (activeEl) activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    function playCurrentAiTurn() {
+    window.playCurrentAiTurn = function() {
       if (activeDialogueFlow && currentDialogueStep < activeDialogueFlow.length) {
         speakText(activeDialogueFlow[currentDialogueStep].hanzi);
       }
-    }
+    };
 
-    function skipUserTurn() {
+    window.skipUserTurn = function() {
       if (activeDialogueFlow && currentDialogueStep < activeDialogueFlow.length) {
         currentDialogueStep++;
         checkTurnAndAct();
       }
-    }
+    };
 
-    function speakText(text, onEndCallback) {
+    window.speakText = function(text, onEndCallback) {
       if (!('speechSynthesis' in window)) {
         if (onEndCallback) onEndCallback();
         return;
@@ -1649,22 +1744,22 @@
         if (onEndCallback) onEndCallback();
       };
       window.speechSynthesis.speak(utterance);
-    }
+    };
 
-    function toggleSpeechRecognition() {
+    window.toggleSpeechRecognition = function() {
       var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
       var micBtn = document.getElementById('mic-btn');
       var statusBox = document.getElementById('transcript-display');
 
       if (!SR) {
-        statusBox.innerHTML = '⚠️ <i>Browser tidak mendukung Web Speech. Klik <b>Lanjut Giliran</b>.</i>';
+        if (statusBox) statusBox.innerHTML = '⚠️ <i>Browser tidak mendukung Web Speech. Klik <b>Lanjut Giliran</b>.</i>';
         return;
       }
 
       if (isListening && recognition) {
         recognition.stop();
         isListening = false;
-        micBtn.classList.remove('listening');
+        if (micBtn) micBtn.classList.remove('listening');
         return;
       }
 
@@ -1676,13 +1771,13 @@
 
         recognition.onstart = function() {
           isListening = true;
-          micBtn.classList.add('listening');
-          statusBox.innerHTML = '🎙️ <b>Mendengarkan...</b> Silakan bicara sekarang.';
+          if (micBtn) micBtn.classList.add('listening');
+          if (statusBox) statusBox.innerHTML = '🎙️ <b>Mendengarkan...</b> Silakan bicara sekarang.';
         };
 
         recognition.onresult = function(e) {
           var transcript = e.results[0][0].transcript;
-          statusBox.innerHTML = 'Suara Anda: "<b>' + transcript + '</b>"';
+          if (statusBox) statusBox.innerHTML = 'Suara Anda: "<b>' + transcript + '</b>"';
 
           var currentTarget = activeDialogueFlow[currentDialogueStep];
           if (currentTarget && currentTarget.role === currentUserRole) {
@@ -1695,33 +1790,33 @@
 
         recognition.onerror = function(e) {
           isListening = false;
-          micBtn.classList.remove('listening');
-          statusBox.innerHTML = '⚠️ <i>Izin mikrofon dibatasi. Klik <b>Lanjut Giliran</b>.</i>';
+          if (micBtn) micBtn.classList.remove('listening');
+          if (statusBox) statusBox.innerHTML = '⚠️ <i>Izin mikrofon dibatasi. Klik <b>Lanjut Giliran</b>.</i>';
         };
 
         recognition.onend = function() {
           isListening = false;
-          micBtn.classList.remove('listening');
+          if (micBtn) micBtn.classList.remove('listening');
         };
 
         recognition.start();
       } catch (err) {
         isListening = false;
-        micBtn.classList.remove('listening');
-        statusBox.innerHTML = '⚠️ <i>Gagal menyalakan mic. Klik <b>Lanjut Giliran</b>.</i>';
+        if (micBtn) micBtn.classList.remove('listening');
+        if (statusBox) statusBox.innerHTML = '⚠️ <i>Gagal menyalakan mic. Klik <b>Lanjut Giliran</b>.</i>';
       }
-    }
+    };
 
     // Workbook Viewer
     function loadWorkbookQuestions(hskLevel, btn) {
-      if (btn) {
+      if (btn && btn.parentElement) {
         var buttons = btn.parentElement.querySelectorAll('.pill-btn');
         for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove('active');
         btn.classList.add('active');
       }
 
       var container = document.getElementById('workbook-cards-container');
-      container.innerHTML = '<div style="text-align:center; padding: 30px; color: var(--gold-autumn);">Memuat Soal dari Spreadsheet... 🍁</div>';
+      if (container) container.innerHTML = '<div style="text-align:center; padding: 30px; color: var(--gold-autumn);">Memuat Soal dari Spreadsheet... 🍁</div>';
 
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
         fetch(SCRIPT_URL + "?action=getWorkbook&level=" + (hskLevel || "ALL"))
@@ -1737,10 +1832,11 @@
 
     function renderWorkbookCards(questions) {
       var container = document.getElementById('workbook-cards-container');
+      if (!container) return;
       container.innerHTML = '';
 
       if (!questions || questions.length === 0) {
-        container.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 30px;">Belum ada butir soal di sheet WORKBOOK_BANK untuk level ini. Gunakan panel CRUD untuk menambahkannya!</div>';
+        container.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 30px;">Belum ada butir soal di sheet WORKBOOK_BANK untuk level ini. Gunakan panel CRUD untuk menambahkannya![cite: 4]</div>';
         return;
       }
 
@@ -1767,32 +1863,38 @@
       });
     }
 
-    function checkWorkbookAnswer(qId, selectedOpt, correctOpt, btnElement) {
-      var parent = btnElement.parentElement;
-      var buttons = parent.querySelectorAll('.pill-btn');
-      for (var i = 0; i < buttons.length; i++) buttons[i].disabled = true;
+    window.checkWorkbookAnswer = function(qId, selectedOpt, correctOpt, btnElement) {
+      if (btnElement && btnElement.parentElement) {
+        var buttons = btnElement.parentElement.querySelectorAll('.pill-btn');
+        for (var i = 0; i < buttons.length; i++) buttons[i].disabled = true;
+      }
 
       var feedbackBox = document.getElementById('wb-fb-' + qId);
+      if (!feedbackBox) return;
       feedbackBox.style.display = 'block';
 
       if (selectedOpt === correctOpt) {
-        btnElement.style.background = '#16a34a';
-        btnElement.style.color = '#fff';
+        if (btnElement) {
+          btnElement.style.background = '#16a34a';
+          btnElement.style.color = '#fff';
+        }
         feedbackBox.style.background = 'rgba(220, 38, 38, 0.2)';
         feedbackBox.style.border = '1px solid #16a34a';
         feedbackBox.style.color = '#86efac';
         feedbackBox.innerHTML = '🎉 <b>Benar Sekali!</b> Jawaban Anda tepat.';
       } else {
-        btnElement.style.background = '#dc2626';
-        btnElement.style.color = '#fff';
+        if (btnElement) {
+          btnElement.style.background = '#dc2626';
+          btnElement.style.color = '#fff';
+        }
         feedbackBox.style.background = 'rgba(220, 38, 38, 0.2)';
         feedbackBox.style.border = '1px solid #dc2626';
         feedbackBox.style.color = '#fca5a5';
         feedbackBox.innerHTML = '❌ <b>Kurang Tepat.</b> Kunci jawaban: <b>' + correctOpt + '</b>';
       }
-    }
+    };
 
-    // Grammar, SRS, Placement & Certificate
+    // Grammar Guides
     function loadGrammarGuidesView() {
       var container = document.getElementById('grammar-cards-container');
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
@@ -1809,6 +1911,7 @@
 
     function renderGrammarGuides(guides) {
       var container = document.getElementById('grammar-cards-container');
+      if (!container) return;
       container.innerHTML = '';
 
       if (!guides || guides.length === 0) {
@@ -1840,6 +1943,7 @@
       });
     }
 
+    // SRS Flashcards
     function initSrsEngine() {
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
@@ -1854,46 +1958,73 @@
 
     function renderCurrentSrsCard() {
       var cardEl = document.getElementById('srs-card-element');
-      cardEl.classList.remove('flipped');
+      if (cardEl) cardEl.classList.remove('flipped');
 
       if (allVocabularies.length === 0) return;
       var v = allVocabularies[currentSrsIndex % allVocabularies.length];
 
-      document.getElementById('srs-card-level').innerText = 'HSK ' + (v.level || v.hskLevel || '1');
-      document.getElementById('srs-card-hz').innerText = v.hanzi;
-      document.getElementById('srs-card-py').innerText = v.pinyin;
-      document.getElementById('srs-card-in').innerText = v.indonesian;
-      document.getElementById('srs-card-pos').innerText = '[' + (v.partOfSpeech || 'Umum') + ']';
+      var elLvl = document.getElementById('srs-card-level');
+      var elHz = document.getElementById('srs-card-hz');
+      var elPy = document.getElementById('srs-card-py');
+      var elIn = document.getElementById('srs-card-in');
+      var elPos = document.getElementById('srs-card-pos');
+
+      if (elLvl) elLvl.innerText = 'HSK ' + (v.level || v.hskLevel || '1');
+      if (elHz) elHz.innerText = v.hanzi;
+      if (elPy) elPy.innerText = v.pinyin;
+      if (elIn) elIn.innerText = v.indonesian;
+      if (elPos) elPos.innerText = '[' + (v.partOfSpeech || 'Umum') + ']';
     }
 
-    function flipFlashcard() {
-      document.getElementById('srs-card-element').classList.toggle('flipped');
-    }
+    window.flipFlashcard = function() {
+      var cardEl = document.getElementById('srs-card-element');
+      if (cardEl) cardEl.classList.toggle('flipped');
+    };
 
-    function answerSrs(isCorrect) {
+    window.answerSrs = function(isCorrect) {
       currentSrsIndex++;
       renderCurrentSrsCard();
-    }
+    };
 
-    function startPlacementTest() {
-      document.getElementById('placement-intro-box').style.display = 'none';
+    // Placement Test
+    window.startPlacementTest = function() {
+      var intro = document.getElementById('placement-intro-box');
       var quizBox = document.getElementById('placement-quiz-box');
-      quizBox.style.display = 'block';
+      if (intro) intro.style.display = 'none';
+      if (quizBox) quizBox.style.display = 'block';
 
-      placementQuestions = [
-        { questionText: "Apa arti dari karakter '我' (wǒ)?", options: ["Saya / Aku", "Kamu", "Dia", "Buku"], correctAnswer: "Saya / Aku", hskLevel: "HSK 1", scoreWeight: 20 },
-        { questionText: "Pilihlah pinyin yang benar untuk '谢谢':", options: ["zàijiàn", "xièxie", "nǐ hǎo", "duìbuqǐ"], correctAnswer: "xièxie", hskLevel: "HSK 1", scoreWeight: 20 },
-        { questionText: "Apa makna dari kata '准备' (zhǔnbèi)?", options: ["Mempersiapkan", "Menjawab", "Beristirahat", "Membeli"], correctAnswer: "Mempersiapkan", hskLevel: "HSK 2", scoreWeight: 20 },
-        { questionText: "Karakter '简单' (jiǎndān) memiliki arti:", options: ["Sederhana / Mudah", "Rumit", "Mahal", "Panjang"], correctAnswer: "Sederhana / Mudah", hskLevel: "HSK 3", scoreWeight: 20 },
-        { questionText: "Apa arti dari '成功' (chénggōng)?", options: ["Sukses / Berhasil", "Gagal", "Menyerah", "Bekerja"], correctAnswer: "Sukses / Berhasil", hskLevel: "HSK 4", scoreWeight: 20 }
-      ];
-      currentPlacementStep = 0;
-      placementScore = 0;
-      renderPlacementStep();
-    }
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(data) {
+            placementQuestions = data || [];
+            currentPlacementStep = 0;
+            placementScore = 0;
+            renderPlacementStep();
+          })
+          .getPlacementTestPackage();
+      } else {
+        placementQuestions = [
+          { questionText: "Apa arti dari karakter '我' (wǒ)?", options: ["Saya / Aku", "Kamu", "Dia", "Buku"], correctAnswer: "Saya / Aku", hskLevel: "HSK 1", scoreWeight: 20 },
+          { questionText: "Pilihlah pinyin yang benar untuk '谢谢':", options: ["zàijiàn", "xièxie", "nǐ hǎo", "duìbuqǐ"], correctAnswer: "xièxie", hskLevel: "HSK 1", scoreWeight: 20 },
+          { questionText: "Apa makna dari kata '准备' (zhǔnbèi)?", options: ["Mempersiapkan", "Menjawab", "Beristirahat", "Membeli"], correctAnswer: "Mempersiapkan", hskLevel: "HSK 2", scoreWeight: 20 },
+          { questionText: "Karakter '简单' (jiǎndān) memiliki arti:", options: ["Sederhana / Mudah", "Rumit", "Mahal", "Panjang"], correctAnswer: "Sederhana / Mudah", hskLevel: "HSK 3", scoreWeight: 20 },
+          { questionText: "Apa arti dari '成功' (chénggōng)?", options: ["Sukses / Berhasil", "Gagal", "Menyerah", "Bekerja"], correctAnswer: "Sukses / Berhasil", hskLevel: "HSK 4", scoreWeight: 20 }
+        ];
+        currentPlacementStep = 0;
+        placementScore = 0;
+        renderPlacementStep();
+      }
+    };
 
     function renderPlacementStep() {
       var quizBox = document.getElementById('placement-quiz-box');
+      if (!quizBox) return;
+
+      if (placementQuestions.length === 0) {
+        quizBox.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted);">Sheet PLACEMENT_TEST belum berisi paket soal.</div>';
+        return;
+      }
+
       if (currentPlacementStep >= placementQuestions.length) {
         var estimated = (placementScore >= 40 ? 'HSK 2 - 3' : 'HSK 1');
         quizBox.innerHTML = 
@@ -1923,41 +2054,42 @@
         '<div style="display: flex; flex-direction: column; gap: 8px;">' + optHtml + '</div>';
     }
 
-    function answerPlacementQuestion(selected) {
+    window.answerPlacementQuestion = function(selected) {
       var q = placementQuestions[currentPlacementStep];
       if (selected === q.correctAnswer) {
         placementScore += (q.scoreWeight || 20);
       }
       currentPlacementStep++;
       renderPlacementStep();
-    }
+    };
 
-    function requestCertificatePdf() {
-      var name = document.getElementById('cert-user-name').value;
+    window.requestCertificatePdf = function() {
+      var inName = document.getElementById('cert-user-name');
+      var name = inName ? inName.value : '';
       if (!name.trim()) {
         alert('Mohon masukkan nama Anda untuk terbitan sertifikat.');
         return;
       }
 
       var status = document.getElementById('cert-status-msg');
-      status.innerHTML = '⏳ <i>Memproses dokumen PDF resmi Zettbot Academy...</i>';
+      if (status) status.innerHTML = '⏳ <i>Memproses dokumen PDF resmi Zettbot Academy...</i>';
 
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
           .withSuccessHandler(function(res) {
             if (res.success) {
-              status.innerHTML = '✅ <b>Sertifikat Berhasil Diterbitkan!</b> Mengunduh file...';
+              if (status) status.innerHTML = '✅ <b>Sertifikat Berhasil Diterbitkan!</b> Mengunduh file...';
               var link = document.createElement('a');
               link.href = 'data:application/pdf;base64,' + res.pdfBase64;
               link.download = res.fileName;
               link.click();
             } else {
-              status.innerHTML = '❌ Terjadi kendala saat menerbitkan PDF.';
+              if (status) status.innerHTML = '❌ Terjadi kendala saat menerbitkan PDF.';
             }
           })
           .generateCertificatePdf(name, 'HSK 1 - 6 Autumn Curriculum', 100);
       }
-    }
+    };
   </script>
 </body>
 </html>
