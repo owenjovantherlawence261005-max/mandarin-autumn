@@ -847,30 +847,31 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function loadDatabaseVocab() {
-      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
-        fetch(SCRIPT_URL + "?action=getVocab&level=ALL")
-          .then(res => res.json())
-          .then(data => {
-            allVocabularies = data;
-            renderVocabUI();
-            initPracticeCharacters();
-            renderCurrentSrsCard();
-          })
-          .catch(err => useFallbackVocab());
-      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler(function(data) {
-            allVocabularies = data;
-            renderVocabUI();
-            initPracticeCharacters();
-            renderCurrentSrsCard();
-          })
-          .getVocabularyData("ALL");
-      } else {
+   function loadDatabaseVocab() {
+  if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+    fetch(SCRIPT_URL + "?action=getVocab&level=ALL")
+      .then(function(res) {
+        return res.json();
+      })
+      .then(function(data) {
+        if (data && data.length > 0) {
+          allVocabularies = data;
+          renderVocabUI();
+          initPracticeCharacters();
+          renderCurrentSrsCard();
+        } else {
+          console.warn("Data sheet VOCABULARY kosong.");
+          useFallbackVocab();
+        }
+      })
+      .catch(function(err) {
+        console.error("Gagal mengambil data Spreadsheet:", err);
         useFallbackVocab();
-      }
-    }
+      });
+  } else {
+    useFallbackVocab();
+  }
+}
 
     function useFallbackVocab() {
       allVocabularies = [
