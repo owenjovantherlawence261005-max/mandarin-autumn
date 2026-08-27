@@ -1367,38 +1367,36 @@
       if (viewId === 'workbook') loadWorkbookQuestions('ALL');
     };
 
-  function loadDatabaseVocab() {
+function loadDatabaseVocab() {
   var container = document.getElementById('vocab-cards-container');
   if (container) container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--gold-autumn);">Memuat data dari Spreadsheet Database... 🍂</div>';
 
-  if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
-    fetch(SCRIPT_URL + "?action=getVocab&level=ALL")
-      .then(res => {
-        if (!res.ok) throw new Error("Network response was not ok");
-        return res.json();
+  // Prioritaskan koneksi lokal Google Apps Script (google.script.run)
+  if (typeof google !== 'undefined' && google.script && google.script.run) {
+    google.script.run
+      .withSuccessHandler(function(res) {
+        allVocabularies = res.items || res || [];
+        renderVocabUI();
+        initPracticeCharacters();
+        renderCurrentSrsCard();
       })
-      .then(data => {
-        // PERBAIKAN: Tangani berbagai bentuk struktur respon dari Apps Script
-        let extractedData = [];
-        if (Array.isArray(data)) {
-          extractedData = data;
-        } else if (data && data.items && Array.isArray(data.items)) {
-          extractedData = data.items;
-        }
-
-        if (extractedData.length > 0) {
-          allVocabularies = extractedData;
-          renderVocabUI();
-          initPracticeCharacters();
-          renderCurrentSrsCard();
-        } else {
-          useFallbackVocab();
-        }
-      })
-      .catch(err => {
-        console.error("Gagal load API:", err);
+      .withFailureHandler(function(err) {
+        console.error("Gagal load Google Script:", err);
         useFallbackVocab();
-      });
+      })
+      .getVocabPage(currentDictPage, 12, currentDictLevel, currentDictSearch, 'all');
+  } 
+  // Jika menggunakan URL eksternal (GitHub Pages)
+  else if (typeof SCRIPT_URL !== 'undefined' && SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+    fetch(SCRIPT_URL + "?action=getVocab&level=ALL")
+      .then(res => res.json())
+      .then(data => {
+        allVocabularies = Array.isArray(data) ? data : (data.items || []);
+        renderVocabUI();
+        initPracticeCharacters();
+        renderCurrentSrsCard();
+      })
+      .catch(err => useFallbackVocab());
   } else {
     useFallbackVocab();
   }
