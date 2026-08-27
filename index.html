@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Serif+SC:wght@600;900&display=swap" rel="stylesheet">
   
-  <!-- Library PDF.js untuk Ekstraksi Naskah PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
   <style>
@@ -77,7 +76,6 @@
       margin-bottom: 20px;
     }
 
-    /* Logo Autumn: Klik 3x Cepat untuk Buka Panel Admin CRUD */
     .brand-icon {
       width: 44px;
       height: 44px;
@@ -1008,7 +1006,6 @@
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
 
-    // GANTI DENGAN URL DEPLOYMENT APPS SCRIPT ANDA JIKA MENGGUNAKAN GITHUB PAGES
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqpb8Pxfr5K_xT_vLQoQD1Gl_f9C2pRYzqWmCy9JUVcvC84WJ4O225MhKQtdWKKRQn9A/exec"; 
 
     var allVocabularies = [];
@@ -1046,7 +1043,6 @@
       initSrsEngine();
     });
 
-    // Deteksi Klik 3x Cepat Logo Autumn (Terkoneksi Langsung ke Onclick HTML)
     window.handleLogoTripleClick = function() {
       logoClickCount++;
       clearTimeout(logoClickTimer);
@@ -1083,9 +1079,6 @@
       }
     };
 
-    // =========================================================================
-    // SMART PDF PARSER: SPATIAL CLUSTERING & PEMBAGIAN SKEMA DATABASE
-    // =========================================================================
     window.handleCrudPdfUpload = async function(event) {
       const file = event.target.files[0];
       if (!file || file.type !== "application/pdf") {
@@ -1303,9 +1296,6 @@
       }
     };
 
-    // =========================================================================
-    // CRUD WORKBOOK
-    // =========================================================================
     window.submitCrudWorkbookQuestion = function() {
       const inHsk = document.getElementById('crud-wb-hsk');
       const inType = document.getElementById('crud-wb-type');
@@ -1364,9 +1354,6 @@
       }
     };
 
-    // =========================================================================
-    // NAVIGATION & VOCABULARY VIEWERS
-    // =========================================================================
     window.switchTab = function(viewId) {
       var views = document.querySelectorAll('.view-section');
       for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
@@ -1388,12 +1375,19 @@
         fetch(SCRIPT_URL + "?action=getVocab&level=ALL")
           .then(res => res.json())
           .then(data => {
-            allVocabularies = data;
-            renderVocabUI();
-            initPracticeCharacters();
-            renderCurrentSrsCard();
+            if (data && Array.isArray(data) && data.length > 0) {
+              allVocabularies = data;
+              renderVocabUI();
+              initPracticeCharacters();
+              renderCurrentSrsCard();
+            } else {
+              useFallbackVocab();
+            }
           })
-          .catch(err => useFallbackVocab());
+          .catch(err => {
+            console.error("Gagal load API:", err);
+            useFallbackVocab();
+          });
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
           .withSuccessHandler(function(res) {
@@ -1427,11 +1421,17 @@
       container.innerHTML = '';
 
       var filtered = allVocabularies.filter(function(v) {
-        var matchLvl = (currentDictLevel === 'ALL' || v.level === currentDictLevel || (v.hskLevel && v.hskLevel.includes(currentDictLevel)));
-        var matchSearch = (!currentDictSearch || 
-          (v.hanzi && v.hanzi.toLowerCase().includes(currentDictSearch.toLowerCase())) || 
-          (v.pinyin && v.pinyin.toLowerCase().includes(currentDictSearch.toLowerCase())) || 
-          (v.indonesian && v.indonesian.toLowerCase().includes(currentDictSearch.toLowerCase()))
+        var userTarget = currentDictLevel.toString().replace(/[^0-9]/g, '').trim();
+        var itemLvl = (v.level || '').toString().replace(/[^0-9]/g, '').trim();
+        var itemRawHsk = (v.hskLevel || '').toString().replace(/[^0-9]/g, '').trim();
+
+        var matchLvl = (currentDictLevel === 'ALL' || userTarget === itemLvl || userTarget === itemRawHsk);
+
+        var sTerm = currentDictSearch.toLowerCase().trim();
+        var matchSearch = (!sTerm || 
+          (v.hanzi && v.hanzi.toLowerCase().includes(sTerm)) || 
+          (v.pinyin && v.pinyin.toLowerCase().includes(sTerm)) || 
+          (v.indonesian && v.indonesian.toLowerCase().includes(sTerm))
         );
         return matchLvl && matchSearch;
       });
@@ -1499,7 +1499,7 @@
       renderVocabUI();
     };
 
-    // Tian Zi Ge Canvas
+    // Tian Zi Ge
     var canvas, ctx, isDrawing = false;
     function initTianZiGeCanvas() {
       canvas = document.getElementById('tianzige-canvas');
@@ -2030,7 +2030,7 @@
         quizBox.innerHTML = 
           '<div style="text-align:center; padding: 20px;">' +
             '<div style="font-size: 50px;">🎯</div>' +
-            '<h3 style="font-size: 22px; color: #fff; margin: 10px 0;">Hasil Diagnostic Placement Test</h3>' +
+            '<h3 style="font-size: 22px; color: #fff; margin-状况: 10px 0;">Hasil Diagnostic Placement Test</h3>' +
             '<p style="font-size: 15px; color: var(--gold-autumn);">Estimasi Level: <b>' + estimated + '</b> (Skor: ' + placementScore + ')</p>' +
             '<button class="btn-autumn-primary" style="margin-top: 20px;" onclick="startPlacementTest()">Ulangi Tes</button>' +
           '</div>';
