@@ -1,1 +1,1573 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Mandarin HSK 1-6 Autumn Edition - Zettbot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Serif+SC:wght@600;900&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-main: #140b07;
+      --bg-card: rgba(40, 24, 16, 0.75);
+      --bg-card-hover: rgba(59, 29, 17, 0.85);
+      --terracotta: #ea580c;
+      --terracotta-glow: rgba(234, 88, 12, 0.35);
+      --gold-autumn: #f59e0b;
+      --maple-red: #c2410c;
+      --amber-border: rgba(245, 158, 11, 0.2);
+      --text-main: #fff7ed;
+      --text-muted: #fed7aa;
+      --text-sub: #fdba74;
+      --font-sans: 'Plus Jakarta Sans', sans-serif;
+      --font-hanzi: 'Noto Serif SC', 'PingFang SC', serif;
+    }
 
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    #leaves-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: rgba(26, 15, 10, 0.85);
+      backdrop-filter: blur(16px);
+      border-right: 1px solid var(--amber-border);
+      display: flex;
+      flex-direction: column;
+      padding: 24px 16px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      flex-shrink: 0;
+    }
+
+    .brand-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 8px 24px 8px;
+      border-bottom: 1px solid var(--amber-border);
+      margin-bottom: 20px;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--maple-red), var(--gold-autumn));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-hanzi);
+      font-size: 22px;
+      color: #fff;
+      box-shadow: 0 4px 12px var(--terracotta-glow);
+    }
+
+    .brand-text h1 { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
+    .brand-text p { font-size: 11px; color: var(--gold-autumn); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+
+    .nav-list { list-style: none; display: flex; flex-direction: column; gap: 6px; flex-grow: 1; overflow-y: auto; }
+    .nav-item button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 13.5px;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      text-align: left;
+    }
+
+    .nav-item button:hover {
+      background: rgba(234, 88, 12, 0.12);
+      color: #fff;
+      border-color: rgba(245, 158, 11, 0.2);
+    }
+
+    .nav-item button.active {
+      background: linear-gradient(135deg, rgba(234, 88, 12, 0.25), rgba(194, 65, 12, 0.35));
+      border-color: var(--terracotta);
+      color: #fff;
+      box-shadow: 0 4px 14px var(--terracotta-glow);
+    }
+
+    .nav-icon { font-size: 18px; }
+
+    .main-viewport {
+      flex-grow: 1;
+      padding: 32px 40px 100px 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .view-section { display: none; }
+    .view-section.active { display: block; animation: fadeIn 0.3s ease-out; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .glass-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--amber-border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .header-group { margin-bottom: 24px; }
+    .header-group .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: var(--gold-autumn);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .header-group h2 { font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+    .header-group p { font-size: 14px; color: var(--text-muted); }
+
+    .toolbar-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+      align-items: center;
+    }
+
+    .search-input-wrap {
+      flex: 1;
+      min-width: 220px;
+      position: relative;
+    }
+
+    .search-input-wrap input {
+      width: 100%;
+      padding: 12px 16px 12px 40px;
+      background: rgba(20, 11, 7, 0.7);
+      border: 1px solid var(--amber-border);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      transition: border 0.2s ease;
+    }
+
+    .search-input-wrap input:focus { border-color: var(--gold-autumn); }
+    .search-icon-abs { position: absolute; left: 14px; top: 12px; color: var(--text-muted); }
+
+    .filter-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pill-btn {
+      padding: 8px 14px;
+      background: rgba(40, 24, 16, 0.6);
+      border: 1px solid var(--amber-border);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .pill-btn:hover, .pill-btn.active {
+      background: var(--terracotta);
+      color: #fff;
+      border-color: var(--terracotta);
+    }
+
+    .vocab-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .vocab-card {
+      background: rgba(40, 24, 16, 0.65);
+      border: 1px solid var(--amber-border);
+      border-radius: 12px;
+      padding: 16px;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .vocab-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--gold-autumn);
+      background: var(--bg-card-hover);
+    }
+
+    .vocab-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .vocab-hanzi { font-family: var(--font-hanzi); font-size: 32px; font-weight: 900; color: #fff; line-height: 1.1; }
+    .vocab-level-tag {
+      font-size: 11px;
+      padding: 3px 8px;
+      background: rgba(234, 88, 12, 0.2);
+      border: 1px solid var(--terracotta);
+      border-radius: 6px;
+      color: var(--gold-autumn);
+      font-weight: 700;
+    }
+
+    .vocab-pinyin { font-size: 14px; color: var(--gold-autumn); font-weight: 600; margin-bottom: 4px; }
+    .vocab-indo { font-size: 13.5px; color: var(--text-main); margin-bottom: 12px; }
+    .vocab-example-box {
+      background: rgba(20, 11, 7, 0.5);
+      border-left: 3px solid var(--terracotta);
+      padding: 8px 10px;
+      border-radius: 0 6px 6px 0;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .example-hz { color: var(--text-muted); margin-bottom: 2px; }
+    .example-tr { color: #fed7aa; font-style: italic; }
+
+    .vocab-actions { display: flex; gap: 8px; }
+    .icon-action-btn {
+      flex: 1;
+      padding: 8px;
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      color: var(--gold-autumn);
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .icon-action-btn:hover { background: var(--terracotta); color: #fff; border-color: var(--terracotta); }
+
+    .canvas-layout {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      align-items: flex-start;
+    }
+
+    .canvas-panel {
+      background: #281810;
+      border: 2px solid var(--terracotta);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #tianzige-canvas {
+      background: #fff8f0;
+      border-radius: 8px;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    .canvas-controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      width: 100%;
+    }
+
+    .canvas-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-clear { background: rgba(194, 65, 12, 0.3); color: #fed7aa; border: 1px solid var(--maple-red); }
+    .btn-clear:hover { background: var(--maple-red); color: #fff; }
+    .btn-anim { background: var(--terracotta); color: #fff; }
+    .btn-anim:hover { background: #c2410c; }
+
+    .roleplay-box { display: flex; flex-direction: column; height: 580px; }
+    .role-switcher {
+      display: flex;
+      gap: 8px;
+      padding: 8px;
+      background: rgba(20, 11, 7, 0.6);
+      border-radius: 10px;
+      margin-bottom: 16px;
+    }
+    .role-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .role-btn.active { background: var(--terracotta); color: #fff; border-color: var(--gold-autumn); }
+
+    .chat-scroller {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: rgba(20, 11, 7, 0.4);
+      border-radius: 12px;
+      border: 1px solid var(--amber-border);
+      margin-bottom: 16px;
+    }
+
+    .chat-bubble {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 14px;
+      position: relative;
+      animation: fadeIn 0.25s ease-out;
+    }
+    .chat-bubble.role-a {
+      align-self: flex-start;
+      background: rgba(59, 29, 17, 0.85);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-bottom-left-radius: 2px;
+    }
+    .chat-bubble.role-b {
+      align-self: flex-end;
+      background: linear-gradient(135deg, rgba(234, 88, 12, 0.6), rgba(194, 65, 12, 0.7));
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-bottom-right-radius: 2px;
+    }
+    .speaker-lbl { font-size: 11px; font-weight: 700; color: var(--gold-autumn); margin-bottom: 4px; }
+    .bubble-hz { font-size: 18px; font-family: var(--font-hanzi); font-weight: 700; color: #fff; margin-bottom: 2px; }
+    .bubble-py { font-size: 12.5px; color: #fed7aa; margin-bottom: 4px; }
+    .bubble-tr { font-size: 12px; color: #ffedd5; opacity: 0.9; }
+
+    .speaking-footer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(40, 24, 16, 0.85);
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--amber-border);
+      flex-wrap: wrap;
+    }
+
+    .mic-button {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--terracotta);
+      border: none;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px var(--terracotta-glow);
+    }
+    .mic-button.listening {
+      background: #ef4444;
+      animation: pulseMic 1.2s infinite;
+    }
+    @keyframes pulseMic {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+      70% { transform: scale(1.08); box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    .transcript-box { flex: 1; min-width: 200px; font-size: 13px; color: var(--text-muted); }
+    .transcript-box b { color: #fff; }
+
+    .srs-box-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .mastery-bar-wrap {
+      width: 100%;
+      height: 8px;
+      background: rgba(20, 11, 7, 0.8);
+      border-radius: 4px;
+      margin-bottom: 20px;
+      overflow: hidden;
+      border: 1px solid var(--amber-border);
+    }
+    .mastery-fill { height: 100%; width: 20%; background: linear-gradient(90deg, var(--maple-red), var(--gold-autumn)); transition: width 0.3s; }
+
+    .flashcard {
+      width: 100%;
+      height: 280px;
+      perspective: 1000px;
+      cursor: pointer;
+      margin-bottom: 24px;
+    }
+
+    .flashcard-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 16px;
+    }
+    .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 16px;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      border: 2px solid var(--amber-border);
+      background: linear-gradient(145deg, #281810, #3b1d11);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+    .card-face.back { transform: rotateY(180deg); background: linear-gradient(145deg, #3b1d11, #281810); border-color: var(--terracotta); }
+
+    .srs-actions { display: flex; gap: 16px; width: 100%; }
+    .srs-btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-fail { background: rgba(220, 38, 38, 0.25); border: 1px solid #dc2626; color: #fca5a5; }
+    .btn-fail:hover { background: #dc2626; color: #fff; }
+    .btn-pass { background: rgba(22, 163, 74, 0.25); border: 1px solid #16a34a; color: #86efac; }
+    .btn-pass:hover { background: #16a34a; color: #fff; }
+
+    .bottom-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(26, 15, 10, 0.95);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--amber-border);
+      z-index: 100;
+      padding: 8px 12px;
+      justify-content: space-around;
+    }
+    .bottom-nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 600;
+      gap: 4px;
+      cursor: pointer;
+    }
+    .bottom-nav-btn.active { color: var(--gold-autumn); }
+    .bottom-nav-btn span.icon { font-size: 18px; }
+
+    @media (max-width: 860px) {
+      .sidebar { display: none; }
+      .bottom-nav { display: flex; }
+      .main-viewport { padding: 20px 16px 90px 16px; }
+      .header-group h2 { font-size: 22px; }
+      .canvas-layout { flex-direction: column; align-items: center; }
+    }
+
+    .btn-autumn-primary {
+      padding: 12px 20px;
+      background: linear-gradient(135deg, var(--terracotta), var(--maple-red));
+      border: 1px solid var(--gold-autumn);
+      color: #fff;
+      font-size: 13.5px;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 14px var(--terracotta-glow);
+    }
+    .btn-autumn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(234, 88, 12, 0.5); }
+  </style>
+</head>
+<body>
+
+  <canvas id="leaves-canvas"></canvas>
+
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="brand-box">
+        <div class="brand-icon">秋</div>
+        <div class="brand-text">
+          <h1>PAKBUJAN MAJU</h1>
+          <p>Autumn Edition 1-6</p>
+        </div>
+      </div>
+      <ul class="nav-list">
+        <li class="nav-item"><button class="active" onclick="switchTab('dashboard')"><span class="nav-icon">🍂</span> Beranda</button></li>
+        <li class="nav-item"><button onclick="switchTab('dictionary')"><span class="nav-icon">📖</span> Kamus HSK 1-6</button></li>
+        <li class="nav-item"><button onclick="switchTab('stroke')"><span class="nav-icon">✍️</span> Menulis Hanzi</button></li>
+        <li class="nav-item"><button onclick="switchTab('workbook')"><span class="nav-icon">📝</span> Workbook Interaktif</button></li>
+        <li class="nav-item"><button onclick="switchTab('speaking')"><span class="nav-icon">🎙️</span> Speaking AI Roleplay</button></li>
+        <li class="nav-item"><button onclick="switchTab('grammar')"><span class="nav-icon">📚</span> Ensiklopedia Tata Bahasa</button></li>
+        <li class="nav-item"><button onclick="switchTab('srs')"><span class="nav-icon">🎴</span> SRS Flashcards</button></li>
+        <li class="nav-item"><button onclick="switchTab('placement')"><span class="nav-icon">🎯</span> Placement Test</button></li>
+        <li class="nav-item"><button onclick="switchTab('certificate')"><span class="nav-icon">📜</span> Rapor & Sertifikat</button></li>
+      </ul>
+    </aside>
+
+    <main class="main-viewport">
+
+      <!-- 1. DASHBOARD -->
+      <section id="view-dashboard" class="view-section active">
+        <div class="header-group">
+          <span class="badge">Selamat Datang di Musim Belajar</span>
+          <h2>Halo, Pelajar Tangguh! 🍁</h2>
+          <p>Kuasai kurikulum Mandarin HSK 1 sampai HSK 6 dengan metode terstruktur, simulasi percakapan AI, dan SRS Leitner.</p>
+        </div>
+
+        <div class="glass-card">
+          <h3 style="font-size: 18px; color: #fff; margin-bottom: 12px;">Mulai Belajar Cepat Hari Ini</h3>
+          <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 16px;">Pilih modul pembelajaran utama di bawah untuk mengasah kemampuan membaca, menulis, tata bahasa, dan berbicara Mandarin.</p>
+          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <button class="btn-autumn-primary" onclick="switchTab('speaking')">Simulasi Speaking AI</button>
+            <button class="pill-btn" onclick="switchTab('dictionary')">Buka Kamus Kosakata</button>
+            <button class="pill-btn" onclick="switchTab('workbook')">Kerjakan Workbook</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. KAMUS HSK 1-6 -->
+      <section id="view-dictionary" class="view-section">
+        <div class="header-group">
+          <span class="badge">HSK Standard Dictionary</span>
+          <h2>Kamus Kosakata HSK 1 - 6</h2>
+          <p>Cari kata berdasarkan Hanzi, Pinyin, atau Arti Bahasa Indonesia lengkap dengan contoh kalimat berpasangan.</p>
+        </div>
+
+        <div class="toolbar-row">
+          <div class="search-input-wrap">
+            <span class="search-icon-abs">🔍</span>
+            <input type="text" id="dict-search-input" placeholder="Cari Hanzi / Pinyin / Arti..." oninput="handleSearchDebounce()">
+          </div>
+          <div class="filter-pills">
+            <button class="pill-btn active" onclick="filterDictLevel('ALL', this)">Semua HSK</button>
+            <button class="pill-btn" onclick="filterDictLevel('HSK 1', this)">HSK 1</button>
+            <button class="pill-btn" onclick="filterDictLevel('HSK 2', this)">HSK 2</button>
+            <button class="pill-btn" onclick="filterDictLevel('HSK 3', this)">HSK 3</button>
+            <button class="pill-btn" onclick="filterDictLevel('HSK 4', this)">HSK 4</button>
+            <button class="pill-btn" onclick="filterDictLevel('HSK 5', this)">HSK 5</button>
+            <button class="pill-btn" onclick="filterDictLevel('HSK 6', this)">HSK 6</button>
+          </div>
+        </div>
+
+        <div id="vocab-cards-container" class="vocab-grid"></div>
+
+        <div style="display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 24px;">
+          <button class="pill-btn" id="btn-prev-page" onclick="changeVocabPage(-1)">← Sebelumnya</button>
+          <span style="font-size: 13px; font-weight: 700; color: var(--gold-autumn);" id="dict-page-indicator">Halaman 1 / 1</span>
+          <button class="pill-btn" id="btn-next-page" onclick="changeVocabPage(1)">Selanjutnya →</button>
+        </div>
+      </section>
+
+      <!-- 3. MENULIS HANZI (TIAN ZI GE) -->
+      <section id="view-stroke" class="view-section">
+        <div class="header-group">
+          <span class="badge">Stroke Order & Calligraphy</span>
+          <h2>Panduan Menulis & Tian Zi Ge</h2>
+          <p>Latihlah goresan karakter Hanzi di atas kanvas panduan kotak sembilan tradisional dengan akurasi tinggi.</p>
+        </div>
+
+        <div class="canvas-layout">
+          <div class="canvas-panel">
+            <canvas id="tianzige-canvas" width="320" height="320"></canvas>
+            <div class="canvas-controls">
+              <button class="canvas-btn btn-clear" onclick="clearCanvas()">Hapus / Reset</button>
+              <button class="canvas-btn btn-anim" onclick="speakText(currentPracticeChar)">🔊 Pelafalan</button>
+            </div>
+          </div>
+
+          <div style="flex: 1; min-width: 280px;" class="glass-card">
+            <h3 style="font-size: 18px; color: #fff; margin-bottom: 12px;">Pilih Karakter untuk Latihan:</h3>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;" id="char-selector-box"></div>
+            
+            <div style="background: rgba(20, 11, 7, 0.6); padding: 14px; border-radius: 10px; border: 1px solid var(--amber-border);">
+              <div style="font-size: 12px; color: var(--gold-autumn); font-weight: 700; margin-bottom: 4px;">URUTAN GORESAN DASAR (BISHUN):</div>
+              <div style="font-size: 15px; color: #fff; font-weight: 600;" id="stroke-rule-display">Dari atas ke bawah, dari kiri ke kanan.</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">Karakter Aktif: <b id="active-char-display" style="font-size: 20px; color: var(--gold-autumn);">你</b></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. WORKBOOK INTERAKTIF -->
+      <section id="view-workbook" class="view-section">
+        <div class="header-group">
+          <span class="badge">Official Standard Workbook</span>
+          <h2>Workbook Interaktif per Level</h2>
+          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dengan evaluasi otomatis seketika.</p>
+        </div>
+
+        <div class="toolbar-row">
+          <div class="filter-pills">
+            <button class="pill-btn active" onclick="loadWorkbookQuestions('ALL', this)">Semua Soal</button>
+            <button class="pill-btn" onclick="loadWorkbookQuestions('HSK 1', this)">HSK 1</button>
+            <button class="pill-btn" onclick="loadWorkbookQuestions('HSK 2', this)">HSK 2</button>
+            <button class="pill-btn" onclick="loadWorkbookQuestions('HSK 3', this)">HSK 3</button>
+            <button class="pill-btn" onclick="loadWorkbookQuestions('HSK 4', this)">HSK 4</button>
+          </div>
+        </div>
+
+        <div id="workbook-cards-container"></div>
+      </section>
+
+      <!-- 5. SPEAKING AI ROLEPLAY & CUSTOM SCRIPT -->
+      <section id="view-speaking" class="view-section">
+        <div class="header-group">
+          <span class="badge">Zettbot Speech Engine</span>
+          <h2>Speaking AI Roleplay & Custom Script</h2>
+          <p>Simulasi percakapan dua arah interaktif berbasis Web Speech API dan upload naskah percakapan bebas.</p>
+        </div>
+
+        <div class="glass-card" style="margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+            <h3 style="font-size: 16px; color: #fff;">Skenario Percakapan:</h3>
+            <button class="pill-btn" onclick="toggleCustomScriptBox()">+ Unggah / Buat Naskah Kustom</button>
+          </div>
+
+          <div id="custom-script-form" style="display: none; background: rgba(20, 11, 7, 0.7); padding: 16px; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--amber-border);">
+            <div style="margin-bottom: 10px;">
+              <label style="font-size: 12px; color: var(--gold-autumn); font-weight: 700;">Judul Skenario:</label>
+              <input type="text" id="script-title-input" placeholder="Contoh: Bertemu Teman Baru di Kampus" style="width: 100%; padding: 8px 12px; background: #281810; border: 1px solid var(--amber-border); color: #fff; border-radius: 6px; margin-top: 4px;">
+            </div>
+            <div style="margin-bottom: 12px;">
+              <label style="font-size: 12px; color: var(--gold-autumn); font-weight: 700;">Naskah Percakapan (Format: A: Hanzi | Pinyin | Arti):</label>
+              <textarea id="script-content-input" rows="5" placeholder="A: 你好！ | Nǐ hǎo! | Halo!&#10;B: 你好，很高兴认识你。 | Nǐ hǎo, hěn gāoxìng rènshí nǐ. | Halo, senang mengenalmu." style="width: 100%; padding: 8px 12px; background: #281810; border: 1px solid var(--amber-border); color: #fff; border-radius: 6px; margin-top: 4px; font-family: monospace; font-size: 12px;"></textarea>
+            </div>
+            <button class="btn-autumn-primary" onclick="submitCustomScript()">Simpan & Gunakan Skenario</button>
+          </div>
+
+          <div class="roleplay-box">
+            <div class="role-switcher">
+              <button class="role-btn active" id="btn-role-b" onclick="setUserRole('B')">Saya Berperan: Karakter B (AI Karakter A)</button>
+              <button class="role-btn" id="btn-role-a" onclick="setUserRole('A')">Saya Berperan: Karakter A (AI Karakter B)</button>
+            </div>
+
+            <div class="chat-scroller" id="roleplay-chat-box"></div>
+
+            <div class="speaking-footer">
+              <button class="mic-button" id="mic-btn" onclick="toggleSpeechRecognition()">🎙️</button>
+              <div class="transcript-box" id="transcript-display">
+                Klik tombol mikrofon dan bicaralah dalam bahasa Mandarin saat giliran Anda...
+              </div>
+              <button class="pill-btn" onclick="playCurrentAiTurn()">🔊 Ulangi AI</button>
+              <button class="pill-btn" onclick="skipUserTurn()" style="border-color: var(--maple-red);">⏭️ Lanjut / Selesai Giliran</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. ENSIKLOPEDIA TATA BAHASA -->
+      <section id="view-grammar" class="view-section">
+        <div class="header-group">
+          <span class="badge">Comprehensive Grammar Encyclopedia</span>
+          <h2>Ensiklopedia Tata Bahasa & Pola Kalimat</h2>
+          <p>Panduan mendalam struktur kalimat esensial: modal kata kerja, aspek partikel, pola kalimat 是 dan 有.</p>
+        </div>
+
+        <div id="grammar-cards-container"></div>
+      </section>
+
+      <!-- 7. SPACED REPETITION FLASHCARDS (SRS) -->
+      <section id="view-srs" class="view-section">
+        <div class="header-group">
+          <span class="badge">Leitner Memory Engine</span>
+          <h2>Spaced Repetition Flashcards</h2>
+          <p>Sistem hapalan berkala cerdas untuk mengunci kosakata di memori jangka panjang.</p>
+        </div>
+
+        <div class="srs-box-container">
+          <div class="mastery-bar-wrap">
+            <div class="mastery-fill" id="srs-progress-bar"></div>
+          </div>
+
+          <div class="flashcard" id="srs-card-element" onclick="flipFlashcard()">
+            <div class="flashcard-inner">
+              <div class="card-face front">
+                <span class="badge" id="srs-card-level">HSK</span>
+                <div style="font-family: var(--font-hanzi); font-size: 54px; font-weight: 900; color: #fff; margin: 16px 0;" id="srs-card-hz">你好</div>
+                <div style="font-size: 13px; color: var(--gold-autumn);">Klik kartu untuk membalik & melihat arti</div>
+              </div>
+              <div class="card-face back">
+                <div style="font-size: 20px; font-weight: 700; color: var(--gold-autumn); margin-bottom: 8px;" id="srs-card-py">nǐ hǎo</div>
+                <div style="font-size: 18px; color: #fff; font-weight: 600; margin-bottom: 16px;" id="srs-card-in">Halo / Hai</div>
+                <div style="font-size: 12.5px; color: var(--text-muted); font-style: italic;" id="srs-card-ex">你好！很高兴认识你。</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="srs-actions">
+            <button class="srs-btn btn-fail" onclick="answerSrs(false)">❌ Belum Hapal (Ulangi)</button>
+            <button class="srs-btn btn-pass" onclick="answerSrs(true)">✅ Sudah Hapal (Lanjut)</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8. PLACEMENT TEST -->
+      <section id="view-placement" class="view-section">
+        <div class="header-group">
+          <span class="badge">Diagnostic Skill Assessment</span>
+          <h2>HSK Diagnostic Placement Test</h2>
+          <p>Ujian penentuan kemampuan Mandarin adaptif untuk mengukur kesiapan level HSK.</p>
+        </div>
+
+        <div id="placement-test-container" class="glass-card">
+          <div id="placement-intro-box">
+            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;">Tes ini terdiri dari serangkaian soal multi-level yang menguji Vocabulary, Grammar, dan Reading. Kerjakan secara mandiri.</p>
+            <button class="btn-autumn-primary" onclick="startPlacementTest()">Mulai Ujian Placement Test</button>
+          </div>
+          <div id="placement-quiz-box" style="display: none;"></div>
+        </div>
+      </section>
+
+      <!-- 9. RAPOR & SERTIFIKAT -->
+      <section id="view-certificate" class="view-section">
+        <div class="header-group">
+          <span class="badge">Official PDF Certification</span>
+          <h2>Rapor Hasil Belajar & Sertifikat</h2>
+          <p>Terbitkan sertifikat pencapaian kelulusan resmi dalam format dokumen PDF berstandar tinggi.</p>
+        </div>
+
+        <div class="glass-card" style="text-align: center; padding: 40px 20px;">
+          <div style="font-size: 60px; margin-bottom: 16px;">🏆</div>
+          <h3 style="font-size: 24px; color: #fff; margin-bottom: 8px;">Cetak Sertifikat Kelulusan HSK</h3>
+          <p style="font-size: 14px; color: var(--text-muted); max-width: 500px; margin: 0 auto 24px auto;">Masukkan nama lengkap Anda untuk mengonversi hasil pembelajaran menjadi lembar sertifikat resmi PDF.</p>
+          
+          <div style="max-width: 360px; margin: 0 auto 20px auto;">
+            <input type="text" id="cert-user-name" placeholder="Nama Lengkap Anda..." style="width: 100%; padding: 12px 16px; background: rgba(20, 11, 7, 0.7); border: 1px solid var(--amber-border); border-radius: 8px; color: #fff; font-size: 14px; text-align: center;">
+          </div>
+
+          <button class="btn-autumn-primary" onclick="requestCertificatePdf()">Unduh Sertifikat PDF Resmi</button>
+          <div id="cert-status-msg" style="margin-top: 16px; font-size: 13px; color: var(--gold-autumn);"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="bottom-nav-btn active" onclick="switchTab('dashboard')"><span class="icon">🍂</span>Beranda</button>
+    <button class="bottom-nav-btn" onclick="switchTab('dictionary')"><span class="icon">📖</span>Kamus</button>
+    <button class="bottom-nav-btn" onclick="switchTab('speaking')"><span class="icon">🎙️</span>Roleplay</button>
+    <button class="bottom-nav-btn" onclick="switchTab('workbook')"><span class="icon">📝</span>Latihan</button>
+    <button class="bottom-nav-btn" onclick="switchTab('srs')"><span class="icon">🎴</span>SRS</button>
+  </nav>
+
+  <script>
+    var currentDictPage = 1;
+    var currentDictLevel = 'ALL';
+    var currentDictSearch = '';
+    var searchDebounceTimer = null;
+    var currentPracticeChar = '你';
+
+    var currentUserRole = 'B';
+    var activeDialogueFlow = [];
+    var currentDialogueStep = 0;
+    var recognition = null;
+    var isListening = false;
+
+    var srsCardsQueue = [];
+    var currentSrsIndex = 0;
+
+    var placementQuestions = [];
+    var currentPlacementStep = 0;
+    var placementScore = 0;
+
+    window.addEventListener('DOMContentLoaded', function() {
+      initFallingLeaves();
+      initTianZiGeCanvas();
+      fetchVocabularies();
+      initPracticeCharacters();
+      loadGrammarGuidesView();
+      loadSpeakingDialoguesView();
+      initSrsEngine();
+    });
+
+    function initFallingLeaves() {
+      var canvas = document.getElementById('leaves-canvas');
+      var ctx = canvas.getContext('2d');
+      var width = canvas.width = window.innerWidth;
+      var height = canvas.height = window.innerHeight;
+
+      window.addEventListener('resize', function() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      var leaves = [];
+      var leafColors = ['#ea580c', '#f59e0b', '#c2410c', '#b45309', '#d97706'];
+
+      for (var i = 0; i < 22; i++) {
+        leaves.push({
+          x: Math.random() * width,
+          y: Math.random() * height - height,
+          size: Math.random() * 8 + 8,
+          speedY: Math.random() * 0.8 + 0.5,
+          speedX: Math.random() * 0.6 - 0.3,
+          angle: Math.random() * 360,
+          rotationSpeed: Math.random() * 1.5 - 0.75,
+          color: leafColors[Math.floor(Math.random() * leafColors.length)],
+          opacity: Math.random() * 0.4 + 0.3
+        });
+      }
+
+      function renderLeaves() {
+        ctx.clearRect(0, 0, width, height);
+        for (var i = 0; i < leaves.length; i++) {
+          var leaf = leaves[i];
+          ctx.save();
+          ctx.translate(leaf.x, leaf.y);
+          ctx.rotate((leaf.angle * Math.PI) / 180);
+          ctx.globalAlpha = leaf.opacity;
+          ctx.fillStyle = leaf.color;
+
+          ctx.beginPath();
+          ctx.moveTo(0, -leaf.size);
+          ctx.quadraticCurveTo(leaf.size * 0.8, -leaf.size * 0.3, leaf.size * 0.6, leaf.size * 0.6);
+          ctx.quadraticCurveTo(0, leaf.size * 0.3, -leaf.size * 0.6, leaf.size * 0.6);
+          ctx.quadraticCurveTo(-leaf.size * 0.8, -leaf.size * 0.3, 0, -leaf.size);
+          ctx.fill();
+          ctx.restore();
+
+          leaf.y += leaf.speedY;
+          leaf.x += leaf.speedX + Math.sin(leaf.y * 0.01) * 0.4;
+          leaf.angle += leaf.rotationSpeed;
+
+          if (leaf.y > height + 20) {
+            leaf.y = -20;
+            leaf.x = Math.random() * width;
+          }
+        }
+        requestAnimationFrame(renderLeaves);
+      }
+      renderLeaves();
+    }
+
+    function switchTab(viewId) {
+      var views = document.querySelectorAll('.view-section');
+      for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+      var target = document.getElementById('view-' + viewId);
+      if (target) target.classList.add('active');
+
+      var navButtons = document.querySelectorAll('.nav-item button, .bottom-nav-btn');
+      for (var j = 0; j < navButtons.length; j++) navButtons[j].classList.remove('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function fetchVocabularies() {
+      var container = document.getElementById('vocab-cards-container');
+      container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--gold-autumn);">Memuat data dari Spreadsheet Database... 🍂</div>';
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            renderVocabList(res);
+          })
+          .withFailureHandler(function(err) {
+            container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: #fca5a5;">Gagal terhubung ke Spreadsheet: ' + err + '</div>';
+          })
+          .getVocabPage(currentDictPage, 12, currentDictLevel, currentDictSearch, 'all');
+      } else {
+        container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--text-muted);">Buka aplikasi melalui Web App URL Google Apps Script Anda.</div>';
+      }
+    }
+
+    function renderVocabList(res) {
+      var container = document.getElementById('vocab-cards-container');
+      container.innerHTML = '';
+
+      if (!res || !res.items || res.items.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--text-muted);">Tidak ada kosakata yang cocok di database.</div>';
+        document.getElementById('dict-page-indicator').innerText = 'Halaman 1 / 1';
+        document.getElementById('btn-prev-page').disabled = true;
+        document.getElementById('btn-next-page').disabled = true;
+        return;
+      }
+
+      for (var i = 0; i < res.items.length; i++) {
+        var item = res.items[i];
+        var card = document.createElement('div');
+        card.className = 'vocab-card';
+        card.innerHTML = 
+          '<div class="vocab-head">' +
+            '<div class="vocab-hanzi">' + item.hanzi + '</div>' +
+            '<div class="vocab-level-tag">' + item.hskLevel + '</div>' +
+          '</div>' +
+          '<div class="vocab-pinyin">' + item.pinyin + '</div>' +
+          '<div class="vocab-indo">' + item.indonesian + '</div>' +
+          '<div class="vocab-example-box">' +
+            '<div class="example-hz">' + (item.exampleHanzi || '') + '</div>' +
+            '<div class="example-tr">' + (item.exampleIndo || '') + '</div>' +
+          '</div>' +
+          '<div class="vocab-actions">' +
+            '<button class="icon-action-btn" onclick="speakText(\'' + item.hanzi + '\')">🔊 Dengar</button>' +
+            '<button class="icon-action-btn" onclick="selectCharForWriting(\'' + item.hanzi.charAt(0) + '\')">✍️ Tulis</button>' +
+          '</div>';
+        container.appendChild(card);
+      }
+
+      document.getElementById('dict-page-indicator').innerText = 'Halaman ' + res.currentPage + ' / ' + res.totalPages;
+      document.getElementById('btn-prev-page').disabled = (res.currentPage <= 1);
+      document.getElementById('btn-next-page').disabled = (res.currentPage >= res.totalPages);
+    }
+
+    function filterDictLevel(level, btn) {
+      currentDictLevel = level;
+      currentDictPage = 1;
+      var buttons = btn.parentElement.querySelectorAll('.pill-btn');
+      for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove('active');
+      btn.classList.add('active');
+      fetchVocabularies();
+    }
+
+    function handleSearchDebounce() {
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(function() {
+        currentDictSearch = document.getElementById('dict-search-input').value;
+        currentDictPage = 1;
+        fetchVocabularies();
+      }, 300);
+    }
+
+    function changeVocabPage(delta) {
+      currentDictPage += delta;
+      fetchVocabularies();
+    }
+
+    var canvas, ctx, isDrawing = false;
+
+    function initTianZiGeCanvas() {
+      canvas = document.getElementById('tianzige-canvas');
+      ctx = canvas.getContext('2d');
+      drawTianZiGeGrid();
+
+      canvas.addEventListener('mousedown', startDraw);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stopDraw);
+      canvas.addEventListener('mouseleave', stopDraw);
+
+      canvas.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        var touch = e.touches[0];
+        var mouseEvent = new MouseEvent('mousedown', { clientX: touch.clientX, clientY: touch.clientY });
+        canvas.dispatchEvent(mouseEvent);
+      });
+
+      canvas.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+        var touch = e.touches[0];
+        var mouseEvent = new MouseEvent('mousemove', { clientX: touch.clientX, clientY: touch.clientY });
+        canvas.dispatchEvent(mouseEvent);
+      });
+
+      canvas.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        var mouseEvent = new MouseEvent('mouseup', {});
+        canvas.dispatchEvent(mouseEvent);
+      });
+    }
+
+    function drawTianZiGeGrid() {
+      var w = canvas.width;
+      var h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      ctx.strokeStyle = '#fcd34d';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+
+      ctx.beginPath();
+      ctx.moveTo(0, 0); ctx.lineTo(w, h);
+      ctx.moveTo(w, 0); ctx.lineTo(0, h);
+      ctx.moveTo(w / 2, 0); ctx.lineTo(w / 2, h);
+      ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2);
+      ctx.stroke();
+
+      ctx.setLineDash([]);
+      ctx.strokeStyle = '#c2410c';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(0, 0, w, h);
+    }
+
+    function startDraw(e) {
+      isDrawing = true;
+      var rect = canvas.getBoundingClientRect();
+      ctx.beginPath();
+      ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    }
+
+    function draw(e) {
+      if (!isDrawing) return;
+      var rect = canvas.getBoundingClientRect();
+      ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 9;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+    }
+
+    function stopDraw() { isDrawing = false; }
+    function clearCanvas() { drawTianZiGeGrid(); }
+
+    function initPracticeCharacters() {
+      var charList = ['你', '好', '谢', '果', '学', '书', '爱', '看'];
+      var container = document.getElementById('char-selector-box');
+      container.innerHTML = '';
+      for (var i = 0; i < charList.length; i++) {
+        var btn = document.createElement('button');
+        btn.className = 'pill-btn';
+        btn.style.fontFamily = 'var(--font-hanzi)';
+        btn.style.fontSize = '18px';
+        btn.innerText = charList[i];
+        btn.onclick = (function(c) {
+          return function() { selectCharForWriting(c); };
+        })(charList[i]);
+        container.appendChild(btn);
+      }
+    }
+
+    function selectCharForWriting(char) {
+      currentPracticeChar = char;
+      document.getElementById('active-char-display').innerText = char;
+      clearCanvas();
+      switchTab('stroke');
+    }
+
+    function loadWorkbookQuestions(hskLevel, btn) {
+      if (btn) {
+        var buttons = btn.parentElement.querySelectorAll('.pill-btn');
+        for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove('active');
+        btn.classList.add('active');
+      }
+
+      var container = document.getElementById('workbook-cards-container');
+      container.innerHTML = '<div style="text-align:center; padding: 30px; color: var(--gold-autumn);">Memuat Soal dari Spreadsheet... 🍁</div>';
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(renderWorkbookCards)
+          .withFailureHandler(function(err) { renderWorkbookCards([]); })
+          .getWorkbookQuestions(hskLevel, 'ALL');
+      }
+    }
+
+    function renderWorkbookCards(questions) {
+      var container = document.getElementById('workbook-cards-container');
+      container.innerHTML = '';
+
+      if (!questions || questions.length === 0) {
+        container.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 30px;">Belum ada butir soal di sheet WORKBOOK_BANK untuk level ini.</div>';
+        return;
+      }
+
+      for (var i = 0; i < questions.length; i++) {
+        var q = questions[i];
+        var card = document.createElement('div');
+        card.className = 'glass-card';
+
+        var optHtml = '';
+        for (var j = 0; j < q.options.length; j++) {
+          var opt = q.options[j];
+          optHtml += '<button class="pill-btn" style="text-align:left; padding: 10px 14px;" onclick="checkWorkbookAnswer(\'' + q.questionId + '\', \'' + opt + '\', \'' + q.correctAnswer + '\', this)">' + opt + '</button>';
+        }
+
+        card.innerHTML = 
+          '<div style="display: flex; justify-content: space-between; margin-bottom: 10px;">' +
+            '<span class="badge">' + q.hskLevel + ' - ' + q.questionType + '</span>' +
+          '</div>' +
+          '<div style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 14px; line-height: 1.5;">' + q.questionPrompt.replace(/\n/g, '<br>') + '</div>' +
+          '<div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">' + optHtml + '</div>' +
+          '<div id="wb-fb-' + q.questionId + '" style="display:none; padding: 10px; border-radius: 8px; font-size: 13px; margin-top: 10px;"></div>';
+
+        container.appendChild(card);
+      }
+    }
+
+    function checkWorkbookAnswer(qId, selectedOpt, correctOpt, btnElement) {
+      var parent = btnElement.parentElement;
+      var buttons = parent.querySelectorAll('.pill-btn');
+      for (var i = 0; i < buttons.length; i++) buttons[i].disabled = true;
+
+      var feedbackBox = document.getElementById('wb-fb-' + qId);
+      feedbackBox.style.display = 'block';
+
+      if (selectedOpt === correctOpt) {
+        btnElement.style.background = '#16a34a';
+        btnElement.style.color = '#fff';
+        feedbackBox.style.background = 'rgba(220, 38, 38, 0.2)';
+        feedbackBox.style.border = '1px solid #16a34a';
+        feedbackBox.style.color = '#86efac';
+        feedbackBox.innerHTML = '🎉 <b>Benar Sekali!</b> Jawaban Anda tepat.';
+      } else {
+        btnElement.style.background = '#dc2626';
+        btnElement.style.color = '#fff';
+        feedbackBox.style.background = 'rgba(220, 38, 38, 0.2)';
+        feedbackBox.style.border = '1px solid #dc2626';
+        feedbackBox.style.color = '#fca5a5';
+        feedbackBox.innerHTML = '❌ <b>Kurang Tepat.</b> Kunci jawaban: <b>' + correctOpt + '</b>';
+      }
+    }
+
+    function loadSpeakingDialoguesView() {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(dialogues) {
+            if (dialogues && dialogues.length > 0) {
+              initSpeakingDialogue(dialogues[0].scriptFlow);
+            }
+          })
+          .getSpeakingDialogues('HSK 1');
+      }
+    }
+
+    function initSpeakingDialogue(dialogueFlow) {
+      activeDialogueFlow = dialogueFlow || [];
+      currentDialogueStep = 0;
+      renderDialogueChat();
+      checkTurnAndAct();
+    }
+
+    function renderDialogueChat() {
+      var chatBox = document.getElementById('roleplay-chat-box');
+      chatBox.innerHTML = '';
+
+      for (var i = 0; i < activeDialogueFlow.length; i++) {
+        var d = activeDialogueFlow[i];
+        var bubble = document.createElement('div');
+        bubble.className = 'chat-bubble ' + (d.role === 'A' ? 'role-a' : 'role-b');
+        bubble.id = 'chat-bubble-' + i;
+        bubble.innerHTML = 
+          '<div class="speaker-lbl">' + d.speaker + ' (' + d.role + ')</div>' +
+          '<div class="bubble-hz">' + d.hanzi + '</div>' +
+          '<div class="bubble-py">' + d.pinyin + '</div>' +
+          '<div class="bubble-tr">' + d.translation + '</div>';
+        chatBox.appendChild(bubble);
+      }
+    }
+
+    function setUserRole(role) {
+      currentUserRole = role;
+      document.getElementById('btn-role-a').classList.toggle('active', role === 'A');
+      document.getElementById('btn-role-b').classList.toggle('active', role === 'B');
+      currentDialogueStep = 0;
+      checkTurnAndAct();
+    }
+
+    function checkTurnAndAct() {
+      if (!activeDialogueFlow || activeDialogueFlow.length === 0) return;
+      if (currentDialogueStep >= activeDialogueFlow.length) {
+        document.getElementById('transcript-display').innerHTML = '🎉 <b>Skenario Percakapan Selesai!</b> Kerja bagus!';
+        return;
+      }
+
+      var currentLine = activeDialogueFlow[currentDialogueStep];
+      var isAiTurn = (currentLine.role !== currentUserRole);
+
+      highlightChatBubble(currentDialogueStep);
+
+      if (isAiTurn) {
+        document.getElementById('transcript-display').innerHTML = '🤖 <i>Zettbot sedang berbicara...</i>';
+        speakText(currentLine.hanzi, function() {
+          currentDialogueStep++;
+          checkTurnAndAct();
+        });
+      } else {
+        document.getElementById('transcript-display').innerHTML = '👉 <b>Giliran Anda!</b> Ucapkan: <i>"' + currentLine.hanzi + '"</i>';
+      }
+    }
+
+    function highlightChatBubble(step) {
+      var bubbles = document.querySelectorAll('.chat-bubble');
+      for (var i = 0; i < bubbles.length; i++) {
+        bubbles[i].style.opacity = (i === step ? '1' : '0.45');
+      }
+      var activeEl = document.getElementById('chat-bubble-' + step);
+      if (activeEl) activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function playCurrentAiTurn() {
+      if (activeDialogueFlow && currentDialogueStep < activeDialogueFlow.length) {
+        speakText(activeDialogueFlow[currentDialogueStep].hanzi);
+      }
+    }
+
+    function skipUserTurn() {
+      if (activeDialogueFlow && currentDialogueStep < activeDialogueFlow.length) {
+        currentDialogueStep++;
+        checkTurnAndAct();
+      }
+    }
+
+    function toggleCustomScriptBox() {
+      var form = document.getElementById('custom-script-form');
+      form.style.display = (form.style.display === 'none' ? 'block' : 'none');
+    }
+
+    function submitCustomScript() {
+      var title = document.getElementById('script-title-input').value;
+      var content = document.getElementById('script-content-input').value;
+
+      if (!content.trim()) {
+        alert('Mohon masukkan naskah percakapan terlebih dahulu.');
+        return;
+      }
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (res.success) {
+              initSpeakingDialogue(res.parsedDialogue);
+              toggleCustomScriptBox();
+            }
+          })
+          .parseAndSaveCustomScript("User Active", title, content);
+      }
+    }
+
+    function speakText(text, onEndCallback) {
+      if (!('speechSynthesis' in window)) {
+        if (onEndCallback) onEndCallback();
+        return;
+      }
+      window.speechSynthesis.cancel();
+      var utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'zh-CN';
+      utterance.rate = 0.85;
+      utterance.onend = function() {
+        if (onEndCallback) onEndCallback();
+      };
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // =========================================================================
+    // SPEECH RECOGNITION ENGINE YANG DIPERBARUI DENGAN FALLBACK AMAN
+    // =========================================================================
+    function toggleSpeechRecognition() {
+      var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      var micBtn = document.getElementById('mic-btn');
+      var statusBox = document.getElementById('transcript-display');
+
+      if (!SR) {
+        statusBox.innerHTML = '⚠️ <i>Browser Anda tidak mendukung Web Speech Recognition. Gunakan tombol <b>Lanjut</b> untuk simulasi.</i>';
+        return;
+      }
+
+      if (isListening && recognition) {
+        try { recognition.stop(); } catch(e){}
+        isListening = false;
+        micBtn.classList.remove('listening');
+        statusBox.innerHTML = '<i>Perekaman dihentikan.</i>';
+        return;
+      }
+
+      // Inisialisasi ulang instansi Speech Recognition pada gesture klik
+      try {
+        recognition = new SR();
+        recognition.lang = 'zh-CN';
+        recognition.interimResults = true;
+        recognition.maxAlternatives = 1;
+
+        recognition.onstart = function() {
+          isListening = true;
+          micBtn.classList.add('listening');
+          statusBox.innerHTML = '🎙️ <b>Mendengarkan...</b> Silakan ucapkan kalimat Mandarin Anda sekarang.';
+        };
+
+        recognition.onresult = function(e) {
+          var transcript = '';
+          for (var i = 0; i < e.results.length; i++) {
+            transcript += e.results[i][0].transcript;
+          }
+          statusBox.innerHTML = 'Suara Anda: "<b>' + transcript + '</b>"';
+
+          if (e.results[0].isFinal) {
+            var currentTarget = activeDialogueFlow[currentDialogueStep];
+            if (currentTarget && currentTarget.role === currentUserRole) {
+              setTimeout(function() {
+                currentDialogueStep++;
+                checkTurnAndAct();
+              }, 600);
+            }
+          }
+        };
+
+        recognition.onerror = function(e) {
+          isListening = false;
+          micBtn.classList.remove('listening');
+          var errText = e.error || 'Terjadi kendala';
+          if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+            statusBox.innerHTML = '⚠️ <i>Akses mikrofon dibatasi oleh iframe Google Apps Script. Klik tombol <b>Lanjut</b> untuk melanjutkan peran Anda.</i>';
+          } else {
+            statusBox.innerHTML = '⚠️ <i>Deteksi suara: ' + errText + '. Klik mikrofon lagi untuk mencoba ulang.</i>';
+          }
+        };
+
+        recognition.onend = function() {
+          isListening = false;
+          micBtn.classList.remove('listening');
+        };
+
+        recognition.start();
+      } catch (err) {
+        isListening = false;
+        micBtn.classList.remove('listening');
+        statusBox.innerHTML = '⚠️ <i>Gagal mengaktifkan mikrofon: ' + err.message + '. Gunakan tombol <b>Lanjut</b>.</i>';
+      }
+    }
+
+    function loadGrammarGuidesView() {
+      var container = document.getElementById('grammar-cards-container');
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(renderGrammarGuides)
+          .getGrammarGuides('ALL');
+      }
+    }
+
+    function renderGrammarGuides(guides) {
+      var container = document.getElementById('grammar-cards-container');
+      container.innerHTML = '';
+
+      if (!guides || guides.length === 0) {
+        container.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 30px;">Belum ada data materi di sheet GRAMMAR_GUIDE.</div>';
+        return;
+      }
+
+      for (var i = 0; i < guides.length; i++) {
+        var g = guides[i];
+        var card = document.createElement('div');
+        card.className = 'glass-card';
+
+        var exHtml = '';
+        if (g.examples) {
+          for (var j = 0; j < g.examples.length; j++) {
+            var ex = g.examples[j];
+            exHtml += '<div style="margin-bottom: 6px;"><b>' + ex.hanzi + '</b> <span style="color:var(--gold-autumn);">(' + ex.pinyin + ')</span> : ' + ex.indo + '</div>';
+          }
+        }
+
+        card.innerHTML = 
+          '<div style="display:flex; justify-content:space-between; margin-bottom: 8px;">' +
+            '<span class="badge">' + g.hskLevel + ' - ' + g.topic + '</span>' +
+          '</div>' +
+          '<h3 style="font-size: 18px; color: #fff; margin-bottom: 8px;">' + g.ruleTitle + '</h3>' +
+          '<div style="background: rgba(20, 11, 7, 0.6); padding: 10px; border-radius: 6px; border-left: 3px solid var(--gold-autumn); font-family: monospace; font-size: 13px; color: #fed7aa; margin-bottom: 12px;">' + g.formula + '</div>' +
+          '<p style="font-size: 13.5px; color: var(--text-main); margin-bottom: 14px; line-height: 1.6;">' + g.explanationIndo + '</p>' +
+          '<div style="background: rgba(40, 24, 16, 0.6); padding: 12px; border-radius: 8px; font-size: 12.5px; color: var(--text-muted);">' + exHtml + '</div>';
+
+        container.appendChild(card);
+      }
+    }
+
+    function initSrsEngine() {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(cards) {
+            srsCardsQueue = cards || [];
+            currentSrsIndex = 0;
+            renderCurrentSrsCard();
+          })
+          .getSrsCards("User Active");
+      }
+    }
+
+    function renderCurrentSrsCard() {
+      var cardEl = document.getElementById('srs-card-element');
+      cardEl.classList.remove('flipped');
+
+      if (srsCardsQueue.length === 0 || currentSrsIndex >= srsCardsQueue.length) {
+        document.getElementById('srs-card-hz').innerText = '🎉 Selesai!';
+        document.getElementById('srs-card-py').innerText = 'Semua kartu telah direview';
+        document.getElementById('srs-card-in').innerText = 'Kembalilah besok untuk review berikutnya!';
+        return;
+      }
+
+      var item = srsCardsQueue[currentSrsIndex];
+      var v = item.vocab;
+
+      document.getElementById('srs-card-level').innerText = v.hskLevel + ' (Mastery Lv. ' + item.masteryLevel + ')';
+      document.getElementById('srs-card-hz').innerText = v.hanzi;
+      document.getElementById('srs-card-py').innerText = v.pinyin;
+      document.getElementById('srs-card-in').innerText = v.indonesian;
+      document.getElementById('srs-card-ex').innerText = v.exampleHanzi || '';
+
+      var pct = Math.min(100, (item.masteryLevel / 5) * 100);
+      document.getElementById('srs-progress-bar').style.width = pct + '%';
+    }
+
+    function flipFlashcard() {
+      document.getElementById('srs-card-element').classList.toggle('flipped');
+    }
+
+    function answerSrs(isCorrect) {
+      if (currentSrsIndex >= srsCardsQueue.length) return;
+      var cur = srsCardsQueue[currentSrsIndex];
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.updateSrsReview("User Active", cur.vocab.vocabId, isCorrect);
+      }
+
+      currentSrsIndex++;
+      renderCurrentSrsCard();
+    }
+
+    function startPlacementTest() {
+      document.getElementById('placement-intro-box').style.display = 'none';
+      var quizBox = document.getElementById('placement-quiz-box');
+      quizBox.style.display = 'block';
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(data) {
+            placementQuestions = data || [];
+            currentPlacementStep = 0;
+            placementScore = 0;
+            renderPlacementStep();
+          })
+          .getPlacementTestPackage();
+      }
+    }
+
+    function renderPlacementStep() {
+      var quizBox = document.getElementById('placement-quiz-box');
+      if (placementQuestions.length === 0) {
+        quizBox.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted);">Sheet PLACEMENT_TEST belum berisi paket soal.</div>';
+        return;
+      }
+
+      if (currentPlacementStep >= placementQuestions.length) {
+        var estimated = (placementScore >= 35 ? 'HSK 2 - 3' : 'HSK 1');
+        quizBox.innerHTML = 
+          '<div style="text-align:center; padding: 20px;">' +
+            '<div style="font-size: 50px;">🎯</div>' +
+            '<h3 style="font-size: 22px; color: #fff; margin: 10px 0;">Hasil Diagnostic Placement Test</h3>' +
+            '<p style="font-size: 15px; color: var(--gold-autumn);">Estimasi Level: <b>' + estimated + '</b> (Skor: ' + placementScore + ')</p>' +
+            '<button class="btn-autumn-primary" style="margin-top: 20px;" onclick="startPlacementTest()">Ulangi Tes</button>' +
+          '</div>';
+        return;
+      }
+
+      var q = placementQuestions[currentPlacementStep];
+      var optHtml = '';
+      for (var i = 0; i < q.options.length; i++) {
+        var opt = q.options[i];
+        optHtml += '<button class="pill-btn" style="text-align:left; padding: 12px;" onclick="answerPlacementQuestion(\'' + opt + '\')">' + opt + '</button>';
+      }
+
+      quizBox.innerHTML = 
+        '<div style="display:flex; justify-content:space-between; margin-bottom: 12px;">' +
+          '<span class="badge">Soal ' + (currentPlacementStep + 1) + ' / ' + placementQuestions.length + '</span>' +
+          '<span style="font-size: 12px; color: var(--gold-autumn);">' + q.hskLevel + '</span>' +
+        '</div>' +
+        '<div style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 16px;">' + q.questionText + '</div>' +
+        '<div style="display: flex; flex-direction: column; gap: 8px;">' + optHtml + '</div>';
+    }
+
+    function answerPlacementQuestion(selected) {
+      var q = placementQuestions[currentPlacementStep];
+      if (selected === q.correctAnswer) {
+        placementScore += (q.scoreWeight || 20);
+      }
+      currentPlacementStep++;
+      renderPlacementStep();
+    }
+
+    function requestCertificatePdf() {
+      var name = document.getElementById('cert-user-name').value;
+      if (!name.trim()) {
+        alert('Mohon masukkan nama Anda untuk terbitan sertifikat.');
+        return;
+      }
+
+      var status = document.getElementById('cert-status-msg');
+      status.innerHTML = '⏳ <i>Memproses dokumen PDF resmi Zettbot Academy...</i>';
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (res.success) {
+              status.innerHTML = '✅ <b>Sertifikat Berhasil Diterbitkan!</b> Mengunduh file...';
+              var link = document.createElement('a');
+              link.href = 'data:application/pdf;base64,' + res.pdfBase64;
+              link.download = res.fileName;
+              link.click();
+            } else {
+              status.innerHTML = '❌ Terjadi kendala saat menerbitkan PDF.';
+            }
+          })
+          .generateCertificatePdf(name, 'HSK 1 - 6 Autumn Curriculum', 100);
+      }
+    }
+  </script>
+</body>
+</html>
