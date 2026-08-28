@@ -509,7 +509,7 @@
     }
     .btn-fail { background: rgba(220, 38, 38, 0.25); border: 1px solid #dc2626; color: #fca5a5; }
     .btn-fail:hover { background: #dc2626; color: #fff; }
-    .btn-pass { background: rgba(22, 163, 74, 0.25); border: 1px solid #16a34a; color: #86efac; }
+    .btn-pass { background: rgba(220, 38, 38, 0.25); border: 1px solid #16a34a; color: #86efac; }
     .btn-pass:hover { background: #16a34a; color: #fff; }
 
     .bottom-nav {
@@ -541,7 +541,7 @@
     .bottom-nav-btn span.icon { font-size: 18px; }
 
     /* =========================================================================
-       PDF SCROLL VIEWPORT & CANVAS (DIPERBAIKI 100% TIDAK KEPOTONG & FULL SCROLL)
+       PDF SCROLL VIEWPORT & CANVAS CONTAINER (STABIL & SCROLL BEBAS)
        ========================================================================= */
     .pdf-scroll-viewport {
       background: #180d08;
@@ -550,11 +550,11 @@
       height: 72vh;
       min-height: 480px;
       max-height: 850px;
-      overflow-y: auto !important;
+      overflow-y: scroll !important;
       overflow-x: auto !important;
       display: block !important;
       text-align: center;
-      padding: 16px 10px 80px 10px; /* Ekstra padding bawah agar nomor soal terakhir tidak mepet */
+      padding: 16px 10px 100px 10px;
       scrollbar-width: thin;
       scrollbar-color: var(--gold-autumn) #180d08;
       position: relative;
@@ -1035,7 +1035,7 @@
         </div>
       </section>
 
-      <!-- 8. HSK DIAGNOSTIC & MOCK PLACEMENT TEST (FULL SCROLL & FIT RESMI) -->
+      <!-- 8. HSK DIAGNOSTIC & MOCK PLACEMENT TEST (FULL SCROLL STABIL) -->
       <section id="view-placement" class="view-section">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
           <div class="header-group" style="margin-bottom: 0;">
@@ -1106,7 +1106,7 @@
               </div>
             </div>
 
-            <!-- CONTAINER SCROLL PENUH (TIDAK KEPOTONG LAGI) -->
+            <!-- CONTAINER SCROLL PENUH STABIL -->
             <div class="pdf-scroll-viewport" id="pdf-scroll-box">
               <div class="pdf-viewer-outer-wrap" id="pdf-viewer-wrapper">
                 <canvas id="pdf-render-canvas"></canvas>
@@ -1344,7 +1344,7 @@
       <div id="crud-section-plc" style="display: none;">
         <input type="hidden" id="crud-plc-edit-id" value="">
 
-        <div style="display: gap: 12px;">
+        <div style="display: flex; gap: 12px;">
           <div class="crud-form-group" style="width: 140px;">
             <label>Jenjang HSK:</label>
             <select id="crud-plc-hsk">
@@ -1424,7 +1424,6 @@
     }
 
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqpb8Pxfr5K_xT_vLQoQD1Gl_f9C2pRYzqWmCy9JUVcvC84WJ4O225MhKQtdWKKRQn9A/exec"; 
-    const SPREADSHEET_ID = "1Gndw_zuqJ8wrZssxJ10lMFgcBjPZ4lqk7Oz6dDYYlBs";
 
     // Session Data
     var sessionUser = {
@@ -1725,68 +1724,28 @@
       }
     };
 
-    // HIGH-SPEED GVIZ & CACHE PARSER
-    function fetchFastGviz(sheetName) {
-      const gvizUrl = "https://docs.google.com/spreadsheets/d/" + SPREADSHEET_ID + "/gviz/tq?tqx=out:json&sheet=" + encodeURIComponent(sheetName);
-      return fetch(gvizUrl)
-        .then(res => res.text())
-        .then(text => {
-          const match = text.match(/google\.visualization\.Query\.setResponse\((.+)\);?/);
-          if (!match) throw new Error("Format GViz tidak valid");
-          const data = JSON.parse(match[1]);
-          if (!data.table || !data.table.rows) return [];
-          return data.table.rows.map(r => r.c ? r.c.map(cell => (cell && cell.v !== null && cell.v !== undefined) ? cell.v : "") : []);
-        });
-    }
-
-    // 1. FAST PLACEMENT PACKAGES TABLE
+    // 1. PLACEMENT PACKAGES TABLE
     function loadPlacementPackagesTable() {
       var tbody = document.getElementById('crud-plc-table-body');
       if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--gold-autumn); padding: 14px;">Memuat data paket ujian...</td></tr>';
 
-      var cached = localStorage.getItem('cache_placement_packages');
-      if (cached) {
-        try {
-          var parsed = JSON.parse(cached);
-          if (parsed && parsed.length > 0) renderPlacementTable(parsed);
-        } catch(e) {}
-      } else if (allPlacementPackages && allPlacementPackages.length > 0) {
-        renderPlacementTable(allPlacementPackages);
+      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+        fetch(SCRIPT_URL + "?action=getPlacement&level=ALL")
+          .then(res => res.json())
+          .then(data => {
+            allPlacementPackages = data || [];
+            renderPlacementTable(allPlacementPackages);
+          })
+          .catch(() => renderPlacementTable(allPlacementPackages));
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(function(data) {
+          allPlacementPackages = data || [];
+          renderPlacementTable(allPlacementPackages);
+        }).getPlacementTestPackage('ALL');
       } else {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--gold-autumn); padding: 14px;">Memuat data kilat...</td></tr>';
+        renderPlacementTable(allPlacementPackages);
       }
-
-      fetchFastGviz('PLACEMENT_TEST')
-        .then(rows => {
-          if (!rows || rows.length === 0) return;
-          var pkgs = rows.map(r => ({
-            testId: r[0] || "",
-            hskLevel: r[1] || "HSK 1",
-            testTitle: r[2] || "Paket Ujian",
-            pdfUrl: r[3] || "./placement_test/HSK1.pdf",
-            audioUrl: r[4] || "./placement_test/HSK1.mp3",
-            answerKeyJson: r[5] || ""
-          })).filter(item => item.testId && item.testId !== 'test_id');
-
-          if (pkgs.length > 0) {
-            allPlacementPackages = pkgs;
-            localStorage.setItem('cache_placement_packages', JSON.stringify(pkgs));
-            renderPlacementTable(pkgs);
-          }
-        })
-        .catch(() => {
-          if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
-            fetch(SCRIPT_URL + "?action=getPlacement&level=ALL")
-              .then(res => res.json())
-              .then(data => {
-                if (data && data.length > 0) {
-                  allPlacementPackages = data;
-                  localStorage.setItem('cache_placement_packages', JSON.stringify(data));
-                  renderPlacementTable(data);
-                }
-              }).catch(() => {});
-          }
-        });
     }
 
     function renderPlacementTable(packages) {
@@ -1813,58 +1772,28 @@
       });
     }
 
-    // 2. FAST SPEAKING DIALOGUES TABLE
+    // 2. SPEAKING DIALOGUES TABLE
     function loadSpeakingDialoguesTable() {
       var tbody = document.getElementById('crud-spk-table-body');
       if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--gold-autumn); padding: 14px;">Memuat data skenario...</td></tr>';
 
-      var cached = localStorage.getItem('cache_speaking_dialogues');
-      if (cached) {
-        try {
-          var parsed = JSON.parse(cached);
-          if (parsed && parsed.length > 0) renderSpeakingTable(parsed);
-        } catch(e) {}
-      } else if (allSpeakingDialogues && allSpeakingDialogues.length > 0) {
-        renderSpeakingTable(allSpeakingDialogues);
+      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+        fetch(SCRIPT_URL + "?action=getDialogues&level=ALL")
+          .then(res => res.json())
+          .then(data => {
+            allSpeakingDialogues = data || [];
+            renderSpeakingTable(allSpeakingDialogues);
+          })
+          .catch(() => renderSpeakingTable(allSpeakingDialogues));
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(function(data) {
+          allSpeakingDialogues = data || [];
+          renderSpeakingTable(allSpeakingDialogues);
+        }).getSpeakingDialogues('ALL');
       } else {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--gold-autumn); padding: 14px;">Memuat data kilat...</td></tr>';
+        renderSpeakingTable(allSpeakingDialogues);
       }
-
-      fetchFastGviz('SPEAKING_DIALOGUES')
-        .then(rows => {
-          if (!rows || rows.length === 0) return;
-          var dlgs = rows.map(r => {
-            let flow = [];
-            try { flow = JSON.parse(r[5]); } catch(e) {}
-            return {
-              dialogueId: r[0] || "",
-              hskLevel: r[1] || "HSK 1",
-              scenarioTitle: r[2] || "Percakapan",
-              roleAName: r[3] || "Pelayan",
-              roleBName: r[4] || "Pelanggan",
-              scriptFlow: flow
-            };
-          }).filter(item => item.dialogueId && item.dialogueId !== 'dialogue_id');
-
-          if (dlgs.length > 0) {
-            allSpeakingDialogues = dlgs;
-            localStorage.setItem('cache_speaking_dialogues', JSON.stringify(dlgs));
-            renderSpeakingTable(dlgs);
-          }
-        })
-        .catch(() => {
-          if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
-            fetch(SCRIPT_URL + "?action=getDialogues&level=ALL")
-              .then(res => res.json())
-              .then(data => {
-                if (data && data.length > 0) {
-                  allSpeakingDialogues = data;
-                  localStorage.setItem('cache_speaking_dialogues', JSON.stringify(data));
-                  renderSpeakingTable(data);
-                }
-              }).catch(() => {});
-          }
-        });
     }
 
     function renderSpeakingTable(dialogues) {
@@ -1891,59 +1820,28 @@
       });
     }
 
-    // 3. FAST WORKBOOK QUESTIONS TABLE
+    // 3. WORKBOOK QUESTIONS TABLE
     function loadWorkbookTable() {
       var tbody = document.getElementById('crud-wb-table-body');
       if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--gold-autumn); padding: 14px;">Memuat data soal...</td></tr>';
 
-      var cached = localStorage.getItem('cache_workbook_questions');
-      if (cached) {
-        try {
-          var parsed = JSON.parse(cached);
-          if (parsed && parsed.length > 0) renderWorkbookTable(parsed);
-        } catch(e) {}
-      } else if (allWorkbookQuestions && allWorkbookQuestions.length > 0) {
-        renderWorkbookTable(allWorkbookQuestions);
+      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+        fetch(SCRIPT_URL + "?action=getWorkbook&level=ALL")
+          .then(res => res.json())
+          .then(data => {
+            allWorkbookQuestions = data || [];
+            renderWorkbookTable(allWorkbookQuestions);
+          })
+          .catch(() => renderWorkbookTable(allWorkbookQuestions));
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(function(data) {
+          allWorkbookQuestions = data || [];
+          renderWorkbookTable(allWorkbookQuestions);
+        }).getWorkbookQuestions('ALL');
       } else {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--gold-autumn); padding: 14px;">Memuat data kilat...</td></tr>';
+        renderWorkbookTable(allWorkbookQuestions);
       }
-
-      fetchFastGviz('WORKBOOK_BANK')
-        .then(rows => {
-          if (!rows || rows.length === 0) return;
-          var qList = rows.map(r => {
-            let opts = [];
-            try { opts = JSON.parse(r[4]); } catch(e) {}
-            return {
-              questionId: r[0] || "",
-              hskLevel: r[1] || "HSK 1",
-              questionType: r[2] || "Pilihan Ganda",
-              questionPrompt: r[3] || "",
-              options: opts,
-              correctAnswer: r[5] || "",
-              explanation: r[6] || ""
-            };
-          }).filter(item => item.questionId && item.questionId !== 'question_id');
-
-          if (qList.length > 0) {
-            allWorkbookQuestions = qList;
-            localStorage.setItem('cache_workbook_questions', JSON.stringify(qList));
-            renderWorkbookTable(qList);
-          }
-        })
-        .catch(() => {
-          if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
-            fetch(SCRIPT_URL + "?action=getWorkbook&level=ALL")
-              .then(res => res.json())
-              .then(data => {
-                if (data && data.length > 0) {
-                  allWorkbookQuestions = data;
-                  localStorage.setItem('cache_workbook_questions', JSON.stringify(data));
-                  renderWorkbookTable(data);
-                }
-              }).catch(() => {});
-          }
-        });
     }
 
     function renderWorkbookTable(questions) {
@@ -2059,32 +1957,19 @@
       if (!linesRaw) { alert("Mohon isi naskah percakapan."); return; }
       const parsedLines = parseDialogueFromLines(linesRaw.split('\n'));
 
-      const newDlgObj = {
-        dialogueId: editId || ("DLG-" + Date.now().toString().slice(-4)),
-        hskLevel: hskLvl,
-        scenarioTitle: title,
-        roleAName: roleA,
-        roleBName: roleB,
-        scriptFlow: parsedLines
-      };
-
-      if (editId) {
-        allSpeakingDialogues = allSpeakingDialogues.map(d => d.dialogueId === editId ? newDlgObj : d);
-      } else {
-        allSpeakingDialogues.unshift(newDlgObj);
-      }
-      localStorage.setItem('cache_speaking_dialogues', JSON.stringify(allSpeakingDialogues));
-      renderSpeakingTable(allSpeakingDialogues);
-      cancelEditSpeakingDialogue();
-
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
         fetch(SCRIPT_URL, {
           method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({ action: "saveSpeakingDialogue", dialogueId: editId, hskLevel: hskLvl, scenarioTitle: title, roleA: roleA, roleB: roleB, scriptFlow: parsedLines })
         }).then(res => res.json()).then(res => {
           alert(editId ? "✅ Skenario berhasil diperbarui!" : "✅ Skenario berhasil disimpan!");
-          loadSpeakingDialoguesTable();
-        }).catch(err => alert("Tersimpan secara lokal di browser."));
+          cancelEditSpeakingDialogue(); loadSpeakingDialoguesTable(); loadSpeakingDialoguesView();
+        }).catch(err => alert("Gagal menyimpan: " + err.message));
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(function(res) {
+          alert(editId ? "✅ Skenario berhasil diperbarui!" : "✅ Skenario berhasil disimpan!");
+          cancelEditSpeakingDialogue(); loadSpeakingDialoguesTable(); loadSpeakingDialoguesView();
+        }).saveOrUpdateSpeakingDialogue(editId, hskLvl, title, roleA, roleB, parsedLines);
       }
     };
 
@@ -2116,14 +2001,11 @@
     window.deleteSpeakingDialogueBtn = function(dlgId) {
       if (sessionUser.role !== 'admin') { alert("Akses ditolak."); return; }
       if (!confirm("Hapus skenario " + dlgId + "?")) return;
-
-      allSpeakingDialogues = allSpeakingDialogues.filter(d => d.dialogueId !== dlgId);
-      localStorage.setItem('cache_speaking_dialogues', JSON.stringify(allSpeakingDialogues));
-      renderSpeakingTable(allSpeakingDialogues);
-
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
         fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deleteSpeakingDialogue", dialogueId: dlgId }) })
-        .then(res => res.json()).then(() => loadSpeakingDialoguesTable()).catch(() => {});
+        .then(res => res.json()).then(res => { alert("✅ Berhasil dihapus!"); loadSpeakingDialoguesTable(); loadSpeakingDialoguesView(); }).catch(err => alert("Gagal: " + err.message));
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(function() { alert("✅ Berhasil dihapus!"); loadSpeakingDialoguesTable(); loadSpeakingDialoguesView(); }).deleteSpeakingDialogue(dlgId);
       }
     };
 
@@ -2141,33 +2023,19 @@
       if (!prompt || !rawOpts || !correct) { alert("Lengkapi data soal."); return; }
       const options = rawOpts.split(',').map(s => s.trim()).filter(s => s.length > 0);
 
-      const newWbObj = {
-        questionId: editId || ("WB-" + Date.now().toString().slice(-4)),
-        hskLevel: hskLvl,
-        questionType: qType,
-        questionPrompt: prompt,
-        options: options,
-        correctAnswer: correct,
-        explanation: explain
-      };
-
-      if (editId) {
-        allWorkbookQuestions = allWorkbookQuestions.map(q => q.questionId === editId ? newWbObj : q);
-      } else {
-        allWorkbookQuestions.unshift(newWbObj);
-      }
-      localStorage.setItem('cache_workbook_questions', JSON.stringify(allWorkbookQuestions));
-      renderWorkbookTable(allWorkbookQuestions);
-      cancelEditWorkbookQuestion();
-
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
         fetch(SCRIPT_URL, {
           method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({ action: "saveWorkbookQuestion", questionId: editId, hskLevel: hskLvl, questionType: qType, questionPrompt: prompt, options: options, correctAnswer: correct, explanation: explain })
         }).then(res => res.json()).then(res => {
           alert(editId ? "✅ Soal berhasil diperbarui!" : "✅ Soal berhasil ditambahkan!");
-          loadWorkbookTable();
-        }).catch(err => alert("Tersimpan secara lokal di browser."));
+          cancelEditWorkbookQuestion(); loadWorkbookTable(); loadWorkbookQuestions(hskLvl);
+        }).catch(err => alert("Gagal: " + err.message));
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(function() {
+          alert(editId ? "✅ Soal berhasil diperbarui!" : "✅ Soal berhasil ditambahkan!");
+          cancelEditWorkbookQuestion(); loadWorkbookTable(); loadWorkbookQuestions(hskLvl);
+        }).saveOrUpdateWorkbookQuestion(editId, hskLvl, qType, prompt, options, correct, explain);
       }
     };
 
@@ -2198,14 +2066,11 @@
     window.deleteWorkbookQuestionBtn = function(qId) {
       if (sessionUser.role !== 'admin') { alert("Akses ditolak."); return; }
       if (!confirm("Hapus soal " + qId + "?")) return;
-
-      allWorkbookQuestions = allWorkbookQuestions.filter(q => q.questionId !== qId);
-      localStorage.setItem('cache_workbook_questions', JSON.stringify(allWorkbookQuestions));
-      renderWorkbookTable(allWorkbookQuestions);
-
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
         fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deleteWorkbookQuestion", questionId: qId }) })
-        .then(res => res.json()).then(() => loadWorkbookTable()).catch(() => {});
+        .then(res => res.json()).then(res => { alert("✅ Berhasil dihapus!"); loadWorkbookTable(); loadWorkbookQuestions('ALL'); }).catch(err => alert("Gagal: " + err.message));
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(function() { alert("✅ Berhasil dihapus!"); loadWorkbookTable(); loadWorkbookQuestions('ALL'); }).deleteWorkbookQuestion(qId);
       }
     };
 
@@ -2226,32 +2091,19 @@
       const audioUrl = (inAudioUrl ? inAudioUrl.value.trim() : "") || "./placement_test/HSK1.mp3";
       const keysJson = inKeys ? inKeys.value.trim() : "";
 
-      const newPkgObj = {
-        testId: editId || ("PLC-" + Date.now().toString().slice(-4)),
-        hskLevel: hskLvl,
-        testTitle: title,
-        pdfUrl: pdfUrl,
-        audioUrl: audioUrl,
-        answerKeyJson: keysJson
-      };
-
-      if (editId) {
-        allPlacementPackages = allPlacementPackages.map(p => p.testId === editId ? newPkgObj : p);
-      } else {
-        allPlacementPackages.unshift(newPkgObj);
-      }
-      localStorage.setItem('cache_placement_packages', JSON.stringify(allPlacementPackages));
-      renderPlacementTable(allPlacementPackages);
-      cancelEditPlacementPackage();
-
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
         fetch(SCRIPT_URL, {
           method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({ action: "savePlacementPackage", testId: editId, hskLevel: hskLvl, testTitle: title, pdfUrl: pdfUrl, audioUrl: audioUrl, answerKeyJson: keysJson })
         }).then(res => res.json()).then(res => {
           alert(editId ? "✅ Paket ujian berhasil diperbarui!" : "✅ Paket ujian berhasil disimpan!");
-          loadPlacementPackagesTable();
-        }).catch(err => alert("Tersimpan secara lokal di browser."));
+          cancelEditPlacementPackage(); loadPlacementPackagesTable(); loadPlacementPackagesView(res.testId);
+        }).catch(err => alert("Gagal menyimpan: " + err.message));
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(function(res) {
+          alert(editId ? "✅ Paket ujian berhasil diperbarui!" : "✅ Paket ujian berhasil disimpan!");
+          cancelEditPlacementPackage(); loadPlacementPackagesTable(); loadPlacementPackagesView(res ? res.testId : null);
+        }).saveOrUpdatePlacementPackage(editId, hskLvl, title, pdfUrl, audioUrl, keysJson);
       }
     };
 
@@ -2275,14 +2127,12 @@
     window.deletePlacementPackageBtn = function(testId) {
       if (sessionUser.role !== 'admin') { alert("Akses ditolak."); return; }
       if (!confirm("Hapus paket ujian " + testId + "?")) return;
-
-      allPlacementPackages = allPlacementPackages.filter(p => p.testId !== testId);
-      localStorage.setItem('cache_placement_packages', JSON.stringify(allPlacementPackages));
-      renderPlacementTable(allPlacementPackages);
-
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
         fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deletePlacementPackage", testId: testId }) })
-        .then(res => res.json()).then(() => loadPlacementPackagesTable()).catch(() => {});
+        .then(res => res.json()).then(res => { alert("✅ Paket ujian berhasil dihapus!"); loadPlacementPackagesTable(); loadPlacementPackagesView(); })
+        .catch(err => alert("Gagal menghapus: " + err.message));
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(function() { alert("✅ Paket ujian berhasil dihapus!"); loadPlacementPackagesTable(); loadPlacementPackagesView(); }).deletePlacementPackage(testId);
       }
     };
 
@@ -2291,30 +2141,16 @@
       var container = document.getElementById('vocab-cards-container');
       if (container) container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--gold-autumn);">Memuat data dari Spreadsheet Database... 🍂</div>';
 
-      fetchFastGviz('VOCABULARY')
-        .then(rows => {
-          if (!rows || rows.length === 0) throw new Error();
-          allVocabularies = rows.map(r => ({
-            vocabId: r[0] || "",
-            hskLevel: r[1] || "HSK 1",
-            level: (r[1] || "1").toString().replace(/[^0-9]/g, '') || "1",
-            hanzi: r[2] || "",
-            pinyin: r[3] || "",
-            indonesian: r[4] || "",
-            partOfSpeech: r[5] || "Umum"
-          })).filter(v => v.hanzi && v.hanzi !== 'hanzi');
-          renderVocabUI();
-          initPracticeCharacters(currentStrokeLevel);
-          renderCurrentSrsCard();
-        })
-        .catch(() => {
-          if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
-            fetch(SCRIPT_URL + "?action=getVocab&level=ALL")
-              .then(res => res.json())
-              .then(data => { allVocabularies = Array.isArray(data) ? data : (data.items || []); renderVocabUI(); initPracticeCharacters(currentStrokeLevel); renderCurrentSrsCard(); })
-              .catch(() => useFallbackVocab());
-          } else { useFallbackVocab(); }
-        });
+      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+        fetch(SCRIPT_URL + "?action=getVocab&level=ALL")
+          .then(res => res.json())
+          .then(data => { allVocabularies = Array.isArray(data) ? data : (data.items || []); renderVocabUI(); initPracticeCharacters(currentStrokeLevel); renderCurrentSrsCard(); })
+          .catch(err => { console.error("Gagal load API:", err); useFallbackVocab(); });
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(function(data) {
+          allVocabularies = Array.isArray(data) ? data : (data.items || []); renderVocabUI(); initPracticeCharacters(currentStrokeLevel); renderCurrentSrsCard();
+        }).getVocabularyData('ALL');
+      } else { useFallbackVocab(); }
     }
 
     function useFallbackVocab() {
@@ -2520,9 +2356,208 @@
       switchTab('stroke'); setTimeout(function() { renderMultiTianZiGe(currentPracticeWord); }, 60);
     };
 
-    // =========================================================================
-    // 8. ENGINE PLACEMENT TEST (FULL SCROLL & MOUSE WHEEL SINKRONISASI)
-    // =========================================================================
+    // SPEAKING AI ROLEPLAY VIEW
+    function loadSpeakingDialoguesView(preferredId) {
+      var selectEl = document.getElementById('speaking-scenario-select');
+      function applyDialogues(dialogues) {
+        allSpeakingDialogues = dialogues || [];
+        if (!allSpeakingDialogues || allSpeakingDialogues.length === 0) {
+          useDefaultDialogue();
+          if (selectEl) selectEl.innerHTML = '<option value="DEFAULT">Memesan Makanan (HSK 1)</option>';
+          return;
+        }
+        if (selectEl) {
+          selectEl.innerHTML = '';
+          allSpeakingDialogues.forEach(function(d) {
+            var rawLvl = d.hskLevel || 'HSK 1'; var lvlStr = rawLvl.toUpperCase().includes('HSK') ? rawLvl : ('HSK ' + rawLvl);
+            var opt = document.createElement('option'); opt.value = d.dialogueId; opt.innerText = (d.scenarioTitle || 'Percakapan') + ' (' + lvlStr + ')'; selectEl.appendChild(opt);
+          });
+        }
+        var targetDlg = null;
+        if (preferredId) targetDlg = allSpeakingDialogues.find(function(d) { return d.dialogueId === preferredId; });
+        if (!targetDlg) targetDlg = allSpeakingDialogues[0];
+        if (selectEl && targetDlg) selectEl.value = targetDlg.dialogueId;
+        selectScenarioDialogue(targetDlg);
+      }
+
+      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+        fetch(SCRIPT_URL + "?action=getDialogues&level=ALL")
+          .then(res => res.json())
+          .then(data => applyDialogues(data))
+          .catch(() => applyDialogues([]));
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(applyDialogues).withFailureHandler(() => applyDialogues([])).getSpeakingDialogues('ALL');
+      } else { applyDialogues([]); }
+    }
+
+    window.handleScenarioChange = function(dlgId) {
+      if (!dlgId) return;
+      var found = allSpeakingDialogues.find(function(d) { return d.dialogueId === dlgId; });
+      if (found) selectScenarioDialogue(found);
+    };
+
+    function selectScenarioDialogue(dlg) {
+      if (!dlg) return;
+      currentDialogueId = dlg.dialogueId || ""; activeDialogueFlow = dlg.scriptFlow || []; characterAName = dlg.roleAName || "Pelayan Restoran"; characterBName = dlg.roleBName || "Pelanggan";
+      updateRoleSwitcherButtons(); initSpeakingDialogue();
+    }
+
+    function useDefaultDialogue() {
+      characterAName = "Pelayan Restoran"; characterBName = "Pelanggan";
+      activeDialogueFlow = [
+        { role: "A", speaker: characterAName, hanzi: "你好！请问你想吃什么？", pinyin: "Nǐ hǎo! Qǐngwèn xiǎng chī shénme?", indo: "Halo! Permisi mau makan apa?" },
+        { role: "B", speaker: characterBName, hanzi: "我要一份炒饭和一杯茶。", pinyin: "Wǒ yào yí fèn chǎofàn hé yì bēi chá.", indo: "Saya mau seporsi nasi goreng dan segelas teh." }
+      ];
+      updateRoleSwitcherButtons(); initSpeakingDialogue();
+    }
+
+    function updateRoleSwitcherButtons() {
+      const container = document.getElementById('role-selector-container'); if (!container) return;
+      container.innerHTML = `<button class="role-btn ${currentUserRole === 'B' ? 'active' : ''}" id="btn-role-b" onclick="setUserRole('B')">Saya Perankan: <b>${characterBName}</b> (AI: ${characterAName})</button>
+                             <button class="role-btn ${currentUserRole === 'A' ? 'active' : ''}" id="btn-role-a" onclick="setUserRole('A')">Saya Perankan: <b>${characterAName}</b> (AI: ${characterBName})</button>`;
+    }
+
+    function initSpeakingDialogue() { currentDialogueStep = 0; renderDialogueChat(); checkTurnAndAct(); }
+
+    function renderDialogueChat() {
+      var chatBox = document.getElementById('roleplay-chat-box'); if (!chatBox) return; chatBox.innerHTML = '';
+      for (var i = 0; i < activeDialogueFlow.length; i++) {
+        var d = activeDialogueFlow[i]; var bubble = document.createElement('div'); bubble.className = 'chat-bubble ' + (d.role === 'A' ? 'role-a' : 'role-b'); bubble.id = 'chat-bubble-' + i;
+        bubble.innerHTML = '<div class="speaker-lbl">' + d.speaker + '</div><div class="bubble-hz">' + d.hanzi + '</div>' + (d.pinyin ? '<div class="bubble-py">' + d.pinyin + '</div>' : '') + (d.indo || d.translation ? '<div class="bubble-tr">' + (d.indo || d.translation) + '</div>' : '');
+        chatBox.appendChild(bubble);
+      }
+    }
+
+    window.setUserRole = function(role) { currentUserRole = role; updateRoleSwitcherButtons(); currentDialogueStep = 0; checkTurnAndAct(); };
+
+    function checkTurnAndAct() {
+      var display = document.getElementById('transcript-display');
+      if (!activeDialogueFlow || activeDialogueFlow.length === 0) return;
+      if (currentDialogueStep >= activeDialogueFlow.length) { if (display) display.innerHTML = '🎉 <b>Skenario Percakapan Selesai!</b> Kerja bagus!'; return; }
+      var currentLine = activeDialogueFlow[currentDialogueStep]; var isAiTurn = (currentLine.role !== currentUserRole);
+      highlightChatBubble(currentDialogueStep);
+
+      if (isAiTurn) {
+        if (display) display.innerHTML = `🤖 <i>${currentLine.speaker} (AI) sedang berbicara...</i>`;
+        speakText(currentLine.hanzi, function() { currentDialogueStep++; checkTurnAndAct(); });
+      } else {
+        if (display) display.innerHTML = `👉 <b>Giliran Anda (${currentLine.speaker})!</b> Ucapkan: <i>"${currentLine.hanzi}"</i>`;
+      }
+    }
+
+    function highlightChatBubble(step) {
+      var bubbles = document.querySelectorAll('.chat-bubble');
+      for (var i = 0; i < bubbles.length; i++) {
+        bubbles[i].style.opacity = (i === step ? '1' : '0.45');
+      }
+      var activeEl = document.getElementById('chat-bubble-' + step); if (activeEl) activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    window.playCurrentAiTurn = function() { if (activeDialogueFlow && currentDialogueStep < activeDialogueFlow.length) speakText(activeDialogueFlow[currentDialogueStep].hanzi); };
+    window.skipUserTurn = function() { if (activeDialogueFlow && currentDialogueStep < activeDialogueFlow.length) { currentDialogueStep++; checkTurnAndAct(); } };
+
+    window.speakText = function(text, onEndCallback) {
+      if (!('speechSynthesis' in window)) { if (onEndCallback) onEndCallback(); return; }
+      window.speechSynthesis.cancel();
+      var utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'zh-CN'; utterance.rate = 0.85;
+      utterance.onend = function() { if (onEndCallback) onEndCallback(); };
+      window.speechSynthesis.speak(utterance);
+    };
+
+    window.toggleSpeechRecognition = function() {
+      var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      var micBtn = document.getElementById('mic-btn'); var statusBox = document.getElementById('transcript-display');
+      if (!SR) { if (statusBox) statusBox.innerHTML = '⚠️ <i>Browser tidak mendukung Web Speech. Klik <b>Lanjut Giliran</b>.</i>'; return; }
+      if (isListening && recognition) { recognition.stop(); isListening = false; if (micBtn) micBtn.classList.remove('listening'); return; }
+
+      try {
+        recognition = new SR(); recognition.lang = 'zh-CN'; recognition.interimResults = false; recognition.maxAlternatives = 1;
+        recognition.onstart = function() { isListening = true; if (micBtn) micBtn.classList.add('listening'); if (statusBox) statusBox.innerHTML = '🎙️ <b>Mendengarkan...</b> Silakan bicara sekarang.'; };
+        recognition.onresult = function(e) {
+          var transcript = e.results[0][0].transcript; if (statusBox) statusBox.innerHTML = 'Suara Anda: "<b>' + transcript + '</b>"';
+          var currentTarget = activeDialogueFlow[currentDialogueStep];
+          if (currentTarget && currentTarget.role === currentUserRole) { setTimeout(function() { currentDialogueStep++; checkTurnAndAct(); }, 600); }
+        };
+        recognition.onerror = function(e) { isListening = false; if (micBtn) micBtn.classList.remove('listening'); if (statusBox) statusBox.innerHTML = '⚠️ <i>Izin mikrofon dibatasi. Klik <b>Lanjut Giliran</b>.</i>'; };
+        recognition.onend = function() { isListening = false; if (micBtn) micBtn.classList.remove('listening'); };
+        recognition.start();
+      } catch (err) { isListening = false; if (micBtn) micBtn.classList.remove('listening'); if (statusBox) statusBox.innerHTML = '⚠️ <i>Gagal menyalakan mic. Klik <b>Lanjut Giliran</b>.</i>'; }
+    };
+
+    // WORKBOOK VIEW
+    function loadWorkbookQuestions(hskLevel, btn) {
+      if (btn && btn.parentElement) {
+        var buttons = btn.parentElement.querySelectorAll('.pill-btn');
+        for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove('active');
+        btn.classList.add('active');
+      }
+      var container = document.getElementById('workbook-cards-container');
+      if (container) container.innerHTML = '<div style="text-align:center; padding: 30px; color: var(--gold-autumn);">Memuat Soal dari Spreadsheet... 🍁</div>';
+      
+      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+        fetch(SCRIPT_URL + "?action=getWorkbook&level=" + (hskLevel || "ALL"))
+          .then(res => res.json())
+          .then(data => renderWorkbookCards(data))
+          .catch(() => renderWorkbookCards([]));
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(renderWorkbookCards).getWorkbookQuestions(hskLevel, 'ALL');
+      } else { renderWorkbookCards([]); }
+    }
+
+    function renderWorkbookCards(questions) {
+      var container = document.getElementById('workbook-cards-container'); if (!container) return; container.innerHTML = '';
+      if (!questions || questions.length === 0) { container.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 30px;">Belum ada butir soal di WORKBOOK_BANK untuk level ini. Gunakan panel CRUD untuk menambahkannya!</div>'; return; }
+
+      questions.forEach(function(q) {
+        var card = document.createElement('div'); card.className = 'glass-card';
+        var optHtml = '';
+        if (q.options) { q.options.forEach(function(opt) { optHtml += '<button class="pill-btn" style="text-align:left; padding: 10px 14px;" onclick="checkWorkbookAnswer(\'' + q.questionId + '\', \'' + opt + '\', \'' + q.correctAnswer + '\', this)">' + opt + '</button>'; }); }
+        card.innerHTML = '<div style="display: flex; justify-content: space-between; margin-bottom: 10px;"><span class="badge">' + q.hskLevel + ' - ' + q.questionType + '</span></div><div style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 14px; line-height: 1.5;">' + q.questionPrompt.replace(/\n/g, '<br>') + '</div><div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">' + optHtml + '</div><div id="wb-fb-' + q.questionId + '" style="display:none; padding: 10px; border-radius: 8px; font-size: 13px; margin-top: 10px;"></div>';
+        container.appendChild(card);
+      });
+    }
+
+    window.checkWorkbookAnswer = function(qId, selectedOpt, correctOpt, btnElement) {
+      if (btnElement && btnElement.parentElement) {
+        var buttons = btnElement.parentElement.querySelectorAll('.pill-btn');
+        for (var i = 0; i < buttons.length; i++) buttons[i].disabled = true;
+      }
+      var feedbackBox = document.getElementById('wb-fb-' + qId); if (!feedbackBox) return; feedbackBox.style.display = 'block';
+
+      if (selectedOpt === correctOpt) {
+        if (btnElement) { btnElement.style.background = '#16a34a'; btnElement.style.color = '#fff'; }
+        feedbackBox.style.background = 'rgba(22, 163, 74, 0.2)'; feedbackBox.style.border = '1px solid #16a34a'; feedbackBox.style.color = '#86efac'; feedbackBox.innerHTML = '🎉 <b>Benar Sekali!</b> Jawaban Anda tepat.';
+      } else {
+        if (btnElement) { btnElement.style.background = '#dc2626'; btnElement.style.color = '#fff'; }
+        feedbackBox.style.background = 'rgba(220, 38, 38, 0.2)'; feedbackBox.style.border = '1px solid #dc2626'; feedbackBox.style.color = '#fca5a5'; feedbackBox.innerHTML = '❌ <b>Kurang Tepat.</b> Kunci jawaban: <b>' + correctOpt + '</b>';
+      }
+    };
+
+    // GRAMMAR VIEW
+    function loadGrammarGuidesView() {
+      var container = document.getElementById('grammar-cards-container');
+      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+        fetch(SCRIPT_URL + "?action=getGrammar&level=ALL")
+          .then(res => res.json())
+          .then(data => renderGrammarGuides(data))
+          .catch(() => renderGrammarGuides([]));
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(renderGrammarGuides).getGrammarGuides('ALL');
+      } else { renderGrammarGuides([]); }
+    }
+
+    function renderGrammarGuides(guides) {
+      var container = document.getElementById('grammar-cards-container'); if (!container) return; container.innerHTML = '';
+      if (!guides || guides.length === 0) { container.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 30px;">Belum ada data materi di sheet GRAMMAR_GUIDE.</div>'; return; }
+      guides.forEach(function(g) {
+        var card = document.createElement('div'); card.className = 'glass-card';
+        var exHtml = ''; if (g.examples) { g.examples.forEach(function(ex) { exHtml += '<div style="margin-bottom: 6px;"><b>' + ex.hanzi + '</b> <span style="color:var(--gold-autumn);">(' + ex.pinyin + ')</span> : ' + ex.indo + '</div>'; }); }
+        card.innerHTML = '<div style="display:flex; justify-content:space-between; margin-bottom: 8px;"><span class="badge">' + g.hskLevel + ' - ' + g.topic + '</span></div><h3 style="font-size: 18px; color: #fff; margin-bottom: 8px;">' + g.ruleTitle + '</h3><div style="background: rgba(20, 11, 7, 0.6); padding: 10px; border-radius: 6px; border-left: 3px solid var(--gold-autumn); font-family: monospace; font-size: 13px; color: #fed7aa; margin-bottom: 12px;">' + g.formula + '</div><p style="font-size: 13.5px; color: var(--text-main); margin-bottom: 14px; line-height: 1.6;">' + g.explanationIndo + '</p><div style="background: rgba(40, 24, 16, 0.6); padding: 12px; border-radius: 8px; font-size: 12.5px; color: var(--text-muted);">' + exHtml + '</div>';
+        container.appendChild(card);
+      });
+    }
+
+    // PLACEMENT TEST VIEW
     function loadPlacementPackagesView(preferredId) {
       var selectEl = document.getElementById('placement-package-select');
 
@@ -2551,29 +2586,14 @@
         selectPlacementPackage(targetPkg);
       }
 
-      fetchFastGviz('PLACEMENT_TEST')
-        .then(rows => {
-          if (!rows || rows.length === 0) throw new Error();
-          var pkgs = rows.map(r => {
-            let parsedKeys = null;
-            try { parsedKeys = JSON.parse(r[5]); } catch(e) {}
-            return {
-              testId: r[0] || "",
-              hskLevel: r[1] || "HSK 1",
-              testTitle: r[2] || "Paket Ujian",
-              pdfUrl: r[3] || "./placement_test/HSK1.pdf",
-              audioUrl: r[4] || "./placement_test/HSK1.mp3",
-              answerKeyJson: r[5] || "",
-              answerKey: parsedKeys
-            };
-          }).filter(item => item.testId && item.testId !== 'test_id');
-          applyPackages(pkgs);
-        })
-        .catch(() => {
-          if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
-            fetch(SCRIPT_URL + "?action=getPlacement&level=ALL").then(res => res.json()).then(data => applyPackages(data)).catch(() => applyPackages([]));
-          } else { applyPackages([]); }
-        });
+      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+        fetch(SCRIPT_URL + "?action=getPlacement&level=ALL")
+          .then(res => res.json())
+          .then(data => applyPackages(data))
+          .catch(() => applyPackages([]));
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(applyPackages).withFailureHandler(() => applyPackages([])).getPlacementTestPackage('ALL');
+      } else { applyPackages([]); }
     }
 
     window.handlePlacementPackageChange = function(testId) {
@@ -2635,7 +2655,7 @@
       const scrollBox = document.getElementById('pdf-scroll-box');
       const ctxRender = renderCanvas.getContext('2d');
 
-      const containerWidth = scrollBox ? (scrollBox.clientWidth - 40) : 620;
+      const containerWidth = (scrollBox && scrollBox.clientWidth > 100) ? (scrollBox.clientWidth - 40) : 650;
       const unscaledViewport = page.getViewport({ scale: 1.0 });
       let dynamicScale = (containerWidth / unscaledViewport.width) * currentPdfScale;
       dynamicScale = Math.max(0.75, Math.min(dynamicScale, 1.6));
@@ -2666,7 +2686,6 @@
       const ctx = drawCanvas.getContext('2d');
       const scrollBox = document.getElementById('pdf-scroll-box');
 
-      // Forward Mouse Wheel Event agar roda scroll mouse selalu menggeser viewport
       if (!drawCanvas._hasWheel) {
         drawCanvas.addEventListener('wheel', function(e) {
           if (scrollBox) {
@@ -2684,7 +2703,6 @@
       }
 
       drawCanvas.onpointerdown = function(e) {
-        // Jangan block scroll jika klik tengah/kanan
         if (e.button !== 0) return;
         isDrawingOnPdf = true;
         const pos = getPos(e);
@@ -2894,7 +2912,7 @@
             Menyimak (听力): <b>${listeningScore}/100</b> (${listeningCorrect}/20 soal)<br>
             Membaca (阅读): <b>${readingScore}/100</b> (${readingCorrect}/20 soal)
           </div>
-          <div style="font-size: 15px; color: var(--gold-autumn); font-weight: 800; margin-bottom: 8px;">
+          <div style="font-size: 15px; color: var(--gold-autumn); font-weight: 800;">
             Total Skor: ${totalScore} / 200
           </div>
         `;
