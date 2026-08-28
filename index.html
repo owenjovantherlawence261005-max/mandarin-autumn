@@ -280,12 +280,14 @@
     }
     .icon-action-btn:hover { background: var(--terracotta); color: #fff; border-color: var(--terracotta); }
 
-    /* Tian Zi Ge */
-    .canvas-layout {
+    /* Tian Zi Ge Multi-Canvas Grid Layout */
+    .canvas-multi-grid {
       display: flex;
       flex-wrap: wrap;
-      gap: 24px;
+      gap: 20px;
+      justify-content: center;
       align-items: flex-start;
+      margin-bottom: 20px;
     }
 
     .canvas-panel {
@@ -296,28 +298,22 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-    }
-
-    #tianzige-canvas {
-      background: #fff8f0;
-      border-radius: 8px;
-      cursor: crosshair;
-      touch-action: none;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
     }
 
     .canvas-controls {
       display: flex;
-      gap: 10px;
-      margin-top: 14px;
+      gap: 8px;
+      margin-top: 12px;
       width: 100%;
     }
 
     .canvas-btn {
       flex: 1;
-      padding: 10px;
+      padding: 8px 12px;
       border-radius: 8px;
       font-weight: 700;
-      font-size: 13px;
+      font-size: 12.5px;
       border: none;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -605,7 +601,6 @@
       .bottom-nav { display: flex; }
       .main-viewport { padding: 20px 16px 90px 16px; }
       .header-group h2 { font-size: 22px; }
-      .canvas-layout { flex-direction: column; align-items: center; }
     }
 
     .btn-autumn-primary {
@@ -711,41 +706,55 @@
           <p>Latihlah goresan karakter Hanzi di atas kanvas panduan kotak sembilan tradisional dengan akurasi tinggi.</p>
         </div>
 
-        <div class="canvas-layout">
-          <div class="canvas-panel">
-            <canvas id="tianzige-canvas" width="320" height="320"></canvas>
-            <div class="canvas-controls">
-              <button class="canvas-btn btn-clear" onclick="clearCanvas()">Hapus / Reset</button>
-              <button class="canvas-btn btn-anim" onclick="speakText(currentPracticeChar)">🔊 Pelafalan</button>
+        <!-- BAGIAN ATAS: KANVAS MENULIS PENUH (MULTI-GRID) -->
+        <div class="glass-card" style="margin-bottom: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--amber-border); padding-bottom: 16px;">
+            <div>
+              <div style="font-size: 12px; color: var(--gold-autumn); font-weight: 700; text-transform: uppercase;">Kosakata yang Sedang Dipelajari:</div>
+              <div style="display: flex; align-items: baseline; gap: 12px; margin-top: 4px;">
+                <span id="active-char-display" style="font-family: var(--font-hanzi); font-size: 34px; font-weight: 900; color: #fff;">你</span>
+                <span id="active-char-info" style="font-size: 16px; color: var(--gold-autumn); font-weight: 600;">(nǐ - kamu)</span>
+                <span id="active-char-badge" class="badge" style="margin-bottom: 0;">HSK 1</span>
+              </div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn-autumn-primary" style="padding: 10px 16px; font-size: 13px;" onclick="speakCurrentWord()">🔊 Pelafalan Kata</button>
+              <button class="pill-btn" style="padding: 10px 16px; font-size: 13px; border-color: var(--maple-red);" onclick="clearAllStrokeCanvases()">🔄 Hapus Semua Goresan</button>
             </div>
           </div>
 
-          <div style="flex: 1; min-width: 280px;" class="glass-card">
-            <h3 style="font-size: 18px; color: #fff; margin-bottom: 12px;">Pilih Karakter untuk Latihan:</h3>
+          <!-- KONTENER KANVAS DINAMIS (MENYESUAIKAN JUMLAH KARAKTER 1, 2, 3, DST) -->
+          <div id="tianzige-multi-container" class="canvas-multi-grid"></div>
+
+          <div style="background: rgba(20, 11, 7, 0.6); padding: 14px; border-radius: 10px; border: 1px solid var(--amber-border); margin-top: 10px;">
+            <div style="font-size: 12px; color: var(--gold-autumn); font-weight: 700; margin-bottom: 4px;">URUTAN GORESAN DASAR (BISHUN):</div>
+            <div style="font-size: 14px; color: #fff; font-weight: 600;" id="stroke-rule-display">Dari atas ke bawah, dari kiri ke kanan, horizontal sebelum vertikal.</div>
+          </div>
+        </div>
+
+        <!-- BAGIAN BAWAH: PILIHAN KOSAKATA HSK 1 - 6 LENGKAP -->
+        <div class="glass-card">
+          <h3 style="font-size: 18px; color: #fff; margin-bottom: 14px;">Pilih Kosakata untuk Latihan Menulis:</h3>
+
+          <div class="toolbar-row" style="margin-bottom: 16px;">
+            <div class="search-input-wrap" style="max-width: 320px;">
+              <span class="search-icon-abs">🔍</span>
+              <input type="text" id="stroke-search-input" placeholder="Cari kosakata Hanzi / Pinyin / Arti..." oninput="handleStrokeSearchDebounce()">
+            </div>
             
-            <!-- Filter Level HSK 1 - 6 untuk Menulis Hanzi -->
-            <div class="filter-pills" style="margin-bottom: 14px;" id="stroke-level-pills">
+            <div class="filter-pills" id="stroke-level-pills">
               <button class="pill-btn active" onclick="filterStrokeLevel('1', this)">HSK 1</button>
               <button class="pill-btn" onclick="filterStrokeLevel('2', this)">HSK 2</button>
               <button class="pill-btn" onclick="filterStrokeLevel('3', this)">HSK 3</button>
               <button class="pill-btn" onclick="filterStrokeLevel('4', this)">HSK 4</button>
               <button class="pill-btn" onclick="filterStrokeLevel('5', this)">HSK 5</button>
               <button class="pill-btn" onclick="filterStrokeLevel('6', this)">HSK 6</button>
-              <button class="pill-btn" onclick="filterStrokeLevel('ALL', this)">Semua</button>
-            </div>
-
-            <!-- Box Daftar Karakter (Scrollable) -->
-            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; max-height: 210px; overflow-y: auto; padding-right: 4px;" id="char-selector-box"></div>
-            
-            <div style="background: rgba(20, 11, 7, 0.6); padding: 14px; border-radius: 10px; border: 1px solid var(--amber-border);">
-              <div style="font-size: 12px; color: var(--gold-autumn); font-weight: 700; margin-bottom: 4px;">URUTAN GORESAN DASAR (BISHUN):</div>
-              <div style="font-size: 15px; color: #fff; font-weight: 600;" id="stroke-rule-display">Dari atas ke bawah, dari kiri ke kanan.</div>
-              <div style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">
-                Karakter Aktif: <b id="active-char-display" style="font-size: 20px; color: var(--gold-autumn);">你</b>
-                <span id="active-char-info" style="font-size: 13px; color: #fed7aa; margin-left: 8px;">(nǐ - kamu)</span>
-              </div>
+              <button class="pill-btn" onclick="filterStrokeLevel('ALL', this)">Semua HSK</button>
             </div>
           </div>
+
+          <!-- Box Daftar Kosakata Lengkap (Scrollable) -->
+          <div style="display: flex; gap: 10px; flex-wrap: wrap; max-height: 280px; overflow-y: auto; padding-right: 6px;" id="char-selector-box"></div>
         </div>
       </section>
 
@@ -1025,8 +1034,18 @@
     var currentDictLevel = 'ALL';
     var currentDictSearch = '';
     var searchDebounceTimer = null;
-    var currentPracticeChar = '你';
+
+    // State Kosakata Menulis Hanzi
+    var currentPracticeWord = {
+      hanzi: '米饭',
+      pinyin: 'mǐfàn',
+      indo: 'nasi',
+      level: 'HSK 1'
+    };
     var currentStrokeLevel = '1';
+    var currentStrokeSearch = '';
+    var strokeSearchDebounceTimer = null;
+    var strokeCanvases = [];
 
     var currentUserRole = 'B';
     var activeDialogueFlow = [];
@@ -1050,7 +1069,7 @@
     window.addEventListener('DOMContentLoaded', function() {
       initFallingLeaves();
       loadDatabaseVocab();
-      initPracticeCharacters('1');
+      renderMultiTianZiGe(currentPracticeWord);
       loadGrammarGuidesView();
       loadSpeakingDialoguesView();
       initSrsEngine();
@@ -1440,7 +1459,7 @@
 
       if (viewId === 'workbook') loadWorkbookQuestions('ALL');
       if (viewId === 'stroke') {
-        setTimeout(function() { initTianZiGeCanvas(); }, 60);
+        setTimeout(function() { renderMultiTianZiGe(currentPracticeWord); }, 60);
       }
     };
 
@@ -1482,11 +1501,11 @@
 
     function useFallbackVocab() {
       allVocabularies = [
-        {hanzi:"我", pinyin:"wǒ", indonesian:"saya", partOfSpeech:"Kata Ganti", level:"1"},
-        {hanzi:"你", pinyin:"nǐ", indonesian:"kamu", partOfSpeech:"Kata Ganti", level:"1"},
-        {hanzi:"他", pinyin:"tā", indonesian:"dia (laki-laki)", partOfSpeech:"Kata Ganti", level:"1"},
-        {hanzi:"准备", pinyin:"zhǔnbèi", indonesian:"mempersiapkan", partOfSpeech:"Kata Kerja", level:"2"},
-        {hanzi:"简单", pinyin:"jiǎndān", indonesian:"sederhana / mudah", partOfSpeech:"Kata Sifat", level:"3"}
+        {hanzi:"米饭", pinyin:"mǐfàn", indonesian:"nasi", partOfSpeech:"Kata Benda", level:"1", hskLevel:"HSK 1"},
+        {hanzi:"谢谢", pinyin:"xièxie", indonesian:"terima kasih", partOfSpeech:"Kata Sapaan", level:"1", hskLevel:"HSK 1"},
+        {hanzi:"再见", pinyin:"zàijiàn", indonesian:"sampai jumpa", partOfSpeech:"Kata Sapaan", level:"1", hskLevel:"HSK 1"},
+        {hanzi:"准备", pinyin:"zhǔnbèi", indonesian:"mempersiapkan", partOfSpeech:"Kata Kerja", level:"2", hskLevel:"HSK 2"},
+        {hanzi:"简单", pinyin:"jiǎndān", indonesian:"sederhana / mudah", partOfSpeech:"Kata Sifat", level:"3", hskLevel:"HSK 3"}
       ];
       renderVocabUI();
       initPracticeCharacters('1');
@@ -1539,7 +1558,7 @@
             '<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px;">[' + (item.partOfSpeech || 'Umum') + ']</div>' +
             '<div class="vocab-actions">' +
               '<button class="icon-action-btn" onclick="speakText(\'' + (item.hanzi || '') + '\')">🔊 Dengar</button>' +
-              '<button class="icon-action-btn" onclick="selectCharForWriting(\'' + (item.hanzi ? item.hanzi.charAt(0) : '') + '\', \'' + (item.pinyin || '') + '\', \'' + (item.indonesian || '') + '\')">✍️ Tulis</button>' +
+              '<button class="icon-action-btn" onclick="selectWordForWriting({hanzi:\'' + (item.hanzi || '') + '\', pinyin:\'' + (item.pinyin || '') + '\', indonesian:\'' + (item.indonesian || '') + '\', level:\'' + (item.level || '1') + '\'})">✍️ Tulis</button>' +
             '</div>';
           container.appendChild(card);
         });
@@ -1580,20 +1599,119 @@
       renderVocabUI();
     };
 
-    // 3. ENGINE TIAN ZI GE CANVAS
-    var canvas, ctx, isDrawing = false;
-    var lastX = 0, lastY = 0;
+    // 3. ENGINE MULTI-TIAN ZI GE (MENAMPILKAN KOTAK MENULIS UNTUK SETIAP KARAKTER DALAM KATA)
+    function renderMultiTianZiGe(wordObj) {
+      var container = document.getElementById('tianzige-multi-container');
+      if (!container) return;
+      container.innerHTML = '';
+      strokeCanvases = [];
 
-    function initTianZiGeCanvas() {
-      canvas = document.getElementById('tianzige-canvas');
+      var hanziStr = (wordObj && wordObj.hanzi) ? wordObj.hanzi.trim() : '你';
+      var chars = [];
+      for (var i = 0; i < hanziStr.length; i++) {
+        var ch = hanziStr.charAt(i);
+        if (ch >= '\u4e00' && ch <= '\u9fa5') {
+          chars.push(ch);
+        }
+      }
+      if (chars.length === 0) chars = [hanziStr.charAt(0) || '你'];
+
+      // Ukuran kanvas dinamis (jika 1 huruf: 300x300, jika multi: 260x260)
+      var canvasDim = (chars.length === 1) ? 300 : 260;
+
+      chars.forEach(function(ch, idx) {
+        var panel = document.createElement('div');
+        panel.className = 'canvas-panel';
+
+        var title = document.createElement('div');
+        title.style.color = 'var(--gold-autumn)';
+        title.style.fontSize = '13.5px';
+        title.style.fontWeight = '700';
+        title.style.marginBottom = '8px';
+        title.innerText = 'Karakter #' + (idx + 1) + ': ' + ch;
+        panel.appendChild(title);
+
+        var cvs = document.createElement('canvas');
+        cvs.width = canvasDim;
+        cvs.height = canvasDim;
+        cvs.style.width = canvasDim + 'px';
+        cvs.style.height = canvasDim + 'px';
+        cvs.style.background = '#fff8f0';
+        cvs.style.borderRadius = '8px';
+        cvs.style.cursor = 'crosshair';
+        cvs.style.touchAction = 'none';
+        panel.appendChild(cvs);
+
+        var ctrl = document.createElement('div');
+        ctrl.className = 'canvas-controls';
+
+        var btnClr = document.createElement('button');
+        btnClr.className = 'canvas-btn btn-clear';
+        btnClr.innerText = 'Hapus';
+        btnClr.onclick = function() { drawSingleTianZiGe(cvs, ch); };
+        ctrl.appendChild(btnClr);
+
+        var btnSpk = document.createElement('button');
+        btnSpk.className = 'canvas-btn btn-anim';
+        btnSpk.innerText = '🔊 Pelafalan';
+        btnSpk.onclick = function() { speakText(ch); };
+        ctrl.appendChild(btnSpk);
+
+        panel.appendChild(ctrl);
+        container.appendChild(panel);
+
+        drawSingleTianZiGe(cvs, ch);
+        attachPointerDrawing(cvs);
+        strokeCanvases.push({ canvas: cvs, char: ch });
+      });
+    }
+
+    function drawSingleTianZiGe(canvas, charToGuide) {
       if (!canvas) return;
-      ctx = canvas.getContext('2d');
-      drawTianZiGeGrid();
+      var ctx = canvas.getContext('2d');
+      var w = canvas.width, h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      // Garis Panduan Kotak Sembilan
+      ctx.strokeStyle = '#fcd34d';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([5, 5]);
+
+      ctx.beginPath();
+      ctx.moveTo(0, 0); ctx.lineTo(w, h);
+      ctx.moveTo(w, 0); ctx.lineTo(0, h);
+      ctx.moveTo(w / 2, 0); ctx.lineTo(w / 2, h);
+      ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2);
+      ctx.stroke();
+
+      // Bingkai Luar
+      ctx.setLineDash([]);
+      ctx.strokeStyle = '#c2410c';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(0, 0, w, h);
+
+      // Watermark Bayangan Karakter untuk Dijiplak
+      if (charToGuide) {
+        ctx.save();
+        var fontSize = Math.round(w * 0.72);
+        ctx.font = fontSize + 'px "Noto Serif SC", "PingFang SC", serif';
+        ctx.fillStyle = 'rgba(234, 88, 12, 0.16)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(charToGuide, w / 2, h / 2 + Math.round(fontSize * 0.05));
+        ctx.restore();
+      }
+    }
+
+    function attachPointerDrawing(canvas) {
+      var ctx = canvas.getContext('2d');
+      var isDrawing = false;
+      var lastX = 0, lastY = 0;
 
       function getCanvasPos(e) {
         var rect = canvas.getBoundingClientRect();
-        var scaleX = canvas.width / (rect.width || 320);
-        var scaleY = canvas.height / (rect.height || 320);
+        var scaleX = canvas.width / (rect.width || canvas.width);
+        var scaleY = canvas.height / (rect.height || canvas.height);
         return {
           x: (e.clientX - rect.left) * scaleX,
           y: (e.clientY - rect.top) * scaleY
@@ -1633,41 +1751,21 @@
       canvas.onpointerleave = function() { isDrawing = false; };
     }
 
-    function drawTianZiGeGrid() {
-      if (!canvas || !ctx) return;
-      var w = canvas.width, h = canvas.height;
-      ctx.clearRect(0, 0, w, h);
-
-      ctx.strokeStyle = '#fcd34d';
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([5, 5]);
-
-      ctx.beginPath();
-      ctx.moveTo(0, 0); ctx.lineTo(w, h);
-      ctx.moveTo(w, 0); ctx.lineTo(0, h);
-      ctx.moveTo(w / 2, 0); ctx.lineTo(w / 2, h);
-      ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2);
-      ctx.stroke();
-
-      ctx.setLineDash([]);
-      ctx.strokeStyle = '#c2410c';
-      ctx.lineWidth = 4;
-      ctx.strokeRect(0, 0, w, h);
-
-      if (currentPracticeChar) {
-        ctx.save();
-        ctx.font = '210px "Noto Serif SC", "PingFang SC", serif';
-        ctx.fillStyle = 'rgba(234, 88, 12, 0.16)';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(currentPracticeChar, w / 2, h / 2 + 15);
-        ctx.restore();
+    window.clearAllStrokeCanvases = function() {
+      if (strokeCanvases && strokeCanvases.length > 0) {
+        strokeCanvases.forEach(function(item) {
+          drawSingleTianZiGe(item.canvas, item.char);
+        });
       }
-    }
+    };
 
-    window.clearCanvas = function() { drawTianZiGeGrid(); };
+    window.speakCurrentWord = function() {
+      if (currentPracticeWord && currentPracticeWord.hanzi) {
+        speakText(currentPracticeWord.hanzi);
+      }
+    };
 
-    // 4. ENGINE FILTER & PILIHAN KARAKTER MENULIS HANZI
+    // 4. ENGINE FILTER & PILIHAN KOSAKATA LENGKAP HSK 1 - 6
     window.filterStrokeLevel = function(lvl, btn) {
       currentStrokeLevel = lvl;
       if (btn && btn.parentElement) {
@@ -1678,6 +1776,15 @@
       initPracticeCharacters(lvl);
     };
 
+    window.handleStrokeSearchDebounce = function() {
+      clearTimeout(strokeSearchDebounceTimer);
+      strokeSearchDebounceTimer = setTimeout(function() {
+        var inSearch = document.getElementById('stroke-search-input');
+        currentStrokeSearch = inSearch ? inSearch.value : '';
+        initPracticeCharacters(currentStrokeLevel);
+      }, 200);
+    };
+
     function initPracticeCharacters(lvl) {
       var container = document.getElementById('char-selector-box');
       if (!container) return;
@@ -1685,54 +1792,44 @@
 
       var selectedLvl = (lvl || currentStrokeLevel || '1').toString().toUpperCase().replace(/\s+/g, '');
       var numLvl = selectedLvl.replace(/[^0-9]/g, '');
+      var sTerm = currentStrokeSearch.toLowerCase().trim();
 
-      var filteredVocabs = allVocabularies.filter(function(v) {
-        if (selectedLvl === 'ALL' || selectedLvl === '') return true;
+      var filtered = allVocabularies.filter(function(v) {
         var vLvl = (v.level || v.hskLevel || '').toString().replace(/[^0-9]/g, '').trim();
-        return vLvl === numLvl;
+        var matchLvl = (selectedLvl === 'ALL' || selectedLvl === '' || vLvl === numLvl);
+
+        var matchSearch = (!sTerm || 
+          (v.hanzi && v.hanzi.toLowerCase().includes(sTerm)) || 
+          (v.pinyin && v.pinyin.toLowerCase().includes(sTerm)) || 
+          (v.indonesian && v.indonesian.toLowerCase().includes(sTerm))
+        );
+
+        return matchLvl && matchSearch && v.hanzi;
       });
 
-      var charMap = {};
-      var charList = [];
-
-      filteredVocabs.forEach(function(v) {
-        var hanzi = (v.hanzi || '').trim();
-        for (var i = 0; i < hanzi.length; i++) {
-          var ch = hanzi.charAt(i);
-          if (ch >= '\u4e00' && ch <= '\u9fa5') {
-            if (!charMap[ch]) {
-              charMap[ch] = {
-                char: ch,
-                pinyin: v.pinyin || '',
-                indo: v.indonesian || '',
-                level: v.level || v.hskLevel || '1'
-              };
-              charList.push(charMap[ch]);
-            }
-          }
-        }
-      });
-
-      if (charList.length === 0) {
-        container.innerHTML = '<div style="font-size: 13px; color: var(--text-muted); padding: 10px;">Belum ada karakter untuk level ini di database.</div>';
+      if (filtered.length === 0) {
+        container.innerHTML = '<div style="font-size: 13px; color: var(--text-muted); padding: 10px;">Belum ada kosakata yang cocok di database.</div>';
         return;
       }
 
-      charList.forEach(function(item) {
+      filtered.forEach(function(item) {
+        var isCurrent = (item.hanzi === currentPracticeWord.hanzi);
         var btn = document.createElement('button');
-        btn.className = 'pill-btn' + (item.char === currentPracticeChar ? ' active' : '');
-        btn.style.fontFamily = 'var(--font-hanzi)';
-        btn.style.fontSize = '18px';
-        btn.style.minWidth = '42px';
-        btn.style.height = '42px';
-        btn.style.padding = '0 8px';
+        btn.className = 'pill-btn' + (isCurrent ? ' active' : '');
+        btn.style.padding = '8px 12px';
         btn.style.display = 'inline-flex';
-        btn.style.alignItems = 'center';
-        btn.style.justifyContent = 'center';
-        btn.title = item.char + ' (' + item.pinyin + '): ' + item.indo;
-        btn.innerText = item.char;
+        btn.style.flexDirection = 'column';
+        btn.style.alignItems = 'flex-start';
+        btn.style.gap = '2px';
+        btn.style.minWidth = '110px';
+
+        btn.innerHTML = 
+          '<div style="font-family: var(--font-hanzi); font-size: 18px; font-weight: 700; color: #fff;">' + (item.hanzi || '') + '</div>' +
+          '<div style="font-size: 11px; color: var(--gold-autumn); font-weight: 600;">' + (item.pinyin || '') + '</div>' +
+          '<div style="font-size: 11px; color: var(--text-muted); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">' + (item.indonesian || '') + '</div>';
+
         btn.onclick = function() {
-          selectCharForWriting(item.char, item.pinyin, item.indo);
+          selectWordForWriting(item);
           var allBtns = container.querySelectorAll('.pill-btn');
           for (var j = 0; j < allBtns.length; j++) allBtns[j].classList.remove('active');
           btn.classList.add('active');
@@ -1741,21 +1838,26 @@
       });
     }
 
-    window.selectCharForWriting = function(char, pinyin, indo) {
-      if (!char) return;
-      currentPracticeChar = char;
-      var el = document.getElementById('active-char-display');
-      var infoEl = document.getElementById('active-char-info');
-      if (el) el.innerText = char;
-      if (infoEl) {
-        if (pinyin || indo) {
-          infoEl.innerText = '(' + (pinyin || '') + (indo ? ' - ' + indo : '') + ')';
-        } else {
-          infoEl.innerText = '';
-        }
-      }
+    window.selectWordForWriting = function(wordObj) {
+      if (!wordObj || !wordObj.hanzi) return;
+      currentPracticeWord = {
+        hanzi: wordObj.hanzi,
+        pinyin: wordObj.pinyin || '',
+        indo: wordObj.indonesian || wordObj.indo || '',
+        level: wordObj.level || wordObj.hskLevel || '1'
+      };
+
+      var rawLvl = currentPracticeWord.level.toString().replace(/[^0-9]/g, '') || '1';
+      var elDisplay = document.getElementById('active-char-display');
+      var elInfo = document.getElementById('active-char-info');
+      var elBadge = document.getElementById('active-char-badge');
+
+      if (elDisplay) elDisplay.innerText = currentPracticeWord.hanzi;
+      if (elInfo) elInfo.innerText = '(' + currentPracticeWord.pinyin + (currentPracticeWord.indo ? ' - ' + currentPracticeWord.indo : '') + ')';
+      if (elBadge) elBadge.innerText = 'HSK ' + rawLvl;
+
       switchTab('stroke');
-      setTimeout(function() { initTianZiGeCanvas(); }, 60);
+      setTimeout(function() { renderMultiTianZiGe(currentPracticeWord); }, 60);
     };
 
     // 5. ENGINE SPEAKING AI ROLEPLAY
