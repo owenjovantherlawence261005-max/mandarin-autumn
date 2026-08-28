@@ -763,7 +763,7 @@
         <div class="header-group">
           <span class="badge">Official Standard Workbook</span>
           <h2>Workbook Interaktif per Level</h2>
-          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dari database Spreadsheet.</p>
+          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dari database Spreadsheet[cite: 8].</p>
         </div>
 
         <div class="toolbar-row">
@@ -779,12 +779,24 @@
         <div id="workbook-cards-container"></div>
       </section>
 
-      <!-- 5. SPEAKING AI ROLEPLAY -->
+      <!-- 5. SPEAKING AI ROLEPLAY (DENGAN FILTER SKENARIO DI KANAN ATAS) -->
       <section id="view-speaking" class="view-section">
-        <div class="header-group">
-          <span class="badge">Zettbot Speech Engine</span>
-          <h2>Speaking AI Roleplay</h2>
-          <p>Simulasi percakapan dua arah interaktif berbasis Web Speech API.</p>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
+          <div class="header-group" style="margin-bottom: 0;">
+            <span class="badge">Zettbot Speech Engine</span>
+            <h2>Speaking AI Roleplay</h2>
+            <p>Simulasi percakapan dua arah interaktif berbasis Web Speech API.</p>
+          </div>
+
+          <!-- Pilihan Filter Skenario di Kanan Atas Mengikuti Database SPEAKING_DIALOGUES -->
+          <div style="display: flex; align-items: center; gap: 10px; background: rgba(40, 24, 16, 0.85); padding: 10px 16px; border-radius: 12px; border: 1px solid var(--amber-border); box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
+            <label for="speaking-scenario-select" style="font-size: 12.5px; font-weight: 700; color: var(--gold-autumn); white-space: nowrap; display: flex; align-items: center; gap: 6px;">
+              <span>🎭</span> Skenario:
+            </label>
+            <select id="speaking-scenario-select" onchange="handleScenarioChange(this.value)" style="background: #180d08; color: #fff; border: 1px solid var(--amber-border); padding: 8px 14px; border-radius: 8px; font-size: 13.5px; font-weight: 600; outline: none; cursor: pointer; min-width: 230px; transition: border-color 0.2s ease;">
+              <option value="">Memuat skenario dari database...</option>
+            </select>
+          </div>
         </div>
 
         <div class="glass-card" style="margin-bottom: 20px;">
@@ -904,7 +916,7 @@
           <span style="font-size: 24px;">🍁</span>
           <div>
             <h3 style="font-size: 18px; color: #fff;">Panel Admin & CRUD Khusus</h3>
-            <p style="font-size: 11px; color: var(--gold-autumn);">Sinkronisasi Otomatis ke Sheet SPEAKING_DIALOGUES & WORKBOOK_BANK</p>
+            <p style="font-size: 11px; color: var(--gold-autumn);">Sinkronisasi Otomatis ke Sheet SPEAKING_DIALOGUES & WORKBOOK_BANK[cite: 8, 9]</p>
           </div>
         </div>
         <button onclick="closeAdminCrudModal()" style="background: none; border: none; color: #fca5a5; font-size: 24px; cursor: pointer;">✕</button>
@@ -960,7 +972,7 @@
           <textarea id="crud-spk-json-preview" rows="4" readonly style="font-family: monospace; font-size: 11.5px; background: #120905; color: #86efac; border-color: rgba(134, 239, 172, 0.3);"></textarea>
         </div>
 
-        <button class="btn-autumn-primary" onclick="submitCrudSpeakingDialogue()" style="width: 100%;">💾 Simpan ke Sheet SPEAKING_DIALOGUES & Terapkan</button>
+        <button class="btn-autumn-primary" onclick="submitCrudSpeakingDialogue()" style="width: 100%;">💾 Simpan ke Sheet SPEAKING_DIALOGUES & Terapkan[cite: 8, 9]</button>
       </div>
 
       <!-- TAB 2: CRUD SOAL WORKBOOK -->
@@ -1007,7 +1019,7 @@
           <input type="text" id="crud-wb-explanation" placeholder="Contoh: 苹果 (píngguǒ) berarti buah apel.">
         </div>
 
-        <button class="btn-autumn-primary" onclick="submitCrudWorkbookQuestion()" style="width: 100%;">💾 Tambah Soal ke WORKBOOK_BANK</button>
+        <button class="btn-autumn-primary" onclick="submitCrudWorkbookQuestion()" style="width: 100%;">💾 Tambah Soal ke WORKBOOK_BANK[cite: 8]</button>
       </div>
 
     </div>
@@ -1047,6 +1059,9 @@
     var strokeSearchDebounceTimer = null;
     var strokeCanvases = [];
 
+    // State Speaking AI Roleplay
+    var allSpeakingDialogues = [];
+    var currentDialogueId = "";
     var currentUserRole = 'B';
     var activeDialogueFlow = [];
     var characterAName = "Pelayan Restoran";
@@ -1367,20 +1382,22 @@
             scriptFlow: parsedLines
           })
         })
-        .then(res => res.json())
-        .then(res => {
+        .then(function(res) { return res.json(); })
+        .then(function(res) {
           alert("✅ Skenario percakapan berhasil disimpan ke sheet SPEAKING_DIALOGUES!");
           closeAdminCrudModal();
+          loadSpeakingDialoguesView(res.dialogueId);
         })
-        .catch(err => {
+        .catch(function(err) {
           alert("Naskah aktif di sesi ini (Terkendala simpan ke sheet: " + err.message + ")");
           closeAdminCrudModal();
         });
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
-          .withSuccessHandler(function() {
+          .withSuccessHandler(function(res) {
             alert("✅ Skenario percakapan berhasil disimpan ke sheet SPEAKING_DIALOGUES!");
             closeAdminCrudModal();
+            loadSpeakingDialoguesView(res ? res.dialogueId : null);
           })
           .saveNewSpeakingDialogue(hskLvl, title, roleA, roleB, parsedLines);
       } else {
@@ -1599,8 +1616,8 @@
       renderVocabUI();
     };
 
-    // 3. ENGINE MULTI-TIAN ZI GE (MENAMPILKAN KOTAK MENULIS UNTUK SETIAP KARAKTER DALAM KATA)
- function renderMultiTianZiGe(wordObj) {
+    // 3. ENGINE MULTI-TIAN ZI GE (RESPONSIF SEBARIS OTOMATIS)
+    function renderMultiTianZiGe(wordObj) {
       var container = document.getElementById('tianzige-multi-container');
       if (!container) return;
       container.innerHTML = '';
@@ -1620,7 +1637,6 @@
       var canvasDim = 280;
       var maxPWidth = '360px';
 
-      // Penyesuaian ukuran otomatis agar selalu muat 1 baris
       if (count === 2) {
         canvasDim = 230;
         maxPWidth = '580px';
@@ -1632,7 +1648,6 @@
         maxPWidth = '860px';
       }
 
-      // SATU BINGKAI UTAMA UNTUK SELURUH KARAKTER
       var mainPanel = document.createElement('div');
       mainPanel.className = 'canvas-panel';
       mainPanel.style.width = '100%';
@@ -1643,7 +1658,6 @@
       mainPanel.style.flexDirection = 'column';
       mainPanel.style.alignItems = 'center';
 
-      // Baris Kanvas Sebaris (nowrap)
       var canvasRow = document.createElement('div');
       canvasRow.style.display = 'flex';
       canvasRow.style.flexWrap = 'nowrap';
@@ -1688,7 +1702,6 @@
 
       mainPanel.appendChild(canvasRow);
 
-      // SATU KONTROL BERSAMA DI BAWAH BINGKAI
       var ctrl = document.createElement('div');
       ctrl.className = 'canvas-controls';
       ctrl.style.marginTop = '16px';
@@ -1712,14 +1725,13 @@
       mainPanel.appendChild(ctrl);
       container.appendChild(mainPanel);
     }
-    
+
     function drawSingleTianZiGe(canvas, charToGuide) {
       if (!canvas) return;
       var ctx = canvas.getContext('2d');
       var w = canvas.width, h = canvas.height;
       ctx.clearRect(0, 0, w, h);
 
-      // Garis Panduan Kotak Sembilan
       ctx.strokeStyle = '#fcd34d';
       ctx.lineWidth = 1.5;
       ctx.setLineDash([5, 5]);
@@ -1731,13 +1743,11 @@
       ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2);
       ctx.stroke();
 
-      // Bingkai Luar
       ctx.setLineDash([]);
       ctx.strokeStyle = '#c2410c';
       ctx.lineWidth = 4;
       ctx.strokeRect(0, 0, w, h);
 
-      // Watermark Bayangan Karakter untuk Dijiplak
       if (charToGuide) {
         ctx.save();
         var fontSize = Math.round(w * 0.72);
@@ -1907,40 +1917,85 @@
       setTimeout(function() { renderMultiTianZiGe(currentPracticeWord); }, 60);
     };
 
-    // 5. ENGINE SPEAKING AI ROLEPLAY
-    function loadSpeakingDialoguesView() {
+    // 5. ENGINE SPEAKING AI ROLEPLAY (MENDUKUNG MULTI-SKENARIO DATABASE)
+    function loadSpeakingDialoguesView(preferredId) {
+      var selectEl = document.getElementById('speaking-scenario-select');
+
+      function applyDialogues(dialogues) {
+        allSpeakingDialogues = dialogues || [];
+        if (!allSpeakingDialogues || allSpeakingDialogues.length === 0) {
+          useDefaultDialogue();
+          if (selectEl) {
+            selectEl.innerHTML = '<option value="DEFAULT">Memesan Makanan (HSK 1)</option>';
+          }
+          return;
+        }
+
+        if (selectEl) {
+          selectEl.innerHTML = '';
+          allSpeakingDialogues.forEach(function(d) {
+            var rawLvl = d.hskLevel || 'HSK 1';
+            var lvlStr = rawLvl.toUpperCase().includes('HSK') ? rawLvl : ('HSK ' + rawLvl);
+            var opt = document.createElement('option');
+            opt.value = d.dialogueId;
+            opt.innerText = (d.scenarioTitle || 'Percakapan') + ' (' + lvlStr + ')';
+            selectEl.appendChild(opt);
+          });
+        }
+
+        var targetDlg = null;
+        if (preferredId) {
+          targetDlg = allSpeakingDialogues.find(function(d) { return d.dialogueId === preferredId; });
+        }
+        if (!targetDlg) {
+          targetDlg = allSpeakingDialogues[0];
+        }
+
+        if (selectEl && targetDlg) {
+          selectEl.value = targetDlg.dialogueId;
+        }
+
+        selectScenarioDialogue(targetDlg);
+      }
+
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
         fetch(SCRIPT_URL + "?action=getDialogues&level=ALL")
-          .then(res => res.json())
-          .then(data => {
-            if (data && data.length > 0) {
-              activeDialogueFlow = data[0].scriptFlow || [];
-              characterAName = data[0].roleAName || "Pelayan Restoran";
-              characterBName = data[0].roleBName || "Pelanggan";
-              updateRoleSwitcherButtons();
-              initSpeakingDialogue();
-            } else {
-              useDefaultDialogue();
-            }
-          })
-          .catch(err => useDefaultDialogue());
+          .then(function(res) { return res.json(); })
+          .then(function(data) { applyDialogues(data); })
+          .catch(function(err) {
+            console.error("Gagal load dialogues:", err);
+            applyDialogues([]);
+          });
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
-          .withSuccessHandler(function(dialogues) {
-            if (dialogues && dialogues.length > 0) {
-              activeDialogueFlow = dialogues[0].scriptFlow || [];
-              characterAName = dialogues[0].roleAName || "Pelayan Restoran";
-              characterBName = dialogues[0].roleBName || "Pelanggan";
-              updateRoleSwitcherButtons();
-              initSpeakingDialogue();
-            } else {
-              useDefaultDialogue();
-            }
+          .withSuccessHandler(applyDialogues)
+          .withFailureHandler(function(err) {
+            console.error("Gagal load dialogues via Apps Script:", err);
+            applyDialogues([]);
           })
-          .getSpeakingDialogues('HSK 1');
+          .getSpeakingDialogues('ALL');
       } else {
-        useDefaultDialogue();
+        applyDialogues([]);
       }
+    }
+
+    window.handleScenarioChange = function(dlgId) {
+      if (!dlgId) return;
+      var found = allSpeakingDialogues.find(function(d) { return d.dialogueId === dlgId; });
+      if (found) {
+        selectScenarioDialogue(found);
+      }
+    };
+
+    function selectScenarioDialogue(dlg) {
+      if (!dlg) return;
+      currentDialogueId = dlg.dialogueId || "";
+      activeDialogueFlow = dlg.scriptFlow || [];
+      characterAName = dlg.roleAName || "Pelayan Restoran";
+      characterBName = dlg.roleBName || "Pelanggan";
+
+      updateRoleSwitcherButtons();
+      initSpeakingDialogue();
     }
 
     function useDefaultDialogue() {
