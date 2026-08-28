@@ -1354,7 +1354,7 @@
       }
     };
 
-    window.switchTab = function(viewId) {
+  window.switchTab = function(viewId) {
       var views = document.querySelectorAll('.view-section');
       for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
       var target = document.getElementById('view-' + viewId);
@@ -1365,45 +1365,45 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       if (viewId === 'workbook') loadWorkbookQuestions('ALL');
+      if (viewId === 'stroke') {
+        setTimeout(function() { drawTianZiGeGrid(); }, 50);
+      }
     };
     
 function loadDatabaseVocab() {
-  var container = document.getElementById('vocab-cards-container');
-  if (container) container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--gold-autumn);">Memuat data dari Spreadsheet Database... 🍂</div>';
+      var container = document.getElementById('vocab-cards-container');
+      if (container) container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--gold-autumn);">Memuat data dari Spreadsheet Database... 🍂</div>';
 
-  // 1. Jalur Utama untuk GitHub Pages (Memanggil API Apps Script)
-  if (typeof SCRIPT_URL !== 'undefined' && SCRIPT_URL && SCRIPT_URL.trim() !== "") {
-    fetch(SCRIPT_URL + "?action=getVocab&level=ALL")
-      .then(function(res) { return res.json(); })
-      .then(function(data) {
-        allVocabularies = Array.isArray(data) ? data : (data.items || []);
-        renderVocabUI();
-        initPracticeCharacters();
-        renderCurrentSrsCard();
-      })
-      .catch(function(err) {
-        console.error("Gagal load API:", err);
+      if (typeof SCRIPT_URL !== 'undefined' && SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+        fetch(SCRIPT_URL + "?action=getVocab&level=ALL")
+          .then(function(res) { return res.json(); })
+          .then(function(data) {
+            allVocabularies = Array.isArray(data) ? data : (data.items || []);
+            renderVocabUI();
+            initPracticeCharacters();
+            renderCurrentSrsCard();
+          })
+          .catch(function(err) {
+            console.error("Gagal load API:", err);
+            useFallbackVocab();
+          });
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(data) {
+            allVocabularies = Array.isArray(data) ? data : (data.items || []);
+            renderVocabUI();
+            initPracticeCharacters();
+            renderCurrentSrsCard();
+          })
+          .withFailureHandler(function(err) {
+            console.error("Gagal load database:", err);
+            useFallbackVocab();
+          })
+          .getVocabularyData('ALL');
+      } else {
         useFallbackVocab();
-      });
-  } 
-  // 2. Jalur Alternatif jika dijalankan langsung di dalam Google Apps Script
-  else if (typeof google !== 'undefined' && google.script && google.script.run) {
-    google.script.run
-      .withSuccessHandler(function(data) {
-        allVocabularies = Array.isArray(data) ? data : (data.items || []);
-        renderVocabUI();
-        initPracticeCharacters();
-        renderCurrentSrsCard();
-      })
-      .withFailureHandler(function(err) {
-        console.error("Gagal load database:", err);
-        useFallbackVocab();
-      })
-      .getVocabularyData('ALL');
-  } else {
-    useFallbackVocab();
-  }
-}
+      }
+    }
     function useFallbackVocab() {
       allVocabularies = [
         {hanzi:"我", pinyin:"wǒ", indonesian:"saya", partOfSpeech:"Kata Ganti", level:"1"},
@@ -1509,66 +1509,55 @@ window.filterDictLevel = function(lvl, btn) {
       renderVocabUI();
     };
 
-    // Tian Zi Ge
-// Tian Zi Ge (Menulis Hanzi - Support Mouse, Stylus Pen & Touchscreen)
+   // Tian Zi Ge Engine (Mouse, Touchscreen & Stylus Pen Ready)
     var canvas, ctx, isDrawing = false;
-    
+    var lastX = 0, lastY = 0;
+
     function initTianZiGeCanvas() {
       canvas = document.getElementById('tianzige-canvas');
       if (!canvas) return;
       ctx = canvas.getContext('2d');
       drawTianZiGeGrid();
 
-      // Helper untuk membaca koordinat secara akurat dari Mouse maupun Touch
       function getCanvasPos(e) {
         var rect = canvas.getBoundingClientRect();
-        var clientX = e.clientX;
-        var clientY = e.clientY;
-        if (e.touches && e.touches.length > 0) {
-          clientX = e.touches[0].clientX;
-          clientY = e.touches[0].clientY;
-        }
         return {
-          x: clientX - rect.left,
-          y: clientY - rect.top
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
         };
       }
 
-      function handleStart(e) {
-        if (e.cancelable) e.preventDefault();
+      canvas.addEventListener('pointerdown', function(e) {
+        e.preventDefault();
         isDrawing = true;
         var pos = getCanvasPos(e);
+        lastX = pos.x;
+        lastY = pos.y;
         ctx.beginPath();
-        ctx.moveTo(pos.x, pos.y);
-      }
+        ctx.arc(pos.x, pos.y, 4.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#1e293b';
+        ctx.fill();
+      });
 
-      function handleMove(e) {
+      canvas.addEventListener('pointermove', function(e) {
         if (!isDrawing) return;
-        if (e.cancelable) e.preventDefault();
+        e.preventDefault();
         var pos = getCanvasPos(e);
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
         ctx.lineTo(pos.x, pos.y);
         ctx.strokeStyle = '#1e293b';
-        ctx.lineWidth = 10;
+        ctx.lineWidth = 9;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         ctx.stroke();
-      }
+        lastX = pos.x;
+        lastY = pos.y;
+      });
 
-      function handleEnd(e) {
-        isDrawing = false;
-      }
-
-      // Event Listener Mouse
-      canvas.addEventListener('mousedown', handleStart);
-      canvas.addEventListener('mousemove', handleMove);
-      canvas.addEventListener('mouseup', handleEnd);
-      canvas.addEventListener('mouseleave', handleEnd);
-
-      // Event Listener Touchscreen / Stylus Pen
-      canvas.addEventListener('touchstart', handleStart, { passive: false });
-      canvas.addEventListener('touchmove', handleMove, { passive: false });
-      canvas.addEventListener('touchend', handleEnd);
-      canvas.addEventListener('touchcancel', handleEnd);
+      canvas.addEventListener('pointerup', function() { isDrawing = false; });
+      canvas.addEventListener('pointercancel', function() { isDrawing = false; });
+      canvas.addEventListener('pointerleave', function() { isDrawing = false; });
     }
 
     function drawTianZiGeGrid() {
@@ -1576,7 +1565,6 @@ window.filterDictLevel = function(lvl, btn) {
       var w = canvas.width, h = canvas.height;
       ctx.clearRect(0, 0, w, h);
 
-      // Garis Panduan Kotak Sembilan (Tian Zi Ge)
       ctx.strokeStyle = '#fcd34d';
       ctx.lineWidth = 1.5;
       ctx.setLineDash([5, 5]);
@@ -1588,17 +1576,15 @@ window.filterDictLevel = function(lvl, btn) {
       ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2);
       ctx.stroke();
 
-      // Bingkai Luar
       ctx.setLineDash([]);
       ctx.strokeStyle = '#c2410c';
       ctx.lineWidth = 4;
       ctx.strokeRect(0, 0, w, h);
 
-      // Watermark Faint Character (Panduan Bayangan untuk Dijiplak)
       if (currentPracticeChar) {
         ctx.save();
         ctx.font = '210px "Noto Serif SC", "PingFang SC", serif';
-        ctx.fillStyle = 'rgba(234, 88, 12, 0.18)';
+        ctx.fillStyle = 'rgba(234, 88, 12, 0.16)';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(currentPracticeChar, w / 2, h / 2 + 15);
@@ -1633,7 +1619,7 @@ window.filterDictLevel = function(lvl, btn) {
       drawTianZiGeGrid();
       switchTab('stroke');
     };
-
+    
     // Roleplay Engine
     function loadSpeakingDialoguesView() {
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
