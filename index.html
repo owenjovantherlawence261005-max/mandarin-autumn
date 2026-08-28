@@ -497,7 +497,7 @@
     }
     .btn-fail { background: rgba(220, 38, 38, 0.25); border: 1px solid #dc2626; color: #fca5a5; }
     .btn-fail:hover { background: #dc2626; color: #fff; }
-    .btn-pass { background: rgba(220, 38, 38, 0.25); border: 1px solid #16a34a; color: #86efac; }
+    .btn-pass { background: rgba(22, 163, 74, 0.25); border: 1px solid #16a34a; color: #86efac; }
     .btn-pass:hover { background: #16a34a; color: #fff; }
 
     .bottom-nav {
@@ -722,12 +722,28 @@
 
           <div style="flex: 1; min-width: 280px;" class="glass-card">
             <h3 style="font-size: 18px; color: #fff; margin-bottom: 12px;">Pilih Karakter untuk Latihan:</h3>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;" id="char-selector-box"></div>
+            
+            <!-- Filter Level HSK 1 - 6 untuk Menulis Hanzi -->
+            <div class="filter-pills" style="margin-bottom: 14px;" id="stroke-level-pills">
+              <button class="pill-btn active" onclick="filterStrokeLevel('1', this)">HSK 1</button>
+              <button class="pill-btn" onclick="filterStrokeLevel('2', this)">HSK 2</button>
+              <button class="pill-btn" onclick="filterStrokeLevel('3', this)">HSK 3</button>
+              <button class="pill-btn" onclick="filterStrokeLevel('4', this)">HSK 4</button>
+              <button class="pill-btn" onclick="filterStrokeLevel('5', this)">HSK 5</button>
+              <button class="pill-btn" onclick="filterStrokeLevel('6', this)">HSK 6</button>
+              <button class="pill-btn" onclick="filterStrokeLevel('ALL', this)">Semua</button>
+            </div>
+
+            <!-- Box Daftar Karakter (Scrollable) -->
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; max-height: 210px; overflow-y: auto; padding-right: 4px;" id="char-selector-box"></div>
             
             <div style="background: rgba(20, 11, 7, 0.6); padding: 14px; border-radius: 10px; border: 1px solid var(--amber-border);">
               <div style="font-size: 12px; color: var(--gold-autumn); font-weight: 700; margin-bottom: 4px;">URUTAN GORESAN DASAR (BISHUN):</div>
               <div style="font-size: 15px; color: #fff; font-weight: 600;" id="stroke-rule-display">Dari atas ke bawah, dari kiri ke kanan.</div>
-              <div style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">Karakter Aktif: <b id="active-char-display" style="font-size: 20px; color: var(--gold-autumn);">你</b></div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">
+                Karakter Aktif: <b id="active-char-display" style="font-size: 20px; color: var(--gold-autumn);">你</b>
+                <span id="active-char-info" style="font-size: 13px; color: #fed7aa; margin-left: 8px;">(nǐ - kamu)</span>
+              </div>
             </div>
           </div>
         </div>
@@ -738,7 +754,7 @@
         <div class="header-group">
           <span class="badge">Official Standard Workbook</span>
           <h2>Workbook Interaktif per Level</h2>
-          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dari database Spreadsheet[cite: 11].</p>
+          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dari database Spreadsheet.</p>
         </div>
 
         <div class="toolbar-row">
@@ -879,7 +895,7 @@
           <span style="font-size: 24px;">🍁</span>
           <div>
             <h3 style="font-size: 18px; color: #fff;">Panel Admin & CRUD Khusus</h3>
-            <p style="font-size: 11px; color: var(--gold-autumn);">Sinkronisasi Otomatis ke Sheet SPEAKING_DIALOGUES & WORKBOOK_BANK[cite: 10, 11]</p>
+            <p style="font-size: 11px; color: var(--gold-autumn);">Sinkronisasi Otomatis ke Sheet SPEAKING_DIALOGUES & WORKBOOK_BANK</p>
           </div>
         </div>
         <button onclick="closeAdminCrudModal()" style="background: none; border: none; color: #fca5a5; font-size: 24px; cursor: pointer;">✕</button>
@@ -895,7 +911,7 @@
         <div class="crud-form-group" style="background: rgba(234, 88, 12, 0.15); padding: 14px; border-radius: 10px; border: 1px dashed var(--gold-autumn);">
           <label>Unggah Naskah PDF Khusus Percakapan 2 Orang:</label>
           <input type="file" id="pdf-crud-file-input" accept="application/pdf" onchange="handleCrudPdfUpload(event)" style="padding: 6px;">
-          <div id="crud-pdf-status" style="font-size: 12px; color: var(--gold-autumn); margin-top: 6px;">Sistem akan membedah Hanzi, Pinyin, dan Terjemahan Indonesia secara otomatis sesuai rumus JSON database[cite: 10].</div>
+          <div id="crud-pdf-status" style="font-size: 12px; color: var(--gold-autumn); margin-top: 6px;">Sistem akan membedah Hanzi, Pinyin, dan Terjemahan Indonesia secara otomatis sesuai rumus JSON database.</div>
         </div>
 
         <div class="crud-form-group">
@@ -935,7 +951,7 @@
           <textarea id="crud-spk-json-preview" rows="4" readonly style="font-family: monospace; font-size: 11.5px; background: #120905; color: #86efac; border-color: rgba(134, 239, 172, 0.3);"></textarea>
         </div>
 
-        <button class="btn-autumn-primary" onclick="submitCrudSpeakingDialogue()" style="width: 100%;">💾 Simpan ke Sheet SPEAKING_DIALOGUES & Terapkan[cite: 10, 11]</button>
+        <button class="btn-autumn-primary" onclick="submitCrudSpeakingDialogue()" style="width: 100%;">💾 Simpan ke Sheet SPEAKING_DIALOGUES & Terapkan</button>
       </div>
 
       <!-- TAB 2: CRUD SOAL WORKBOOK -->
@@ -982,7 +998,7 @@
           <input type="text" id="crud-wb-explanation" placeholder="Contoh: 苹果 (píngguǒ) berarti buah apel.">
         </div>
 
-        <button class="btn-autumn-primary" onclick="submitCrudWorkbookQuestion()" style="width: 100%;">💾 Tambah Soal ke WORKBOOK_BANK[cite: 11]</button>
+        <button class="btn-autumn-primary" onclick="submitCrudWorkbookQuestion()" style="width: 100%;">💾 Tambah Soal ke WORKBOOK_BANK</button>
       </div>
 
     </div>
@@ -1010,6 +1026,7 @@
     var currentDictSearch = '';
     var searchDebounceTimer = null;
     var currentPracticeChar = '你';
+    var currentStrokeLevel = '1';
 
     var currentUserRole = 'B';
     var activeDialogueFlow = [];
@@ -1033,13 +1050,13 @@
     window.addEventListener('DOMContentLoaded', function() {
       initFallingLeaves();
       loadDatabaseVocab();
-      initPracticeCharacters();
+      initPracticeCharacters('1');
       loadGrammarGuidesView();
       loadSpeakingDialoguesView();
       initSrsEngine();
     });
 
-    // 1. ENGINE EFEK DAUN GUGUR AUTUMN (PERBAIKAN UTAMA REFERENCE ERROR)
+    // 1. ENGINE EFEK DAUN GUGUR AUTUMN
     function initFallingLeaves() {
       var canvas = document.getElementById('leaves-canvas');
       if (!canvas) return;
@@ -1438,7 +1455,7 @@
           .then(function(data) {
             allVocabularies = Array.isArray(data) ? data : (data.items || []);
             renderVocabUI();
-            initPracticeCharacters();
+            initPracticeCharacters(currentStrokeLevel);
             renderCurrentSrsCard();
           })
           .catch(function(err) {
@@ -1450,7 +1467,7 @@
           .withSuccessHandler(function(data) {
             allVocabularies = Array.isArray(data) ? data : (data.items || []);
             renderVocabUI();
-            initPracticeCharacters();
+            initPracticeCharacters(currentStrokeLevel);
             renderCurrentSrsCard();
           })
           .withFailureHandler(function(err) {
@@ -1472,7 +1489,7 @@
         {hanzi:"简单", pinyin:"jiǎndān", indonesian:"sederhana / mudah", partOfSpeech:"Kata Sifat", level:"3"}
       ];
       renderVocabUI();
-      initPracticeCharacters();
+      initPracticeCharacters('1');
       renderCurrentSrsCard();
     }
 
@@ -1522,7 +1539,7 @@
             '<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px;">[' + (item.partOfSpeech || 'Umum') + ']</div>' +
             '<div class="vocab-actions">' +
               '<button class="icon-action-btn" onclick="speakText(\'' + (item.hanzi || '') + '\')">🔊 Dengar</button>' +
-              '<button class="icon-action-btn" onclick="selectCharForWriting(\'' + (item.hanzi ? item.hanzi.charAt(0) : '') + '\')">✍️ Tulis</button>' +
+              '<button class="icon-action-btn" onclick="selectCharForWriting(\'' + (item.hanzi ? item.hanzi.charAt(0) : '') + '\', \'' + (item.pinyin || '') + '\', \'' + (item.indonesian || '') + '\')">✍️ Tulis</button>' +
             '</div>';
           container.appendChild(card);
         });
@@ -1563,7 +1580,7 @@
       renderVocabUI();
     };
 
-    // 3. ENGINE TIAN ZI GE CANVAS (POINTER EVENTS READY)
+    // 3. ENGINE TIAN ZI GE CANVAS
     var canvas, ctx, isDrawing = false;
     var lastX = 0, lastY = 0;
 
@@ -1650,33 +1667,98 @@
 
     window.clearCanvas = function() { drawTianZiGeGrid(); };
 
-    function initPracticeCharacters() {
+    // 4. ENGINE FILTER & PILIHAN KARAKTER MENULIS HANZI
+    window.filterStrokeLevel = function(lvl, btn) {
+      currentStrokeLevel = lvl;
+      if (btn && btn.parentElement) {
+        var buttons = btn.parentElement.querySelectorAll('.pill-btn');
+        for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove('active');
+        btn.classList.add('active');
+      }
+      initPracticeCharacters(lvl);
+    };
+
+    function initPracticeCharacters(lvl) {
       var container = document.getElementById('char-selector-box');
       if (!container) return;
       container.innerHTML = '';
-      var pool = allVocabularies.slice(0, 15);
-      pool.forEach(function(v) {
-        var char = (v.hanzi || '').charAt(0);
-        if (!char) return;
+
+      var selectedLvl = (lvl || currentStrokeLevel || '1').toString().toUpperCase().replace(/\s+/g, '');
+      var numLvl = selectedLvl.replace(/[^0-9]/g, '');
+
+      var filteredVocabs = allVocabularies.filter(function(v) {
+        if (selectedLvl === 'ALL' || selectedLvl === '') return true;
+        var vLvl = (v.level || v.hskLevel || '').toString().replace(/[^0-9]/g, '').trim();
+        return vLvl === numLvl;
+      });
+
+      var charMap = {};
+      var charList = [];
+
+      filteredVocabs.forEach(function(v) {
+        var hanzi = (v.hanzi || '').trim();
+        for (var i = 0; i < hanzi.length; i++) {
+          var ch = hanzi.charAt(i);
+          if (ch >= '\u4e00' && ch <= '\u9fa5') {
+            if (!charMap[ch]) {
+              charMap[ch] = {
+                char: ch,
+                pinyin: v.pinyin || '',
+                indo: v.indonesian || '',
+                level: v.level || v.hskLevel || '1'
+              };
+              charList.push(charMap[ch]);
+            }
+          }
+        }
+      });
+
+      if (charList.length === 0) {
+        container.innerHTML = '<div style="font-size: 13px; color: var(--text-muted); padding: 10px;">Belum ada karakter untuk level ini di database.</div>';
+        return;
+      }
+
+      charList.forEach(function(item) {
         var btn = document.createElement('button');
-        btn.className = 'pill-btn';
+        btn.className = 'pill-btn' + (item.char === currentPracticeChar ? ' active' : '');
         btn.style.fontFamily = 'var(--font-hanzi)';
         btn.style.fontSize = '18px';
-        btn.innerText = char;
-        btn.onclick = function() { selectCharForWriting(char); };
+        btn.style.minWidth = '42px';
+        btn.style.height = '42px';
+        btn.style.padding = '0 8px';
+        btn.style.display = 'inline-flex';
+        btn.style.alignItems = 'center';
+        btn.style.justifyContent = 'center';
+        btn.title = item.char + ' (' + item.pinyin + '): ' + item.indo;
+        btn.innerText = item.char;
+        btn.onclick = function() {
+          selectCharForWriting(item.char, item.pinyin, item.indo);
+          var allBtns = container.querySelectorAll('.pill-btn');
+          for (var j = 0; j < allBtns.length; j++) allBtns[j].classList.remove('active');
+          btn.classList.add('active');
+        };
         container.appendChild(btn);
       });
     }
 
-    window.selectCharForWriting = function(char) {
+    window.selectCharForWriting = function(char, pinyin, indo) {
+      if (!char) return;
       currentPracticeChar = char;
       var el = document.getElementById('active-char-display');
+      var infoEl = document.getElementById('active-char-info');
       if (el) el.innerText = char;
+      if (infoEl) {
+        if (pinyin || indo) {
+          infoEl.innerText = '(' + (pinyin || '') + (indo ? ' - ' + indo : '') + ')';
+        } else {
+          infoEl.innerText = '';
+        }
+      }
       switchTab('stroke');
       setTimeout(function() { initTianZiGeCanvas(); }, 60);
     };
 
-    // 4. ENGINE SPEAKING AI ROLEPLAY
+    // 5. ENGINE SPEAKING AI ROLEPLAY
     function loadSpeakingDialoguesView() {
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
         fetch(SCRIPT_URL + "?action=getDialogues&level=ALL")
@@ -1891,7 +1973,7 @@
       }
     };
 
-    // 5. ENGINE WORKBOOK
+    // 6. ENGINE WORKBOOK
     function loadWorkbookQuestions(hskLevel, btn) {
       if (btn && btn.parentElement) {
         var buttons = btn.parentElement.querySelectorAll('.pill-btn');
@@ -1920,7 +2002,7 @@
       container.innerHTML = '';
 
       if (!questions || questions.length === 0) {
-        container.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 30px;">Belum ada butir soal di sheet WORKBOOK_BANK untuk level ini. Gunakan panel CRUD untuk menambahkannya![cite: 11]</div>';
+        container.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 30px;">Belum ada butir soal di sheet WORKBOOK_BANK untuk level ini. Gunakan panel CRUD untuk menambahkannya!</div>';
         return;
       }
 
@@ -1978,7 +2060,7 @@
       }
     };
 
-    // 6. ENGINE GRAMMAR
+    // 7. ENGINE GRAMMAR
     function loadGrammarGuidesView() {
       var container = document.getElementById('grammar-cards-container');
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
@@ -2027,7 +2109,7 @@
       });
     }
 
-    // 7. ENGINE SRS FLASHCARDS
+    // 8. ENGINE SRS FLASHCARDS
     function initSrsEngine() {
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
@@ -2070,7 +2152,7 @@
       renderCurrentSrsCard();
     };
 
-    // 8. ENGINE PLACEMENT TEST
+    // 9. ENGINE PLACEMENT TEST
     window.startPlacementTest = function() {
       var intro = document.getElementById('placement-intro-box');
       var quizBox = document.getElementById('placement-quiz-box');
@@ -2147,7 +2229,7 @@
       renderPlacementStep();
     };
 
-    // 9. ENGINE SERTIFIKAT PDF
+    // 10. ENGINE SERTIFIKAT PDF
     window.requestCertificatePdf = function() {
       var inName = document.getElementById('cert-user-name');
       var name = inName ? inName.value : '';
