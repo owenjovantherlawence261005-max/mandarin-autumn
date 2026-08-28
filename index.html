@@ -1600,7 +1600,7 @@
     };
 
     // 3. ENGINE MULTI-TIAN ZI GE (MENAMPILKAN KOTAK MENULIS UNTUK SETIAP KARAKTER DALAM KATA)
-  function renderMultiTianZiGe(wordObj) {
+ function renderMultiTianZiGe(wordObj) {
       var container = document.getElementById('tianzige-multi-container');
       if (!container) return;
       container.innerHTML = '';
@@ -1616,39 +1616,56 @@
       }
       if (chars.length === 0) chars = [hanziStr.charAt(0) || '你'];
 
+      var count = chars.length;
+      var canvasDim = 280;
+      var maxPWidth = '360px';
+
+      // Penyesuaian ukuran otomatis agar selalu muat 1 baris
+      if (count === 2) {
+        canvasDim = 230;
+        maxPWidth = '580px';
+      } else if (count === 3) {
+        canvasDim = 190;
+        maxPWidth = '740px';
+      } else if (count >= 4) {
+        canvasDim = 165;
+        maxPWidth = '860px';
+      }
+
       // SATU BINGKAI UTAMA UNTUK SELURUH KARAKTER
       var mainPanel = document.createElement('div');
       mainPanel.className = 'canvas-panel';
       mainPanel.style.width = '100%';
-      mainPanel.style.maxWidth = (chars.length === 1 ? '360px' : (chars.length === 2 ? '680px' : '980px'));
-      mainPanel.style.padding = '20px';
+      mainPanel.style.maxWidth = maxPWidth;
+      mainPanel.style.padding = '18px 14px';
       mainPanel.style.margin = '0 auto';
       mainPanel.style.display = 'flex';
       mainPanel.style.flexDirection = 'column';
       mainPanel.style.alignItems = 'center';
 
-      // Baris Tempat Meletakkan Kanvas Bersanding
+      // Baris Kanvas Sebaris (nowrap)
       var canvasRow = document.createElement('div');
       canvasRow.style.display = 'flex';
-      canvasRow.style.flexWrap = 'wrap';
-      canvasRow.style.gap = '16px';
+      canvasRow.style.flexWrap = 'nowrap';
+      canvasRow.style.gap = (count >= 4 ? '10px' : '14px');
       canvasRow.style.justifyContent = 'center';
       canvasRow.style.width = '100%';
-
-      var canvasDim = (chars.length === 1) ? 290 : (chars.length === 2 ? 260 : 210);
+      canvasRow.style.overflowX = 'auto';
+      canvasRow.style.padding = '4px 2px';
 
       chars.forEach(function(ch, idx) {
         var charCol = document.createElement('div');
         charCol.style.display = 'flex';
         charCol.style.flexDirection = 'column';
         charCol.style.alignItems = 'center';
+        charCol.style.flexShrink = '0';
 
         var title = document.createElement('div');
         title.style.color = 'var(--gold-autumn)';
-        title.style.fontSize = '13px';
+        title.style.fontSize = (count >= 4 ? '11.5px' : '13px');
         title.style.fontWeight = '700';
-        title.style.marginBottom = '8px';
-        title.innerText = (chars.length > 1 ? 'Karakter #' + (idx + 1) + ': ' : '') + ch;
+        title.style.marginBottom = '6px';
+        title.innerText = (count > 1 ? '#' + (idx + 1) + ': ' : '') + ch;
         charCol.appendChild(title);
 
         var cvs = document.createElement('canvas');
@@ -1674,8 +1691,8 @@
       // SATU KONTROL BERSAMA DI BAWAH BINGKAI
       var ctrl = document.createElement('div');
       ctrl.className = 'canvas-controls';
-      ctrl.style.marginTop = '18px';
-      ctrl.style.maxWidth = '420px';
+      ctrl.style.marginTop = '16px';
+      ctrl.style.maxWidth = '380px';
       ctrl.style.width = '100%';
       ctrl.style.display = 'flex';
       ctrl.style.gap = '10px';
@@ -1695,7 +1712,7 @@
       mainPanel.appendChild(ctrl);
       container.appendChild(mainPanel);
     }
-
+    
     function drawSingleTianZiGe(canvas, charToGuide) {
       if (!canvas) return;
       var ctx = canvas.getContext('2d');
