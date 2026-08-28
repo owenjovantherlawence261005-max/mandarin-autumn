@@ -524,9 +524,7 @@
     .bottom-nav-btn.active { color: var(--gold-autumn); }
     .bottom-nav-btn span.icon { font-size: 18px; }
 
-    /* =========================================================================
-       PDF VIEWER & DRAWING OVERLAY RESPONSIVE CONTAINER
-       ========================================================================= */
+    /* PDF Scroll Viewport & Canvas Overlay */
     .pdf-scroll-viewport {
       background: #180d08;
       border: 1px solid var(--amber-border);
@@ -880,7 +878,7 @@
         <div class="header-group">
           <span class="badge">Official Standard Workbook</span>
           <h2>Workbook Interaktif per Level</h2>
-          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dari database Spreadsheet[cite: 5].</p>
+          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dari database Spreadsheet[cite: 2].</p>
         </div>
 
         <div class="toolbar-row">
@@ -982,7 +980,7 @@
         </div>
       </section>
 
-      <!-- 8. HSK DIAGNOSTIC & MOCK PLACEMENT TEST (JALUR RELATIF RESMI GITHUB + FIT SCROLL VIEWER) -->
+      <!-- 8. HSK DIAGNOSTIC & MOCK PLACEMENT TEST (FOLDER PLACEMENT_TEST / JALUR RELATIF RESMI) -->
       <section id="view-placement" class="view-section">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
           <div class="header-group" style="margin-bottom: 0;">
@@ -1002,7 +1000,7 @@
           </div>
         </div>
 
-        <!-- PANEL KONTROL AUDIO MENYIMAK (STREAMING OTOMATIS) -->
+        <!-- PANEL KONTROL AUDIO MENYIMAK (STREAMING LANGSUNG) -->
         <div class="glass-card" style="margin-bottom: 20px; padding: 16px 20px;">
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
             <div style="display: flex; align-items: center; gap: 12px;">
@@ -1123,7 +1121,7 @@
           <span style="font-size: 24px;">🍁</span>
           <div>
             <h3 style="font-size: 18px; color: #fff;">Panel Admin & CRUD Khusus</h3>
-            <p style="font-size: 11px; color: var(--gold-autumn);">Sinkronisasi Otomatis ke Sheet SPEAKING, WORKBOOK & PLACEMENT_TEST[cite: 5]</p>
+            <p style="font-size: 11px; color: var(--gold-autumn);">Sinkronisasi Otomatis ke Sheet SPEAKING, WORKBOOK & PLACEMENT_TEST[cite: 2]</p>
           </div>
         </div>
         <button onclick="closeAdminCrudModal()" style="background: none; border: none; color: #fca5a5; font-size: 24px; cursor: pointer;">✕</button>
@@ -1132,7 +1130,7 @@
       <div class="crud-tab-header">
         <button class="crud-tab-btn active" id="crud-tab-spk" onclick="switchCrudTab('spk')">🎙️ Speaking AI (PDF 2 Orang)</button>
         <button class="crud-tab-btn" id="crud-tab-wb" onclick="switchCrudTab('wb')">📝 Soal Workbook</button>
-        <button class="crud-tab-btn" id="crud-tab-plc" onclick="switchCrudTab('plc')">🎯 Placement Test (Jalur Relatif PDF/Audio)</button>
+        <button class="crud-tab-btn" id="crud-tab-plc" onclick="switchCrudTab('plc')">🎯 Placement Test (Folder placement_test)</button>
       </div>
 
       <!-- TAB 1: CRUD SPEAKING AI -->
@@ -1288,7 +1286,7 @@
         </div>
       </div>
 
-      <!-- TAB 3: CRUD PLACEMENT TEST (JALUR RELATIF FILE PDF & AUDIO) -->
+      <!-- TAB 3: CRUD PLACEMENT TEST (FOLDER placement_test) -->
       <div id="crud-section-plc" style="display: none;">
         <input type="hidden" id="crud-plc-edit-id" value="">
 
@@ -1312,13 +1310,13 @@
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div class="crud-form-group">
-            <label>Nama File / Path PDF Soal (pdf_url):</label>
-            <input type="text" id="crud-plc-pdf-url" placeholder="Contoh: ./HSK1.pdf atau ./HSK1_Set2.pdf">
+            <label>Path File PDF Soal (pdf_url):</label>
+            <input type="text" id="crud-plc-pdf-url" placeholder="./placement_test/HSK1.pdf">
           </div>
 
           <div class="crud-form-group">
-            <label>Nama File / Path Audio MP3 (audio_url):</label>
-            <input type="text" id="crud-plc-audio-url" placeholder="Contoh: ./HSK1.mp3 atau ./HSK1_Set2.mp3">
+            <label>Path File Audio MP3 (audio_url):</label>
+            <input type="text" id="crud-plc-audio-url" placeholder="./placement_test/HSK1.mp3">
           </div>
         </div>
 
@@ -1406,7 +1404,7 @@
     var allWorkbookQuestions = [];
 
     // =========================================================================
-    // STATE PLACEMENT TEST & MOCK EXAM (JALUR RELATIF RESMI GITHUB)
+    // STATE PLACEMENT TEST & MOCK EXAM (FOLDER placement_test)
     // =========================================================================
     var allPlacementPackages = [];
     var currentPlacementPackage = null;
@@ -2389,7 +2387,7 @@
       });
     }
 
-    // 8. ENGINE PLACEMENT TEST VIEW (JALUR RELATIF RESMI GITHUB)
+    // 8. ENGINE PLACEMENT TEST VIEW (FOLDER placement_test)
     function loadPlacementPackagesView(preferredId) {
       var selectEl = document.getElementById('placement-package-select');
 
@@ -2400,8 +2398,8 @@
             testId: "PLC-DEFAULT",
             hskLevel: "HSK 1",
             testTitle: "Simulasi Ujian Resmi HSK 1 (H10901)",
-            pdfUrl: "./HSK1.pdf",
-            audioUrl: "./HSK1.mp3",
+            pdfUrl: "./placement_test/HSK1.pdf",
+            audioUrl: "./placement_test/HSK1.mp3",
             answerKey: DEFAULT_HSK1_ANSWER_KEY
           }];
         }
@@ -2463,16 +2461,16 @@
       var elTitle = document.getElementById('exam-audio-title');
       if (elTitle) elTitle.innerText = 'Audio Menyimak: ' + (pkg.testTitle || 'Ujian');
 
-      // 1. Tautkan File Audio MP3 Jalur Relatif
+      // 1. Tautkan File Audio MP3 Jalur Folder placement_test/
       var audioPlayer = document.getElementById('exam-audio-player');
       if (audioPlayer) {
-        var audioSrc = pkg.audioUrl || "./HSK1.mp3";
+        var audioSrc = pkg.audioUrl || "./placement_test/HSK1.mp3";
         audioPlayer.src = audioSrc;
         audioPlayer.preload = "auto";
       }
 
-      // 2. Muat File PDF Jalur Relatif
-      var pdfSrc = pkg.pdfUrl || "./HSK1.pdf";
+      // 2. Muat File PDF Jalur Folder placement_test/
+      var pdfSrc = pkg.pdfUrl || "./placement_test/HSK1.pdf";
       loadPdfFromUrlOrData(pdfSrc);
 
       renderLjdItems();
@@ -2498,9 +2496,9 @@
         currentPdfPageNum = 1;
         renderPdfAndDrawPage(currentPdfPageNum);
       } catch (err) {
-        console.warn("Gagal membuka PDF dari path URL, mencoba fallback lokal:", err);
+        console.warn("Gagal membuka PDF dari path:", err);
         try {
-          examPdfDoc = await pdfjsLib.getDocument('./HSK1.pdf').promise;
+          examPdfDoc = await pdfjsLib.getDocument('./placement_test/HSK1.pdf').promise;
           totalPdfPages = examPdfDoc.numPages;
           currentPdfPageNum = 1;
           renderPdfAndDrawPage(currentPdfPageNum);
@@ -2519,7 +2517,6 @@
       const scrollBox = document.getElementById('pdf-scroll-box');
       const ctxRender = renderCanvas.getContext('2d');
 
-      // Hitung skala agar pas 100% dengan lebar kontainer tanpa terpotong
       const containerWidth = scrollBox ? scrollBox.clientWidth : 650;
       const unscaledViewport = page.getViewport({ scale: 1.0 });
       let dynamicScale = (containerWidth - 40) / unscaledViewport.width;
@@ -2538,7 +2535,6 @@
       };
       await page.render(renderContext).promise;
 
-      // Pulihkan coretan tersimpan di halaman ini
       const ctxDraw = drawCanvas.getContext('2d');
       ctxDraw.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
       if (drawingsPerPage[pageNum]) {
@@ -2828,8 +2824,8 @@
 
       const hskLvl = inHsk ? inHsk.value : "HSK 1";
       const title = (inTitle ? inTitle.value.trim() : "") || ("Simulasi Ujian Resmi " + hskLvl);
-      const pdfUrl = (inPdfUrl ? inPdfUrl.value.trim() : "") || "./HSK1.pdf";
-      const audioUrl = (inAudioUrl ? inAudioUrl.value.trim() : "") || "./HSK1.mp3";
+      const pdfUrl = (inPdfUrl ? inPdfUrl.value.trim() : "") || "./placement_test/HSK1.pdf";
+      const audioUrl = (inAudioUrl ? inAudioUrl.value.trim() : "") || "./placement_test/HSK1.mp3";
       const keysJson = inKeys ? inKeys.value.trim() : "";
 
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
