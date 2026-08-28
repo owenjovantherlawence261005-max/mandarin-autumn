@@ -66,7 +66,7 @@
       min-height: 100vh;
       position: relative;
       z-index: 1;
-      visibility: hidden; /* Sembunyikan sebelum login */
+      visibility: hidden;
     }
 
     .sidebar {
@@ -794,12 +794,32 @@
 
     <main class="main-viewport">
 
-      <!-- 1. DASHBOARD -->
+      <!-- 1. DASHBOARD DENGAN KARTU VISUAL TRACK LEVEL -->
       <section id="view-dashboard" class="view-section active">
         <div class="header-group">
           <span class="badge">Selamat Datang di Musim Belajar</span>
           <h2 id="dashboard-welcome-text">Halo, Pelajar Tangguh! 🍁</h2>
           <p>Kuasai kurikulum Mandarin HSK 1 sampai HSK 6 dengan metode terstruktur, simulasi percakapan AI, dan SRS Leitner.</p>
+        </div>
+
+        <!-- KARTU STATUS & TRACK LEVEL PENGGUNA -->
+        <div class="glass-card" style="margin-bottom: 20px; background: linear-gradient(135deg, rgba(59, 29, 17, 0.9), rgba(40, 24, 16, 0.8)); border-left: 4px solid var(--gold-autumn);">
+          <div style="font-size: 12px; font-weight: 700; color: var(--gold-autumn); text-transform: uppercase; margin-bottom: 8px;">
+            📊 Status & Progres Belajar Anda:
+          </div>
+          <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+            <div>
+              <div style="font-size: 13px; color: var(--text-muted);">Tingkat HSK Aktif:</div>
+              <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
+                <span id="track-hsk-badge" class="badge" style="font-size: 14px; padding: 6px 14px; background: var(--terracotta); color: #fff; margin: 0;">HSK 1</span>
+                <span style="font-size: 12.5px; color: #fed7aa;" id="track-hsk-desc">Selesaikan Placement Test untuk naik ke HSK 2</span>
+              </div>
+            </div>
+            <div>
+              <div style="font-size: 13px; color: var(--text-muted);">Aktivitas Terakhir:</div>
+              <div style="font-size: 14px; font-weight: 700; color: #fff; margin-top: 4px;" id="track-last-tab-display">Beranda (Dashboard)</div>
+            </div>
+          </div>
         </div>
 
         <div class="glass-card">
@@ -909,7 +929,7 @@
         <div class="header-group">
           <span class="badge">Official Standard Workbook</span>
           <h2>Workbook Interaktif per Level</h2>
-          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dari database Spreadsheet.</p>
+          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dari database Spreadsheet[cite: 2].</p>
         </div>
 
         <div class="toolbar-row">
@@ -1011,7 +1031,7 @@
         </div>
       </section>
 
-      <!-- 8. HSK DIAGNOSTIC & MOCK PLACEMENT TEST -->
+      <!-- 8. HSK DIAGNOSTIC & MOCK PLACEMENT TEST (FOLDER placement_test / JALUR RELATIF RESMI) -->
       <section id="view-placement" class="view-section">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
           <div class="header-group" style="margin-bottom: 0;">
@@ -1031,7 +1051,7 @@
           </div>
         </div>
 
-        <!-- PANEL KONTROL AUDIO MENYIMAK (STREAMING LANGSUNG JALUR RELATIF GITHUB) -->
+        <!-- PANEL KONTROL AUDIO MENYIMAK (STREAMING LANGSUNG) -->
         <div class="glass-card" style="margin-bottom: 20px; padding: 16px 20px;">
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
             <div style="display: flex; align-items: center; gap: 12px;">
@@ -1434,6 +1454,9 @@
 
     var allWorkbookQuestions = [];
 
+    // =========================================================================
+    // STATE PLACEMENT TEST & MOCK EXAM (FOLDER placement_test)
+    // =========================================================================
     var allPlacementPackages = [];
     var currentPlacementPackage = null;
     var examPdfDoc = null;
@@ -1448,6 +1471,7 @@
     var isDrawingOnPdf = false;
     var lastPdfX = 0, lastPdfY = 0;
 
+    // Kunci Jawaban Standar Resmi HSK 1 (H10901)
     const DEFAULT_HSK1_ANSWER_KEY = {
       1: "TRUE", 2: "FALSE", 3: "FALSE", 4: "FALSE", 5: "TRUE",
       6: "A", 7: "A", 8: "C", 9: "A", 10: "C",
@@ -1530,6 +1554,18 @@
         var certName = document.getElementById('cert-user-name');
         if (certName) certName.value = displayNama;
 
+        // Perbarui Tampilan Widget Track Level
+        var elTrackHsk = document.getElementById('track-hsk-badge');
+        var elTrackTab = document.getElementById('track-last-tab-display');
+        var elTrackDesc = document.getElementById('track-hsk-desc');
+
+        if (elTrackHsk) elTrackHsk.innerText = sessionUser.currentHsk;
+        if (elTrackTab) elTrackTab.innerText = sessionUser.lastTab.toUpperCase();
+        if (elTrackDesc) {
+          var numLvl = parseInt(sessionUser.currentHsk.replace(/[^0-9]/g, '')) || 1;
+          elTrackDesc.innerText = 'Selesaikan Placement Test untuk naik ke HSK ' + (numLvl < 6 ? numLvl + 1 : 6);
+        }
+
         // Muat Data Aplikasi
         loadDatabaseVocab();
         renderMultiTianZiGe(currentPracticeWord);
@@ -1573,6 +1609,10 @@
 
       // Simpan track
       pingTrackLevel(viewId);
+
+      // Perbarui label widget di Dashboard
+      var elTrackTab = document.getElementById('track-last-tab-display');
+      if (elTrackTab) elTrackTab.innerText = viewId.toUpperCase();
 
       if (viewId === 'workbook') loadWorkbookQuestions(sessionUser.currentHsk);
       if (viewId === 'stroke') setTimeout(() => { renderMultiTianZiGe(currentPracticeWord); }, 60);
@@ -1621,7 +1661,7 @@
 
     // MODAL ADMIN KHUSUS OWEN
     window.handleLogoTripleClick = function() {
-      if (sessionUser.role !== 'admin') return; // Hanya OWEN yang bisa
+      if (sessionUser.role !== 'admin') return;
       logoClickCount++;
       clearTimeout(logoClickTimer);
       if (logoClickCount >= 3) {
@@ -1632,7 +1672,6 @@
       }
     };
 
-    // Sisa Logic Vocab, TianZiGe, Speaking, Grammar, dll (TETAP SAMA SEPERTI SEBELUMNYA)
     function loadDatabaseVocab() {
       var container = document.getElementById('vocab-cards-container');
       if (container) container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--gold-autumn);">Memuat data dari Spreadsheet Database... 🍂</div>';
@@ -2282,7 +2321,13 @@
           var numLvl = parseInt(passedLvl.replace(/[^0-9]/g, ''));
           if (!isNaN(numLvl) && numLvl < 6) {
             sessionUser.currentHsk = 'HSK ' + (numLvl + 1);
-            pingTrackLevel('placement'); // Update track di database
+            pingTrackLevel('placement');
+
+            // Perbarui label widget
+            var elTrackHsk = document.getElementById('track-hsk-badge');
+            var elTrackDesc = document.getElementById('track-hsk-desc');
+            if (elTrackHsk) elTrackHsk.innerText = sessionUser.currentHsk;
+            if (elTrackDesc) elTrackDesc.innerText = 'Selesaikan Placement Test untuk naik ke HSK ' + (numLvl + 2 <= 6 ? numLvl + 2 : 6);
           }
         } else {
           resBox.innerHTML += `<div style="font-size: 11px; color: #fed7aa; margin-top: 6px;">Batas kelulusan resmi: 120 poin. Silakan pelajari lagi materi yang belum dipahami dan coba kembali.</div>`;
