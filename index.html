@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Mandarin HSK 1-6 Autumn Edition - PakBujan Academy</title>
+  <title>Mandarin HSK 1-6 Autumn Edition - PAKBUJAN ACADEMY</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Serif+SC:wght@600;900&display=swap" rel="stylesheet">
   
@@ -541,7 +541,7 @@
     .bottom-nav-btn span.icon { font-size: 18px; }
 
     /* =========================================================================
-       PDF SCROLL VIEWPORT & CANVAS CONTAINER (FULL SCROLL STABIL)
+       PDF SCROLL VIEWPORT & CANVAS CONTAINER (FULL SCROLL STABIL TANPA KEPOTONG)
        ========================================================================= */
     .pdf-scroll-viewport {
       background: #180d08;
@@ -1537,7 +1537,6 @@
         .then(res => res.json())
         .then(res => handleLoginResponse(res, userIn, passIn, btn, errBox))
         .catch(err => {
-          // Fallback lokal jika jaringan mengalami timeout
           handleOfflineLogin(userIn, passIn, btn, errBox);
         });
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
@@ -2063,7 +2062,7 @@
         }).then(res => res.json()).then(res => {
           alert(editId ? "✅ Soal berhasil diperbarui!" : "✅ Soal berhasil ditambahkan!");
           cancelEditWorkbookQuestion(); loadWorkbookTable(); loadWorkbookQuestions(hskLvl);
-        }).catch(err => alert("Gagal: " + err.message));
+        }).catch(err => alert("Gagal menyimpan: " + err.message));
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run.withSuccessHandler(function() {
           alert(editId ? "✅ Soal berhasil diperbarui!" : "✅ Soal berhasil ditambahkan!");
