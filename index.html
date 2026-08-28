@@ -524,6 +524,44 @@
     .bottom-nav-btn.active { color: var(--gold-autumn); }
     .bottom-nav-btn span.icon { font-size: 18px; }
 
+    /* PDF Canvas with Annotation Overlay Wrapper */
+    .pdf-viewer-outer-wrap {
+      position: relative;
+      display: inline-block;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.6);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+    #pdf-render-canvas {
+      display: block;
+    }
+    #pdf-draw-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    /* Color Swatch Button */
+    .color-swatch-btn {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      display: inline-block;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .color-swatch-btn.active {
+      transform: scale(1.15);
+      border-color: #fff;
+      box-shadow: 0 0 6px rgba(255,255,255,0.8);
+    }
+
     /* MODAL PANEL CRUD RAHASIA (KLIK 3X LOGO AUTUMN) */
     #admin-crud-modal {
       display: none;
@@ -539,7 +577,7 @@
       padding: 30px 16px;
     }
     .crud-modal-content {
-      max-width: 820px;
+      max-width: 840px;
       margin: 0 auto;
       background: #23140d;
       border: 2px solid var(--gold-autumn);
@@ -553,15 +591,16 @@
       margin-bottom: 20px;
       border-bottom: 1px solid var(--amber-border);
       padding-bottom: 12px;
+      flex-wrap: wrap;
     }
     .crud-tab-btn {
-      padding: 10px 18px;
+      padding: 10px 16px;
       background: transparent;
       border: 1px solid var(--amber-border);
       border-radius: 8px;
       color: var(--text-muted);
       font-weight: 700;
-      font-size: 13.5px;
+      font-size: 13px;
       cursor: pointer;
       transition: all 0.2s ease;
     }
@@ -824,7 +863,7 @@
         <div class="header-group">
           <span class="badge">Official Standard Workbook</span>
           <h2>Workbook Interaktif per Level</h2>
-          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dari database Spreadsheet[cite: 8].</p>
+          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dari database Spreadsheet.</p>
         </div>
 
         <div class="toolbar-row">
@@ -849,7 +888,6 @@
             <p>Simulasi percakapan dua arah interaktif berbasis Web Speech API.</p>
           </div>
 
-          <!-- Pilihan Filter Skenario di Kanan Atas Mengikuti Database SPEAKING_DIALOGUES -->
           <div style="display: flex; align-items: center; gap: 10px; background: rgba(40, 24, 16, 0.85); padding: 10px 16px; border-radius: 12px; border: 1px solid var(--amber-border); box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
             <label for="speaking-scenario-select" style="font-size: 12.5px; font-weight: 700; color: var(--gold-autumn); white-space: nowrap; display: flex; align-items: center; gap: 6px;">
               <span>🎭</span> Skenario:
@@ -927,20 +965,111 @@
         </div>
       </section>
 
-      <!-- 8. PLACEMENT TEST -->
+      <!-- 8. HSK DIAGNOSTIC & MOCK PLACEMENT TEST (AUDIO + PDF + INTERACTIVE ANNOTATION CANVAS) -->
       <section id="view-placement" class="view-section">
-        <div class="header-group">
-          <span class="badge">Diagnostic Skill Assessment</span>
-          <h2>HSK Diagnostic Placement Test</h2>
-          <p>Ujian penentuan kemampuan Mandarin adaptif untuk mengukur kesiapan level HSK.</p>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
+          <div class="header-group" style="margin-bottom: 0;">
+            <span class="badge">Official Standard Mock Exam</span>
+            <h2>HSK Standard Placement & Mock Exam</h2>
+            <p>Ujian penentuan kemampuan resmi dengan lembar PDF yang bisa dicoret, audio menyimak, dan lembar jawaban digital.</p>
+          </div>
+
+          <!-- Dropdown Filter Pilihan Paket Ujian Placement HSK -->
+          <div style="display: flex; align-items: center; gap: 10px; background: rgba(40, 24, 16, 0.85); padding: 10px 16px; border-radius: 12px; border: 1px solid var(--amber-border); box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
+            <label for="placement-package-select" style="font-size: 12.5px; font-weight: 700; color: var(--gold-autumn); white-space: nowrap; display: flex; align-items: center; gap: 6px;">
+              <span>🎯</span> Pilih Paket Ujian:
+            </label>
+            <select id="placement-package-select" onchange="handlePlacementPackageChange(this.value)" style="background: #180d08; color: #fff; border: 1px solid var(--amber-border); padding: 8px 14px; border-radius: 8px; font-size: 13.5px; font-weight: 600; outline: none; cursor: pointer; min-width: 250px; transition: border-color 0.2s ease;">
+              <option value="">Memuat paket dari database...</option>
+            </select>
+          </div>
         </div>
 
-        <div id="placement-test-container" class="glass-card">
-          <div id="placement-intro-box" style="text-align: center; padding: 20px;">
-            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px;">Tes mandiri diagnostik berbasis database soal Spreadsheet.</p>
-            <button class="btn-autumn-primary" onclick="startPlacementTest()">Mulai Ujian Placement Test</button>
+        <!-- PANEL KONTROL AUDIO MENYIMAK (DENGAN TOMBOL DOWNLOAD) -->
+        <div class="glass-card" style="margin-bottom: 20px; padding: 16px 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 26px;">🎧</span>
+              <div>
+                <div style="font-size: 15px; font-weight: 800; color: #fff;" id="exam-audio-title">Audio Menyimak (听力录音)</div>
+                <div style="font-size: 11.5px; color: var(--gold-autumn);">Putar rekaman saat mengerjakan Bagian Menyimak (No. 1–20)</div>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <audio id="exam-audio-player" controls style="height: 38px; border-radius: 8px; outline: none;"></audio>
+              <button class="pill-btn" style="padding: 8px 14px; border-color: var(--gold-autumn); font-size: 12px;" onclick="downloadCurrentExamAudio()">⬇️ Unduh Audio (MP3)</button>
+            </div>
           </div>
-          <div id="placement-quiz-box" style="display: none;"></div>
+        </div>
+
+        <!-- LAYOUT UTAMA: VIEWER PDF BERCORETAN + LEMBAR JAWABAN DIGITAL (LJD) -->
+        <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start;">
+          
+          <!-- SISI KIRI: LEMBAR SOAL PDF DENGAN KANVAS CORETAN PENSIL & PENGHAPUS -->
+          <div class="glass-card" style="flex: 1; min-width: 320px; padding: 18px;">
+            
+            <!-- TOOLBAR ALAT CORETAN / DRAWING TOOLBAR -->
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; background: rgba(20, 11, 7, 0.6); padding: 10px 14px; border-radius: 10px; border: 1px solid var(--amber-border);">
+              
+              <!-- Navigasi Halaman PDF -->
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <button class="pill-btn" style="padding: 5px 10px; font-size: 11.5px;" onclick="changePdfPage(-1)">◀ Sebelumnya</button>
+                <span id="pdf-page-num" style="font-size: 12px; font-weight: 700; color: #fff; min-width: 70px; text-align: center;">Hal 1 / 1</span>
+                <button class="pill-btn" style="padding: 5px 10px; font-size: 11.5px;" onclick="changePdfPage(1)">Berikutnya ▶</button>
+              </div>
+
+              <!-- Alat Pensil, Warna & Penghapus -->
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <button class="pill-btn active" id="btn-tool-pen" style="padding: 5px 10px; font-size: 11.5px;" onclick="setAnnotationTool('pen')">✏️ Pensil</button>
+                <button class="pill-btn" id="btn-tool-eraser" style="padding: 5px 10px; font-size: 11.5px;" onclick="setAnnotationTool('eraser')">🧹 Penghapus</button>
+
+                <!-- Pilihan Warna Coretan -->
+                <div style="display: flex; gap: 5px; align-items: center; margin: 0 4px;">
+                  <span class="color-swatch-btn active" style="background: #ef4444;" onclick="setAnnotationColor('#ef4444', this)" title="Merah"></span>
+                  <span class="color-swatch-btn" style="background: #3b82f6;" onclick="setAnnotationColor('#3b82f6', this)" title="Biru"></span>
+                  <span class="color-swatch-btn" style="background: #f59e0b;" onclick="setAnnotationColor('#f59e0b', this)" title="Oranye Gold"></span>
+                  <span class="color-swatch-btn" style="background: #1e293b;" onclick="setAnnotationColor('#1e293b', this)" title="Hitam"></span>
+                </div>
+
+                <button class="pill-btn" style="padding: 5px 10px; font-size: 11.5px; border-color: var(--maple-red);" onclick="clearCurrentPageDrawings()">🔄 Hapus Coretan Hal Ini</button>
+                <button class="btn-autumn-primary" style="padding: 6px 12px; font-size: 11.5px;" onclick="downloadAnnotatedPage()">📥 Unduh Lembar + Coretan (PNG)</button>
+              </div>
+            </div>
+
+            <!-- CONTAINER VIEWER CANVAS (PDF + OVERLAY DRAWING LAYER) -->
+            <div style="background: #180d08; border: 1px solid var(--amber-border); border-radius: 10px; overflow: auto; max-height: 760px; display: flex; justify-content: center; padding: 12px;">
+              <div class="pdf-viewer-outer-wrap" id="pdf-viewer-wrapper">
+                <canvas id="pdf-render-canvas"></canvas>
+                <canvas id="pdf-draw-canvas"></canvas>
+              </div>
+            </div>
+            
+            <div style="margin-top: 10px; font-size: 11.5px; color: var(--text-muted); text-align: center;">
+              💡 <i>Anda bisa langsung mencoret/menandai pilihan di atas lembar PDF dengan mouse maupun layar sentuh.</i>
+            </div>
+          </div>
+
+          <!-- SISI KANAN: LEMBAR JAWABAN DIGITAL INTERAKTIF (LJD 40 SOAL) -->
+          <div class="glass-card" style="width: 360px; max-height: 870px; display: flex; flex-direction: column; padding: 18px;">
+            <div style="border-bottom: 1px solid var(--amber-border); padding-bottom: 10px; margin-bottom: 12px;">
+              <div style="font-size: 15px; font-weight: 800; color: #fff;">📝 Lembar Jawaban Digital</div>
+              <div style="font-size: 11.5px; color: var(--gold-autumn);">Pilih jawaban sesuai naskah soal di PDF</div>
+            </div>
+
+            <div style="display: flex; gap: 6px; margin-bottom: 12px;">
+              <button class="pill-btn active" id="btn-ljd-listening" style="flex: 1; padding: 6px; font-size: 11.5px;" onclick="switchLjdSection('listening')">🎧 Menyimak (1-20)</button>
+              <button class="pill-btn" id="btn-ljd-reading" style="flex: 1; padding: 6px; font-size: 11.5px;" onclick="switchLjdSection('reading')">📖 Membaca (21-40)</button>
+            </div>
+
+            <div id="ljd-items-container" style="flex: 1; overflow-y: auto; padding-right: 6px; display: flex; flex-direction: column; gap: 9px; margin-bottom: 14px;"></div>
+
+            <div style="border-top: 1px solid var(--amber-border); padding-top: 12px;">
+              <button class="btn-autumn-primary" style="width: 100%; padding: 12px;" onclick="submitPlacementExam()">📊 Kumpulkan & Hitung Skor</button>
+              <div id="exam-score-result" style="display: none; margin-top: 12px; padding: 12px; border-radius: 8px; text-align: center; background: rgba(234, 88, 12, 0.15); border: 1px solid var(--gold-autumn);"></div>
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -977,15 +1106,16 @@
           <span style="font-size: 24px;">🍁</span>
           <div>
             <h3 style="font-size: 18px; color: #fff;">Panel Admin & CRUD Khusus</h3>
-            <p style="font-size: 11px; color: var(--gold-autumn);">Sinkronisasi Otomatis ke Sheet SPEAKING_DIALOGUES & WORKBOOK_BANK[cite: 8, 9]</p>
+            <p style="font-size: 11px; color: var(--gold-autumn);">Sinkronisasi Otomatis ke Sheet SPEAKING, WORKBOOK & PLACEMENT_TEST</p>
           </div>
         </div>
         <button onclick="closeAdminCrudModal()" style="background: none; border: none; color: #fca5a5; font-size: 24px; cursor: pointer;">✕</button>
       </div>
 
       <div class="crud-tab-header">
-        <button class="crud-tab-btn active" id="crud-tab-spk" onclick="switchCrudTab('spk')">🎙️ CRUD Speaking AI (PDF 2 Orang)</button>
-        <button class="crud-tab-btn" id="crud-tab-wb" onclick="switchCrudTab('wb')">📝 CRUD Soal Workbook</button>
+        <button class="crud-tab-btn active" id="crud-tab-spk" onclick="switchCrudTab('spk')">🎙️ Speaking AI (PDF 2 Orang)</button>
+        <button class="crud-tab-btn" id="crud-tab-wb" onclick="switchCrudTab('wb')">📝 Soal Workbook</button>
+        <button class="crud-tab-btn" id="crud-tab-plc" onclick="switchCrudTab('plc')">🎯 Placement Test (PDF + Audio)</button>
       </div>
 
       <!-- TAB 1: CRUD SPEAKING AI -->
@@ -993,12 +1123,11 @@
         <input type="hidden" id="crud-spk-edit-id" value="">
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-          <!-- Kolom Kiri: Upload & Pengaturan Skenario -->
           <div>
             <div class="crud-form-group" style="background: rgba(234, 88, 12, 0.15); padding: 10px; border-radius: 8px; border: 1px dashed var(--gold-autumn); margin-bottom: 10px;">
               <label style="font-size: 11px;">Unggah PDF 2 Orang:</label>
               <input type="file" id="pdf-crud-file-input" accept="application/pdf" onchange="handleCrudPdfUpload(event)" style="padding: 4px; font-size: 12px;">
-              <div id="crud-pdf-status" style="font-size: 11px; color: var(--gold-autumn); margin-top: 4px;">Bedah otomatis Hanzi, Pinyin & Terjemahan[cite: 9].</div>
+              <div id="crud-pdf-status" style="font-size: 11px; color: var(--gold-autumn); margin-top: 4px;">Bedah otomatis Hanzi, Pinyin & Terjemahan.</div>
             </div>
 
             <div class="crud-form-group" style="margin-bottom: 10px;">
@@ -1029,7 +1158,6 @@
             </div>
           </div>
 
-          <!-- Kolom Kanan: Naskah & Preview -->
           <div>
             <div class="crud-form-group" style="margin-bottom: 8px;">
               <label>Naskah Percakapan (Karakter: Hanzi | Pinyin | Terjemahan):</label>
@@ -1043,10 +1171,9 @@
           </div>
         </div>
 
-        <button class="btn-autumn-primary" id="btn-save-crud-spk" onclick="submitCrudSpeakingDialogue()" style="width: 100%; margin-top: 12px; padding: 10px;">💾 Simpan ke Sheet SPEAKING_DIALOGUES[cite: 8, 9]</button>
+        <button class="btn-autumn-primary" id="btn-save-crud-spk" onclick="submitCrudSpeakingDialogue()" style="width: 100%; margin-top: 12px; padding: 10px;">💾 Simpan ke Sheet SPEAKING_DIALOGUES</button>
         <button class="pill-btn" id="btn-cancel-edit-spk" onclick="cancelEditSpeakingDialogue()" style="width: 100%; margin-top: 6px; display: none; border-color: var(--maple-red); padding: 8px;">✕ Batalkan Mode Edit</button>
 
-        <!-- TABEL DAFTAR SKENARIO -->
         <div style="margin-top: 16px; border-top: 1px solid var(--amber-border); padding-top: 12px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
             <label style="font-size: 12px; font-weight: 700; color: var(--gold-autumn); text-transform: uppercase;">Daftar Skenario di Database (SPEAKING_DIALOGUES):</label>
@@ -1117,10 +1244,9 @@
           <input type="text" id="crud-wb-explanation" placeholder="Contoh: 苹果 (píngguǒ) berarti buah apel.">
         </div>
 
-        <button class="btn-autumn-primary" id="btn-save-crud-wb" onclick="submitCrudWorkbookQuestion()" style="width: 100%;">💾 Tambah Soal ke WORKBOOK_BANK[cite: 8]</button>
+        <button class="btn-autumn-primary" id="btn-save-crud-wb" onclick="submitCrudWorkbookQuestion()" style="width: 100%;">💾 Tambah Soal ke WORKBOOK_BANK</button>
         <button class="pill-btn" id="btn-cancel-edit-wb" onclick="cancelEditWorkbookQuestion()" style="width: 100%; margin-top: 8px; display: none; border-color: var(--maple-red);">✕ Batalkan Mode Edit (Kembali ke Tambah Baru)</button>
 
-        <!-- TABEL EDIT & HAPUS SOAL WORKBOOK -->
         <div style="margin-top: 24px; border-top: 1px solid var(--amber-border); padding-top: 16px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <label style="font-size: 12px; font-weight: 700; color: var(--gold-autumn); text-transform: uppercase;">Daftar Soal Database (WORKBOOK_BANK):</label>
@@ -1145,6 +1271,74 @@
         </div>
       </div>
 
+      <!-- TAB 3: CRUD PLACEMENT TEST (PDF + AUDIO UJIAN) -->
+      <div id="crud-section-plc" style="display: none;">
+        <input type="hidden" id="crud-plc-edit-id" value="">
+
+        <div style="display: flex; gap: 12px;">
+          <div class="crud-form-group" style="width: 140px;">
+            <label>Jenjang HSK:</label>
+            <select id="crud-plc-hsk">
+              <option value="HSK 1">HSK 1</option>
+              <option value="HSK 2">HSK 2</option>
+              <option value="HSK 3">HSK 3</option>
+              <option value="HSK 4">HSK 4</option>
+              <option value="HSK 5">HSK 5</option>
+              <option value="HSK 6">HSK 6</option>
+            </select>
+          </div>
+          <div class="crud-form-group" style="flex: 1;">
+            <label>Judul Paket Ujian (test_title):</label>
+            <input type="text" id="crud-plc-title" placeholder="Contoh: Simulasi Ujian Resmi HSK 1 (H10901)">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="crud-form-group" style="background: rgba(234, 88, 12, 0.15); padding: 10px; border-radius: 8px; border: 1px dashed var(--gold-autumn);">
+            <label style="color: #fff;">1. Unggah Lembar Soal PDF (Wajib):</label>
+            <input type="file" id="crud-plc-pdf-input" accept="application/pdf" style="padding: 5px; font-size: 12px;">
+            <div id="crud-plc-pdf-status" style="font-size: 11px; color: var(--gold-autumn); margin-top: 4px;">File PDF akan menjadi lembar ujian resmi.</div>
+          </div>
+
+          <div class="crud-form-group" style="background: rgba(234, 88, 12, 0.15); padding: 10px; border-radius: 8px; border: 1px dashed var(--gold-autumn);">
+            <label style="color: #fff;">2. Unggah Audio Menyimak MP3 (Opsional):</label>
+            <input type="file" id="crud-plc-audio-input" accept="audio/*" style="padding: 5px; font-size: 12px;">
+            <div id="crud-plc-audio-status" style="font-size: 11px; color: var(--gold-autumn); margin-top: 4px;">Audio rekaman listening bagian 1-20.</div>
+          </div>
+        </div>
+
+        <div class="crud-form-group">
+          <label>Kunci Jawaban JSON (Opsional, format default 1–40):</label>
+          <textarea id="crud-plc-keys" rows="3" style="font-family: monospace; font-size: 11px;" placeholder='{"1":"TRUE","2":"FALSE","6":"A","11":"D","26":"D", ...}'></textarea>
+        </div>
+
+        <button class="btn-autumn-primary" id="btn-save-crud-plc" onclick="submitCrudPlacementPackage()" style="width: 100%; margin-top: 6px;">💾 Simpan Paket ke Sheet PLACEMENT_TEST</button>
+        <button class="pill-btn" id="btn-cancel-edit-plc" onclick="cancelEditPlacementPackage()" style="width: 100%; margin-top: 6px; display: none; border-color: var(--maple-red);">✕ Batalkan Mode Edit</button>
+
+        <div style="margin-top: 20px; border-top: 1px solid var(--amber-border); padding-top: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label style="font-size: 12px; font-weight: 700; color: var(--gold-autumn); text-transform: uppercase;">Daftar Paket Ujian di Database (PLACEMENT_TEST):</label>
+            <button class="pill-btn" style="padding: 3px 8px; font-size: 11px;" onclick="loadPlacementPackagesTable()">🔄 Refresh</button>
+          </div>
+          <div class="crud-table-wrap">
+            <table class="crud-table">
+              <thead>
+                <tr>
+                  <th style="width: 75px;">ID</th>
+                  <th style="width: 65px;">Level</th>
+                  <th>Judul Paket Ujian</th>
+                  <th>PDF & Audio</th>
+                  <th style="width: 120px; text-align: center;">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="crud-plc-table-body">
+                <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 14px;">Memuat paket ujian...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -1154,7 +1348,7 @@
     <button class="bottom-nav-btn" onclick="switchTab('stroke')"><span class="icon">✍️</span>Menulis</button>
     <button class="bottom-nav-btn" onclick="switchTab('speaking')"><span class="icon">🎙️</span>Roleplay</button>
     <button class="bottom-nav-btn" onclick="switchTab('workbook')"><span class="icon">📝</span>Workbook</button>
-    <button class="bottom-nav-btn" onclick="switchTab('srs')"><span class="icon">🎴</span>SRS</button>
+    <button class="bottom-nav-btn" onclick="switchTab('placement')"><span class="icon">🎯</span>Placement</button>
   </nav>
 
   <script>
@@ -1196,12 +1390,35 @@
     // State Soal Workbook
     var allWorkbookQuestions = [];
 
+    // State Placement Test & Mock Exam
+    var allPlacementPackages = [];
+    var currentPlacementPackage = null;
+    var examPdfDoc = null;
+    var currentPdfPageNum = 1;
+    var totalPdfPages = 1;
+    var activeLjdSection = 'listening';
+    var userExamAnswers = {};
+    var drawingsPerPage = {}; // Menyimpan coretan user per nomor halaman
+    var currentDrawTool = 'pen'; // 'pen' atau 'eraser'
+    var currentPenColor = '#ef4444';
+    var currentPenWidth = 3;
+    var isDrawingOnPdf = false;
+    var lastPdfX = 0, lastPdfY = 0;
+
+    // KUNCI JAWABAN STANDAR RESMI HSK 1 (H10901)
+    const DEFAULT_HSK1_ANSWER_KEY = {
+      1: "TRUE", 2: "FALSE", 3: "FALSE", 4: "FALSE", 5: "TRUE",
+      6: "A", 7: "A", 8: "C", 9: "A", 10: "C",
+      11: "D", 12: "B", 13: "A", 14: "E", 15: "F",
+      16: "B", 17: "B", 18: "C", 19: "C", 20: "B",
+      21: "TRUE", 22: "TRUE", 23: "FALSE", 24: "FALSE", 25: "TRUE",
+      26: "D", 27: "F", 28: "C", 29: "A", 30: "B",
+      31: "C", 32: "D", 33: "A", 34: "B", 35: "E",
+      36: "F", 37: "B", 38: "E", 39: "A", 40: "C"
+    };
+
     var srsCardsQueue = [];
     var currentSrsIndex = 0;
-
-    var placementQuestions = [];
-    var currentPlacementStep = 0;
-    var placementScore = 0;
 
     var logoClickCount = 0;
     var logoClickTimer = null;
@@ -1213,6 +1430,7 @@
       renderMultiTianZiGe(currentPracticeWord);
       loadGrammarGuidesView();
       loadSpeakingDialoguesView();
+      loadPlacementPackagesView();
       initSrsEngine();
     });
 
@@ -1295,6 +1513,7 @@
         modal.style.display = 'block';
         loadSpeakingDialoguesTable();
         loadWorkbookTable();
+        loadPlacementPackagesTable();
       }
     };
 
@@ -1303,181 +1522,1471 @@
       if (modal) modal.style.display = 'none';
       cancelEditSpeakingDialogue();
       cancelEditWorkbookQuestion();
+      cancelEditPlacementPackage();
     };
 
     window.switchCrudTab = function(tab) {
       var tSpk = document.getElementById('crud-tab-spk');
       var tWb = document.getElementById('crud-tab-wb');
+      var tPlc = document.getElementById('crud-tab-plc');
       var sSpk = document.getElementById('crud-section-spk');
       var sWb = document.getElementById('crud-section-wb');
-      if (tSpk && tWb && sSpk && sWb) {
+      var sPlc = document.getElementById('crud-section-plc');
+
+      if (tSpk && tWb && tPlc && sSpk && sWb && sPlc) {
         tSpk.classList.toggle('active', tab === 'spk');
         tWb.classList.toggle('active', tab === 'wb');
+        tPlc.classList.toggle('active', tab === 'plc');
         sSpk.style.display = (tab === 'spk' ? 'block' : 'none');
         sWb.style.display = (tab === 'wb' ? 'block' : 'none');
+        sPlc.style.display = (tab === 'plc' ? 'block' : 'none');
+
         if (tab === 'spk') loadSpeakingDialoguesTable();
         if (tab === 'wb') loadWorkbookTable();
+        if (tab === 'plc') loadPlacementPackagesTable();
       }
     };
 
-    // SMART PDF PARSER
-    window.handleCrudPdfUpload = async function(event) {
-      const file = event.target.files[0];
-      if (!file || file.type !== "application/pdf") {
-        alert("Mohon pilih file berekstensi PDF (.pdf).");
+    // 2. ENGINE PENARIK KOSAKATA GITHUB PAGES
+    function loadDatabaseVocab() {
+      var container = document.getElementById('vocab-cards-container');
+      if (container) container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--gold-autumn);">Memuat data dari Spreadsheet Database... 🍂</div>';
+
+      if (typeof SCRIPT_URL !== 'undefined' && SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+        fetch(SCRIPT_URL + "?action=getVocab&level=ALL")
+          .then(function(res) { return res.json(); })
+          .then(function(data) {
+            allVocabularies = Array.isArray(data) ? data : (data.items || []);
+            renderVocabUI();
+            initPracticeCharacters(currentStrokeLevel);
+            renderCurrentSrsCard();
+          })
+          .catch(function(err) {
+            console.error("Gagal load API:", err);
+            useFallbackVocab();
+          });
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(data) {
+            allVocabularies = Array.isArray(data) ? data : (data.items || []);
+            renderVocabUI();
+            initPracticeCharacters(currentStrokeLevel);
+            renderCurrentSrsCard();
+          })
+          .withFailureHandler(function(err) {
+            console.error("Gagal load database:", err);
+            useFallbackVocab();
+          })
+          .getVocabularyData('ALL');
+      } else {
+        useFallbackVocab();
+      }
+    }
+
+    function useFallbackVocab() {
+      allVocabularies = [
+        {hanzi:"米饭", pinyin:"mǐfàn", indonesian:"nasi", partOfSpeech:"Kata Benda", level:"1", hskLevel:"HSK 1"},
+        {hanzi:"谢谢", pinyin:"xièxie", indonesian:"terima kasih", partOfSpeech:"Kata Sapaan", level:"1", hskLevel:"HSK 1"},
+        {hanzi:"再见", pinyin:"zàijiàn", indonesian:"sampai jumpa", partOfSpeech:"Kata Sapaan", level:"1", hskLevel:"HSK 1"},
+        {hanzi:"准备", pinyin:"zhǔnbèi", indonesian:"mempersiapkan", partOfSpeech:"Kata Kerja", level:"2", hskLevel:"HSK 2"},
+        {hanzi:"简单", pinyin:"jiǎndān", indonesian:"sederhana / mudah", partOfSpeech:"Kata Sifat", level:"3", hskLevel:"HSK 3"}
+      ];
+      renderVocabUI();
+      initPracticeCharacters('1');
+      renderCurrentSrsCard();
+    }
+
+    function renderVocabUI() {
+      var container = document.getElementById('vocab-cards-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      var targetNum = currentDictLevel.toString().replace(/[^0-9]/g, '').trim();
+
+      var filtered = allVocabularies.filter(function(v) {
+        var vLvl = (v.level || v.hskLevel || '').toString().replace(/[^0-9]/g, '').trim();
+        var matchLvl = (currentDictLevel === 'ALL' || targetNum === '' || vLvl === targetNum);
+
+        var sTerm = currentDictSearch.toLowerCase().trim();
+        var matchSearch = (!sTerm || 
+          (v.hanzi && v.hanzi.toLowerCase().includes(sTerm)) || 
+          (v.pinyin && v.pinyin.toLowerCase().includes(sTerm)) || 
+          (v.indonesian && v.indonesian.toLowerCase().includes(sTerm))
+        );
+        
+        return matchLvl && matchSearch;
+      });
+
+      var pageSize = 12;
+      var totalPages = Math.ceil(filtered.length / pageSize) || 1;
+      currentDictPage = Math.max(1, Math.min(currentDictPage, totalPages));
+
+      var pagedItems = filtered.slice((currentDictPage - 1) * pageSize, currentDictPage * pageSize);
+
+      if (pagedItems.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--text-muted);">Tidak ada kosakata yang cocok.</div>';
+      } else {
+        pagedItems.forEach(function(item) {
+          var rawLvl = (item.hskLevel || item.level || '1').toString();
+          var displayTag = rawLvl.toUpperCase().includes('HSK') ? rawLvl : ('HSK ' + rawLvl);
+
+          var card = document.createElement('div');
+          card.className = 'vocab-card';
+          card.innerHTML = 
+            '<div class="vocab-head">' +
+              '<div class="vocab-hanzi">' + (item.hanzi || '') + '</div>' +
+              '<div class="vocab-level-tag">' + displayTag + '</div>' +
+            '</div>' +
+            '<div class="vocab-pinyin">' + (item.pinyin || '') + '</div>' +
+            '<div class="vocab-indo">' + (item.indonesian || '') + '</div>' +
+            '<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px;">[' + (item.partOfSpeech || 'Umum') + ']</div>' +
+            '<div class="vocab-actions">' +
+              '<button class="icon-action-btn" onclick="speakText(\'' + (item.hanzi || '') + '\')">🔊 Dengar</button>' +
+              '<button class="icon-action-btn" onclick="selectWordForWriting({hanzi:\'' + (item.hanzi || '') + '\', pinyin:\'' + (item.pinyin || '') + '\', indonesian:\'' + (item.indonesian || '') + '\', level:\'' + (item.level || '1') + '\'})">✍️ Tulis</button>' +
+            '</div>';
+          container.appendChild(card);
+        });
+      }
+
+      var elPage = document.getElementById('dict-page-indicator');
+      var elPrev = document.getElementById('btn-prev-page');
+      var elNext = document.getElementById('btn-next-page');
+
+      if (elPage) elPage.innerText = 'Halaman ' + currentDictPage + ' / ' + totalPages;
+      if (elPrev) elPrev.disabled = (currentDictPage <= 1);
+      if (elNext) elNext.disabled = (currentDictPage >= totalPages);
+    }
+
+    window.filterDictLevel = function(lvl, btn) {
+      currentDictLevel = lvl;
+      currentDictPage = 1;
+      if (btn && btn.parentElement) {
+        var buttons = btn.parentElement.querySelectorAll('.pill-btn');
+        for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove('active');
+        btn.classList.add('active');
+      }
+      renderVocabUI();
+    };
+
+    window.handleSearchDebounce = function() {
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(function() {
+        var inSearch = document.getElementById('dict-search-input');
+        currentDictSearch = inSearch ? inSearch.value : '';
+        currentDictPage = 1;
+        renderVocabUI();
+      }, 250);
+    };
+
+    window.changeVocabPage = function(delta) {
+      currentDictPage += delta;
+      renderVocabUI();
+    };
+
+    // 3. ENGINE MULTI-TIAN ZI GE (RESPONSIF SEBARIS OTOMATIS)
+    function renderMultiTianZiGe(wordObj) {
+      var container = document.getElementById('tianzige-multi-container');
+      if (!container) return;
+      container.innerHTML = '';
+      strokeCanvases = [];
+
+      var hanziStr = (wordObj && wordObj.hanzi) ? wordObj.hanzi.trim() : '你';
+      var chars = [];
+      for (var i = 0; i < hanziStr.length; i++) {
+        var ch = hanziStr.charAt(i);
+        if (ch >= '\u4e00' && ch <= '\u9fa5') {
+          chars.push(ch);
+        }
+      }
+      if (chars.length === 0) chars = [hanziStr.charAt(0) || '你'];
+
+      var count = chars.length;
+      var canvasDim = 280;
+      var maxPWidth = '360px';
+
+      if (count === 2) {
+        canvasDim = 230;
+        maxPWidth = '580px';
+      } else if (count === 3) {
+        canvasDim = 190;
+        maxPWidth = '740px';
+      } else if (count >= 4) {
+        canvasDim = 165;
+        maxPWidth = '860px';
+      }
+
+      var mainPanel = document.createElement('div');
+      mainPanel.className = 'canvas-panel';
+      mainPanel.style.width = '100%';
+      mainPanel.style.maxWidth = maxPWidth;
+      mainPanel.style.padding = '18px 14px';
+      mainPanel.style.margin = '0 auto';
+      mainPanel.style.display = 'flex';
+      mainPanel.style.flexDirection = 'column';
+      mainPanel.style.alignItems = 'center';
+
+      var canvasRow = document.createElement('div');
+      canvasRow.style.display = 'flex';
+      canvasRow.style.flexWrap = 'nowrap';
+      canvasRow.style.gap = (count >= 4 ? '10px' : '14px');
+      canvasRow.style.justifyContent = 'center';
+      canvasRow.style.width = '100%';
+      canvasRow.style.overflowX = 'auto';
+      canvasRow.style.padding = '4px 2px';
+
+      chars.forEach(function(ch, idx) {
+        var charCol = document.createElement('div');
+        charCol.style.display = 'flex';
+        charCol.style.flexDirection = 'column';
+        charCol.style.alignItems = 'center';
+        charCol.style.flexShrink = '0';
+
+        var title = document.createElement('div');
+        title.style.color = 'var(--gold-autumn)';
+        title.style.fontSize = (count >= 4 ? '11.5px' : '13px');
+        title.style.fontWeight = '700';
+        title.style.marginBottom = '6px';
+        title.innerText = (count > 1 ? '#' + (idx + 1) + ': ' : '') + ch;
+        charCol.appendChild(title);
+
+        var cvs = document.createElement('canvas');
+        cvs.width = canvasDim;
+        cvs.height = canvasDim;
+        cvs.style.width = canvasDim + 'px';
+        cvs.style.height = canvasDim + 'px';
+        cvs.style.background = '#fff8f0';
+        cvs.style.borderRadius = '8px';
+        cvs.style.cursor = 'crosshair';
+        cvs.style.touchAction = 'none';
+        charCol.appendChild(cvs);
+
+        canvasRow.appendChild(charCol);
+
+        drawSingleTianZiGe(cvs, ch);
+        attachPointerDrawing(cvs);
+        strokeCanvases.push({ canvas: cvs, char: ch });
+      });
+
+      mainPanel.appendChild(canvasRow);
+
+      var ctrl = document.createElement('div');
+      ctrl.className = 'canvas-controls';
+      ctrl.style.marginTop = '16px';
+      ctrl.style.maxWidth = '380px';
+      ctrl.style.width = '100%';
+      ctrl.style.display = 'flex';
+      ctrl.style.gap = '10px';
+
+      var btnClr = document.createElement('button');
+      btnClr.className = 'canvas-btn btn-clear';
+      btnClr.innerText = '🔄 Hapus Goresan';
+      btnClr.onclick = function() { clearAllStrokeCanvases(); };
+      ctrl.appendChild(btnClr);
+
+      var btnSpk = document.createElement('button');
+      btnSpk.className = 'canvas-btn btn-anim';
+      btnSpk.innerText = '🔊 Pelafalan Kata';
+      btnSpk.onclick = function() { speakCurrentWord(); };
+      ctrl.appendChild(btnSpk);
+
+      mainPanel.appendChild(ctrl);
+      container.appendChild(mainPanel);
+    }
+
+    function drawSingleTianZiGe(canvas, charToGuide) {
+      if (!canvas) return;
+      var ctx = canvas.getContext('2d');
+      var w = canvas.width, h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      ctx.strokeStyle = '#fcd34d';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([5, 5]);
+
+      ctx.beginPath();
+      ctx.moveTo(0, 0); ctx.lineTo(w, h);
+      ctx.moveTo(w, 0); ctx.lineTo(0, h);
+      ctx.moveTo(w / 2, 0); ctx.lineTo(w / 2, h);
+      ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2);
+      ctx.stroke();
+
+      ctx.setLineDash([]);
+      ctx.strokeStyle = '#c2410c';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(0, 0, w, h);
+
+      if (charToGuide) {
+        ctx.save();
+        var fontSize = Math.round(w * 0.72);
+        ctx.font = fontSize + 'px "Noto Serif SC", "PingFang SC", serif';
+        ctx.fillStyle = 'rgba(234, 88, 12, 0.16)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(charToGuide, w / 2, h / 2 + Math.round(fontSize * 0.05));
+        ctx.restore();
+      }
+    }
+
+    function attachPointerDrawing(canvas) {
+      var ctx = canvas.getContext('2d');
+      var isDrawing = false;
+      var lastX = 0, lastY = 0;
+
+      function getCanvasPos(e) {
+        var rect = canvas.getBoundingClientRect();
+        var scaleX = canvas.width / (rect.width || canvas.width);
+        var scaleY = canvas.height / (rect.height || canvas.height);
+        return {
+          x: (e.clientX - rect.left) * scaleX,
+          y: (e.clientY - rect.top) * scaleY
+        };
+      }
+
+      canvas.onpointerdown = function(e) {
+        e.preventDefault();
+        isDrawing = true;
+        var pos = getCanvasPos(e);
+        lastX = pos.x;
+        lastY = pos.y;
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 4.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#1e293b';
+        ctx.fill();
+      };
+
+      canvas.onpointermove = function(e) {
+        if (!isDrawing) return;
+        e.preventDefault();
+        var pos = getCanvasPos(e);
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 9;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+        lastX = pos.x;
+        lastY = pos.y;
+      };
+
+      canvas.onpointerup = function() { isDrawing = false; };
+      canvas.onpointercancel = function() { isDrawing = false; };
+      canvas.onpointerleave = function() { isDrawing = false; };
+    }
+
+    window.clearAllStrokeCanvases = function() {
+      if (strokeCanvases && strokeCanvases.length > 0) {
+        strokeCanvases.forEach(function(item) {
+          drawSingleTianZiGe(item.canvas, item.char);
+        });
+      }
+    };
+
+    window.speakCurrentWord = function() {
+      if (currentPracticeWord && currentPracticeWord.hanzi) {
+        speakText(currentPracticeWord.hanzi);
+      }
+    };
+
+    // 4. ENGINE FILTER & PILIHAN KOSAKATA LENGKAP HSK 1 - 6
+    window.filterStrokeLevel = function(lvl, btn) {
+      currentStrokeLevel = lvl;
+      if (btn && btn.parentElement) {
+        var buttons = btn.parentElement.querySelectorAll('.pill-btn');
+        for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove('active');
+        btn.classList.add('active');
+      }
+      initPracticeCharacters(lvl);
+    };
+
+    window.handleStrokeSearchDebounce = function() {
+      clearTimeout(strokeSearchDebounceTimer);
+      strokeSearchDebounceTimer = setTimeout(function() {
+        var inSearch = document.getElementById('stroke-search-input');
+        currentStrokeSearch = inSearch ? inSearch.value : '';
+        initPracticeCharacters(currentStrokeLevel);
+      }, 200);
+    };
+
+    function initPracticeCharacters(lvl) {
+      var container = document.getElementById('char-selector-box');
+      if (!container) return;
+      container.innerHTML = '';
+
+      var selectedLvl = (lvl || currentStrokeLevel || '1').toString().toUpperCase().replace(/\s+/g, '');
+      var numLvl = selectedLvl.replace(/[^0-9]/g, '');
+      var sTerm = currentStrokeSearch.toLowerCase().trim();
+
+      var filtered = allVocabularies.filter(function(v) {
+        var vLvl = (v.level || v.hskLevel || '').toString().replace(/[^0-9]/g, '').trim();
+        var matchLvl = (selectedLvl === 'ALL' || selectedLvl === '' || vLvl === numLvl);
+
+        var matchSearch = (!sTerm || 
+          (v.hanzi && v.hanzi.toLowerCase().includes(sTerm)) || 
+          (v.pinyin && v.pinyin.toLowerCase().includes(sTerm)) || 
+          (v.indonesian && v.indonesian.toLowerCase().includes(sTerm))
+        );
+
+        return matchLvl && matchSearch && v.hanzi;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div style="font-size: 13px; color: var(--text-muted); padding: 10px;">Belum ada kosakata yang cocok di database.</div>';
         return;
       }
 
-      const statusBox = document.getElementById('crud-pdf-status');
-      if (statusBox) statusBox.innerHTML = `⏳ <b>Membaca dan menganalisis PDF:</b> ${file.name}...`;
+      filtered.forEach(function(item) {
+        var isCurrent = (item.hanzi === currentPracticeWord.hanzi);
+        var btn = document.createElement('button');
+        btn.className = 'pill-btn' + (isCurrent ? ' active' : '');
+        btn.style.padding = '8px 12px';
+        btn.style.display = 'inline-flex';
+        btn.style.flexDirection = 'column';
+        btn.style.alignItems = 'flex-start';
+        btn.style.gap = '2px';
+        btn.style.minWidth = '110px';
 
-      try {
-        const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-        let extractedLines = [];
+        btn.innerHTML = 
+          '<div style="font-family: var(--font-hanzi); font-size: 18px; font-weight: 700; color: #fff;">' + (item.hanzi || '') + '</div>' +
+          '<div style="font-size: 11px; color: var(--gold-autumn); font-weight: 600;">' + (item.pinyin || '') + '</div>' +
+          '<div style="font-size: 11px; color: var(--text-muted); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">' + (item.indonesian || '') + '</div>';
 
-        for (let i = 1; i <= pdf.numPages; i++) {
-          const page = await pdf.getPage(i);
-          const content = await page.getTextContent();
-          
-          let linesMap = {};
-          content.items.forEach(item => {
-            if (!item.str || item.str.trim() === '') return;
-            let y = Math.round(item.transform[5]); 
-            let matchedY = Object.keys(linesMap).find(k => Math.abs(Number(k) - y) <= 4);
-            if (matchedY !== undefined) {
-              linesMap[matchedY].push(item);
-            } else {
-              linesMap[y] = [item];
-            }
-          });
+        btn.onclick = function() {
+          selectWordForWriting(item);
+          var allBtns = container.querySelectorAll('.pill-btn');
+          for (var j = 0; j < allBtns.length; j++) allBtns[j].classList.remove('active');
+          btn.classList.add('active');
+        };
+        container.appendChild(btn);
+      });
+    }
 
-          let sortedY = Object.keys(linesMap).sort((a, b) => Number(b) - Number(a));
-          sortedY.forEach(y => {
-            let lineItems = linesMap[y].sort((a, b) => a.transform[4] - b.transform[4]);
-            let lineStr = lineItems.map(it => it.str).join(' ').trim();
-            lineStr = lineStr.replace(/\s+/g, ' ');
-            if (lineStr) extractedLines.push(lineStr);
-          });
-        }
+    window.selectWordForWriting = function(wordObj) {
+      if (!wordObj || !wordObj.hanzi) return;
+      currentPracticeWord = {
+        hanzi: wordObj.hanzi,
+        pinyin: wordObj.pinyin || '',
+        indo: wordObj.indonesian || wordObj.indo || '',
+        level: wordObj.level || wordObj.hskLevel || '1'
+      };
 
-        const parsed = parseDialogueFromLines(extractedLines);
+      var rawLvl = currentPracticeWord.level.toString().replace(/[^0-9]/g, '') || '1';
+      var elDisplay = document.getElementById('active-char-display');
+      var elInfo = document.getElementById('active-char-info');
+      var elBadge = document.getElementById('active-char-badge');
 
-        if (parsed.length < 2) {
-          if (statusBox) statusBox.innerHTML = "⚠️ Naskah kurang dari 2 baris atau format percakapan tidak terbaca.";
+      if (elDisplay) elDisplay.innerText = currentPracticeWord.hanzi;
+      if (elInfo) elInfo.innerText = '(' + currentPracticeWord.pinyin + (currentPracticeWord.indo ? ' - ' + currentPracticeWord.indo : '') + ')';
+      if (elBadge) elBadge.innerText = 'HSK ' + rawLvl;
+
+      switchTab('stroke');
+      setTimeout(function() { renderMultiTianZiGe(currentPracticeWord); }, 60);
+    };
+
+    // 5. ENGINE SPEAKING AI ROLEPLAY
+    function loadSpeakingDialoguesView(preferredId) {
+      var selectEl = document.getElementById('speaking-scenario-select');
+
+      function applyDialogues(dialogues) {
+        allSpeakingDialogues = dialogues || [];
+        if (!allSpeakingDialogues || allSpeakingDialogues.length === 0) {
+          useDefaultDialogue();
+          if (selectEl) {
+            selectEl.innerHTML = '<option value="DEFAULT">Memesan Makanan (HSK 1)</option>';
+          }
           return;
         }
 
-        var inTitle = document.getElementById('crud-spk-title');
-        var inRoleA = document.getElementById('crud-spk-role-a');
-        var inRoleB = document.getElementById('crud-spk-role-b');
-        var inLines = document.getElementById('crud-spk-lines');
-        var inPreview = document.getElementById('crud-spk-json-preview');
+        if (selectEl) {
+          selectEl.innerHTML = '';
+          allSpeakingDialogues.forEach(function(d) {
+            var rawLvl = d.hskLevel || 'HSK 1';
+            var lvlStr = rawLvl.toUpperCase().includes('HSK') ? rawLvl : ('HSK ' + rawLvl);
+            var opt = document.createElement('option');
+            opt.value = d.dialogueId;
+            opt.innerText = (d.scenarioTitle || 'Percakapan') + ' (' + lvlStr + ')';
+            selectEl.appendChild(opt);
+          });
+        }
 
-        if (inTitle) inTitle.value = file.name.replace(/\.[^/.]+$/, "");
-        if (inRoleA) inRoleA.value = characterAName;
-        if (inRoleB) inRoleB.value = characterBName;
+        var targetDlg = null;
+        if (preferredId) {
+          targetDlg = allSpeakingDialogues.find(function(d) { return d.dialogueId === preferredId; });
+        }
+        if (!targetDlg) {
+          targetDlg = allSpeakingDialogues[0];
+        }
 
-        let rawFormatted = parsed.map(p => `${p.speaker}: ${p.hanzi} | ${p.pinyin} | ${p.indo}`).join('\n');
-        if (inLines) inLines.value = rawFormatted;
-        if (inPreview) inPreview.value = JSON.stringify(parsed, null, 2);
+        if (selectEl && targetDlg) {
+          selectEl.value = targetDlg.dialogueId;
+        }
 
-        if (statusBox) statusBox.innerHTML = `✅ <b>Berhasil Terpisah Rapi!</b> Ditemukan ${parsed.length} giliran bicara antara <b>${characterAName}</b> dan <b>${characterBName}</b>.`;
+        selectScenarioDialogue(targetDlg);
+      }
 
-      } catch (err) {
-        if (statusBox) statusBox.innerHTML = "❌ Terjadi kendala memproses PDF: " + err.message;
+      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+        fetch(SCRIPT_URL + "?action=getDialogues&level=ALL")
+          .then(function(res) { return res.json(); })
+          .then(function(data) { applyDialogues(data); })
+          .catch(function(err) {
+            console.error("Gagal load dialogues:", err);
+            applyDialogues([]);
+          });
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(applyDialogues)
+          .withFailureHandler(function(err) {
+            console.error("Gagal load dialogues via Apps Script:", err);
+            applyDialogues([]);
+          })
+          .getSpeakingDialogues('ALL');
+      } else {
+        applyDialogues([]);
+      }
+    }
+
+    window.handleScenarioChange = function(dlgId) {
+      if (!dlgId) return;
+      var found = allSpeakingDialogues.find(function(d) { return d.dialogueId === dlgId; });
+      if (found) {
+        selectScenarioDialogue(found);
       }
     };
 
-    function parseDialogueFromLines(lines) {
-      const speakerRegex = /^([A-Za-z0-9\u4e00-\u9fa5\s\(\)]{1,15})\s*[:：]\s*(.*)/;
-      let mergedTurns = [];
+    function selectScenarioDialogue(dlg) {
+      if (!dlg) return;
+      currentDialogueId = dlg.dialogueId || "";
+      activeDialogueFlow = dlg.scriptFlow || [];
+      characterAName = dlg.roleAName || "Pelayan Restoran";
+      characterBName = dlg.roleBName || "Pelanggan";
 
-      for (let i = 0; i < lines.length; i++) {
-        let line = lines[i].trim();
-        if (!line) continue;
-
-        if (speakerRegex.test(line)) {
-          mergedTurns.push(line);
-        } else {
-          if (mergedTurns.length > 0) {
-            mergedTurns[mergedTurns.length - 1] += " " + line;
-          } else {
-            mergedTurns.push(line);
-          }
-        }
-      }
-
-      let flow = [];
-      let detectedSpeakers = [];
-
-      for (let i = 0; i < mergedTurns.length; i++) {
-        let line = mergedTurns[i].trim();
-        if (!line) continue;
-
-        let speaker = "";
-        let content = line;
-
-        let colonMatch = line.match(speakerRegex);
-        if (colonMatch) {
-          speaker = colonMatch[1].trim();
-          content = colonMatch[2].trim();
-        }
-
-        if (speaker && !detectedSpeakers.includes(speaker)) {
-          detectedSpeakers.push(speaker);
-        }
-
-        let role = "A";
-        if (speaker) {
-          role = (detectedSpeakers.indexOf(speaker) === 0) ? "A" : "B";
-        } else {
-          role = (flow.length % 2 === 0) ? "A" : "B";
-        }
-
-        content = content.replace(/｜/g, '|');
-        let parts = content.split('|').map(s => s.trim());
-
-        let hanzi = parts[0] || "";
-        let pinyin = parts[1] || "";
-        let indo = parts[2] || "";
-
-        if (parts.length === 1 && !pinyin && !indo) {
-          hanzi = content;
-        }
-
-        if (hanzi) {
-          flow.push({
-            role: role,
-            speaker: speaker || (role === "A" ? (detectedSpeakers[0] || "Karakter A") : (detectedSpeakers[1] || "Karakter B")),
-            hanzi: hanzi,
-            pinyin: pinyin,
-            indo: indo
-          });
-        }
-      }
-
-      if (detectedSpeakers.length >= 2) {
-        characterAName = detectedSpeakers[0];
-        characterBName = detectedSpeakers[1];
-      } else if (detectedSpeakers.length === 1) {
-        characterAName = detectedSpeakers[0];
-        characterBName = "Karakter B";
-      } else {
-        characterAName = "Pelayan Restoran";
-        characterBName = "Pelanggan";
-      }
-
-      flow.forEach(item => {
-        if (!item.speaker || item.speaker === "Karakter A" || item.speaker === "Karakter B") {
-          item.speaker = (item.role === "A" ? characterAName : characterBName);
-        }
-      });
-
-      return flow;
+      updateRoleSwitcherButtons();
+      initSpeakingDialogue();
     }
 
-    // CRUD SPEAKING SUBMISSION (CREATE / UPDATE)
+    function useDefaultDialogue() {
+      characterAName = "Pelayan Restoran";
+      characterBName = "Pelanggan";
+      activeDialogueFlow = [
+        { role: "A", speaker: characterAName, hanzi: "你好！请问你想吃什么？", pinyin: "Nǐ hǎo! Qǐngwèn xiǎng chī shénme?", indo: "Halo! Permisi mau makan apa?" },
+        { role: "B", speaker: characterBName, hanzi: "我要一份炒饭和一杯茶。", pinyin: "Wǒ yào yí fèn chǎofàn hé yì bēi chá.", indo: "Saya mau seporsi nasi goreng dan segelas teh." },
+        { role: "A", speaker: characterAName, hanzi: "好的，请稍等一下。", pinyin: "Hǎo de, qǐng shāo děng yíxià.", indo: "Baiklah, tolong tunggu sebentar." }
+      ];
+      updateRoleSwitcherButtons();
+      initSpeakingDialogue();
+    }
+
+    function updateRoleSwitcherButtons() {
+      const container = document.getElementById('role-selector-container');
+      if (!container) return;
+      container.innerHTML = `
+        <button class="role-btn ${currentUserRole === 'B' ? 'active' : ''}" id="btn-role-b" onclick="setUserRole('B')">
+          Saya Perankan: <b>${characterBName}</b> (AI: ${characterAName})
+        </button>
+        <button class="role-btn ${currentUserRole === 'A' ? 'active' : ''}" id="btn-role-a" onclick="setUserRole('A')">
+          Saya Perankan: <b>${characterAName}</b> (AI: ${characterBName})
+        </button>
+      `;
+    }
+
+    function initSpeakingDialogue() {
+      currentDialogueStep = 0;
+      renderDialogueChat();
+      checkTurnAndAct();
+    }
+
+    function renderDialogueChat() {
+      var chatBox = document.getElementById('roleplay-chat-box');
+      if (!chatBox) return;
+      chatBox.innerHTML = '';
+
+      for (var i = 0; i < activeDialogueFlow.length; i++) {
+        var d = activeDialogueFlow[i];
+        var bubble = document.createElement('div');
+        bubble.className = 'chat-bubble ' + (d.role === 'A' ? 'role-a' : 'role-b');
+        bubble.id = 'chat-bubble-' + i;
+        bubble.innerHTML = 
+          '<div class="speaker-lbl">' + d.speaker + '</div>' +
+          '<div class="bubble-hz">' + d.hanzi + '</div>' +
+          (d.pinyin ? '<div class="bubble-py">' + d.pinyin + '</div>' : '') +
+          (d.indo || d.translation ? '<div class="bubble-tr">' + (d.indo || d.translation) + '</div>' : '');
+        chatBox.appendChild(bubble);
+      }
+    }
+
+    window.setUserRole = function(role) {
+      currentUserRole = role;
+      updateRoleSwitcherButtons();
+      currentDialogueStep = 0;
+      checkTurnAndAct();
+    };
+
+    function checkTurnAndAct() {
+      var display = document.getElementById('transcript-display');
+      if (!activeDialogueFlow || activeDialogueFlow.length === 0) return;
+      if (currentDialogueStep >= activeDialogueFlow.length) {
+        if (display) display.innerHTML = '🎉 <b>Skenario Percakapan Selesai!</b> Kerja bagus!';
+        return;
+      }
+
+      var currentLine = activeDialogueFlow[currentDialogueStep];
+      var isAiTurn = (currentLine.role !== currentUserRole);
+
+      highlightChatBubble(currentDialogueStep);
+
+      if (isAiTurn) {
+        if (display) display.innerHTML = `🤖 <i>${currentLine.speaker} (AI) sedang berbicara...</i>`;
+        speakText(currentLine.hanzi, function() {
+          currentDialogueStep++;
+          checkTurnAndAct();
+        });
+      } else {
+        if (display) display.innerHTML = `👉 <b>Giliran Anda (${currentLine.speaker})!</b> Ucapkan: <i>"${currentLine.hanzi}"</i>`;
+      }
+    }
+
+    function highlightChatBubble(step) {
+      var bubbles = document.querySelectorAll('.chat-bubble');
+      for (var i = 0; i < bubbles.length; i++) {
+        bubbles[i].style.opacity = (i === step ? '1' : '0.45');
+      }
+      var activeEl = document.getElementById('chat-bubble-' + step);
+      if (activeEl) activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    window.playCurrentAiTurn = function() {
+      if (activeDialogueFlow && currentDialogueStep < activeDialogueFlow.length) {
+        speakText(activeDialogueFlow[currentDialogueStep].hanzi);
+      }
+    };
+
+    window.skipUserTurn = function() {
+      if (activeDialogueFlow && currentDialogueStep < activeDialogueFlow.length) {
+        currentDialogueStep++;
+        checkTurnAndAct();
+      }
+    };
+
+    window.speakText = function(text, onEndCallback) {
+      if (!('speechSynthesis' in window)) {
+        if (onEndCallback) onEndCallback();
+        return;
+      }
+      window.speechSynthesis.cancel();
+      var utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'zh-CN';
+      utterance.rate = 0.85;
+      utterance.onend = function() {
+        if (onEndCallback) onEndCallback();
+      };
+      window.speechSynthesis.speak(utterance);
+    };
+
+    window.toggleSpeechRecognition = function() {
+      var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      var micBtn = document.getElementById('mic-btn');
+      var statusBox = document.getElementById('transcript-display');
+
+      if (!SR) {
+        if (statusBox) statusBox.innerHTML = '⚠️ <i>Browser tidak mendukung Web Speech. Klik <b>Lanjut Giliran</b>.</i>';
+        return;
+      }
+
+      if (isListening && recognition) {
+        recognition.stop();
+        isListening = false;
+        if (micBtn) micBtn.classList.remove('listening');
+        return;
+      }
+
+      try {
+        recognition = new SR();
+        recognition.lang = 'zh-CN';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onstart = function() {
+          isListening = true;
+          if (micBtn) micBtn.classList.add('listening');
+          if (statusBox) statusBox.innerHTML = '🎙️ <b>Mendengarkan...</b> Silakan bicara sekarang.';
+        };
+
+        recognition.onresult = function(e) {
+          var transcript = e.results[0][0].transcript;
+          if (statusBox) statusBox.innerHTML = 'Suara Anda: "<b>' + transcript + '</b>"';
+
+          var currentTarget = activeDialogueFlow[currentDialogueStep];
+          if (currentTarget && currentTarget.role === currentUserRole) {
+            setTimeout(function() {
+              currentDialogueStep++;
+              checkTurnAndAct();
+            }, 600);
+          }
+        };
+
+        recognition.onerror = function(e) {
+          isListening = false;
+          if (micBtn) micBtn.classList.remove('listening');
+          if (statusBox) statusBox.innerHTML = '⚠️ <i>Izin mikrofon dibatasi. Klik <b>Lanjut Giliran</b>.</i>';
+        };
+
+        recognition.onend = function() {
+          isListening = false;
+          if (micBtn) micBtn.classList.remove('listening');
+        };
+
+        recognition.start();
+      } catch (err) {
+        isListening = false;
+        if (micBtn) micBtn.classList.remove('listening');
+        if (statusBox) statusBox.innerHTML = '⚠️ <i>Gagal menyalakan mic. Klik <b>Lanjut Giliran</b>.</i>';
+      }
+    };
+
+    // 6. ENGINE WORKBOOK
+    function loadWorkbookQuestions(hskLevel, btn) {
+      if (btn && btn.parentElement) {
+        var buttons = btn.parentElement.querySelectorAll('.pill-btn');
+        for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove('active');
+        btn.classList.add('active');
+      }
+
+      var container = document.getElementById('workbook-cards-container');
+      if (container) container.innerHTML = '<div style="text-align:center; padding: 30px; color: var(--gold-autumn);">Memuat Soal dari Spreadsheet... 🍁</div>';
+
+      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+        fetch(SCRIPT_URL + "?action=getWorkbook&level=" + (hskLevel || "ALL"))
+          .then(res => res.json())
+          .then(data => renderWorkbookCards(data))
+          .catch(err => renderWorkbookCards([]));
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(renderWorkbookCards)
+          .getWorkbookQuestions(hskLevel, 'ALL');
+      }
+    }
+
+    function renderWorkbookCards(questions) {
+      var container = document.getElementById('workbook-cards-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (!questions || questions.length === 0) {
+        container.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 30px;">Belum ada butir soal di sheet WORKBOOK_BANK untuk level ini. Gunakan panel CRUD untuk menambahkannya!</div>';
+        return;
+      }
+
+      questions.forEach(function(q) {
+        var card = document.createElement('div');
+        card.className = 'glass-card';
+
+        var optHtml = '';
+        if (q.options) {
+          q.options.forEach(function(opt) {
+            optHtml += '<button class="pill-btn" style="text-align:left; padding: 10px 14px;" onclick="checkWorkbookAnswer(\'' + q.questionId + '\', \'' + opt + '\', \'' + q.correctAnswer + '\', this)">' + opt + '</button>';
+          });
+        }
+
+        card.innerHTML = 
+          '<div style="display: flex; justify-content: space-between; margin-bottom: 10px;">' +
+            '<span class="badge">' + q.hskLevel + ' - ' + q.questionType + '</span>' +
+          '</div>' +
+          '<div style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 14px; line-height: 1.5;">' + q.questionPrompt.replace(/\n/g, '<br>') + '</div>' +
+          '<div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">' + optHtml + '</div>' +
+          '<div id="wb-fb-' + q.questionId + '" style="display:none; padding: 10px; border-radius: 8px; font-size: 13px; margin-top: 10px;"></div>';
+
+        container.appendChild(card);
+      });
+    }
+
+    window.checkWorkbookAnswer = function(qId, selectedOpt, correctOpt, btnElement) {
+      if (btnElement && btnElement.parentElement) {
+        var buttons = btnElement.parentElement.querySelectorAll('.pill-btn');
+        for (var i = 0; i < buttons.length; i++) buttons[i].disabled = true;
+      }
+
+      var feedbackBox = document.getElementById('wb-fb-' + qId);
+      if (!feedbackBox) return;
+      feedbackBox.style.display = 'block';
+
+      if (selectedOpt === correctOpt) {
+        if (btnElement) {
+          btnElement.style.background = '#16a34a';
+          btnElement.style.color = '#fff';
+        }
+        feedbackBox.style.background = 'rgba(22, 163, 74, 0.2)';
+        feedbackBox.style.border = '1px solid #16a34a';
+        feedbackBox.style.color = '#86efac';
+        feedbackBox.innerHTML = '🎉 <b>Benar Sekali!</b> Jawaban Anda tepat.';
+      } else {
+        if (btnElement) {
+          btnElement.style.background = '#dc2626';
+          btnElement.style.color = '#fff';
+        }
+        feedbackBox.style.background = 'rgba(220, 38, 38, 0.2)';
+        feedbackBox.style.border = '1px solid #dc2626';
+        feedbackBox.style.color = '#fca5a5';
+        feedbackBox.innerHTML = '❌ <b>Kurang Tepat.</b> Kunci jawaban: <b>' + correctOpt + '</b>';
+      }
+    };
+
+    // 7. ENGINE GRAMMAR
+    function loadGrammarGuidesView() {
+      var container = document.getElementById('grammar-cards-container');
+      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+        fetch(SCRIPT_URL + "?action=getGrammar&level=ALL")
+          .then(res => res.json())
+          .then(data => renderGrammarGuides(data))
+          .catch(err => renderGrammarGuides([]));
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(renderGrammarGuides)
+          .getGrammarGuides('ALL');
+      }
+    }
+
+    function renderGrammarGuides(guides) {
+      var container = document.getElementById('grammar-cards-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (!guides || guides.length === 0) {
+        container.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 30px;">Belum ada data materi di sheet GRAMMAR_GUIDE.</div>';
+        return;
+      }
+
+      guides.forEach(function(g) {
+        var card = document.createElement('div');
+        card.className = 'glass-card';
+
+        var exHtml = '';
+        if (g.examples) {
+          g.examples.forEach(function(ex) {
+            exHtml += '<div style="margin-bottom: 6px;"><b>' + ex.hanzi + '</b> <span style="color:var(--gold-autumn);">(' + ex.pinyin + ')</span> : ' + ex.indo + '</div>';
+          });
+        }
+
+        card.innerHTML = 
+          '<div style="display:flex; justify-content:space-between; margin-bottom: 8px;">' +
+            '<span class="badge">' + g.hskLevel + ' - ' + g.topic + '</span>' +
+          '</div>' +
+          '<h3 style="font-size: 18px; color: #fff; margin-bottom: 8px;">' + g.ruleTitle + '</h3>' +
+          '<div style="background: rgba(20, 11, 7, 0.6); padding: 10px; border-radius: 6px; border-left: 3px solid var(--gold-autumn); font-family: monospace; font-size: 13px; color: #fed7aa; margin-bottom: 12px;">' + g.formula + '</div>' +
+          '<p style="font-size: 13.5px; color: var(--text-main); margin-bottom: 14px; line-height: 1.6;">' + g.explanationIndo + '</p>' +
+          '<div style="background: rgba(40, 24, 16, 0.6); padding: 12px; border-radius: 8px; font-size: 12.5px; color: var(--text-muted);">' + exHtml + '</div>';
+
+        container.appendChild(card);
+      });
+    }
+
+    // 8. ENGINE PLACEMENT TEST (AUDIO PLAYER + PDF.JS + INTERACTIVE ANNOTATION CANVAS + LJD)
+    function loadPlacementPackagesView(preferredId) {
+      var selectEl = document.getElementById('placement-package-select');
+
+      function applyPackages(packages) {
+        allPlacementPackages = packages || [];
+        if (!allPlacementPackages || allPlacementPackages.length === 0) {
+          allPlacementPackages = [{
+            testId: "PLC-DEFAULT",
+            hskLevel: "HSK 1",
+            testTitle: "Simulasi Ujian Resmi HSK 1 (H10901)",
+            pdfData: "",
+            audioData: "",
+            answerKey: DEFAULT_HSK1_ANSWER_KEY
+          }];
+        }
+
+        if (selectEl) {
+          selectEl.innerHTML = '';
+          allPlacementPackages.forEach(function(pkg) {
+            var rawLvl = pkg.hskLevel || 'HSK 1';
+            var lvlStr = rawLvl.toUpperCase().includes('HSK') ? rawLvl : ('HSK ' + rawLvl);
+            var opt = document.createElement('option');
+            opt.value = pkg.testId;
+            opt.innerText = (pkg.testTitle || 'Paket Ujian') + ' (' + lvlStr + ')';
+            selectEl.appendChild(opt);
+          });
+        }
+
+        var targetPkg = null;
+        if (preferredId) {
+          targetPkg = allPlacementPackages.find(function(p) { return p.testId === preferredId; });
+        }
+        if (!targetPkg) {
+          targetPkg = allPlacementPackages[0];
+        }
+
+        if (selectEl && targetPkg) {
+          selectEl.value = targetPkg.testId;
+        }
+
+        selectPlacementPackage(targetPkg);
+      }
+
+      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+        fetch(SCRIPT_URL + "?action=getPlacement&level=ALL")
+          .then(function(res) { return res.json(); })
+          .then(function(data) { applyPackages(data); })
+          .catch(function() { applyPackages([]); });
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(applyPackages)
+          .withFailureHandler(function() { applyPackages([]); })
+          .getPlacementTestPackage('ALL');
+      } else {
+        applyPackages([]);
+      }
+    }
+
+    window.handlePlacementPackageChange = function(testId) {
+      if (!testId) return;
+      var found = allPlacementPackages.find(function(p) { return p.testId === testId; });
+      if (found) selectPlacementPackage(found);
+    };
+
+    function selectPlacementPackage(pkg) {
+      if (!pkg) return;
+      currentPlacementPackage = pkg;
+      drawingsPerPage = {};
+      userExamAnswers = {};
+
+      var elTitle = document.getElementById('exam-audio-title');
+      if (elTitle) elTitle.innerText = 'Audio Menyimak: ' + (pkg.testTitle || 'Ujian');
+
+      var audioPlayer = document.getElementById('exam-audio-player');
+      if (audioPlayer) {
+        if (pkg.audioData && pkg.audioData.trim() !== "") {
+          audioPlayer.src = pkg.audioData;
+        } else {
+          audioPlayer.removeAttribute('src');
+        }
+      }
+
+      // Load Dokumen PDF Soal
+      if (pkg.pdfData && pkg.pdfData.trim() !== "") {
+        loadPdfFromData(pkg.pdfData);
+      }
+
+      renderLjdItems();
+    }
+
+    window.downloadCurrentExamAudio = function() {
+      var audioPlayer = document.getElementById('exam-audio-player');
+      if (!audioPlayer || !audioPlayer.src) {
+        alert("Belum ada file audio yang terpasang pada paket ujian ini.");
+        return;
+      }
+      var link = document.createElement('a');
+      link.href = audioPlayer.src;
+      link.download = (currentPlacementPackage ? currentPlacementPackage.testTitle : 'Audio_Ujian') + '.mp3';
+      link.click();
+    };
+
+    // ENGINE VIEWER PDF + DRAWING CANVAS OVERLAY
+    async function loadPdfFromData(pdfData) {
+      try {
+        examPdfDoc = await pdfjsLib.getDocument({ data: pdfData }).promise;
+        totalPdfPages = examPdfDoc.numPages;
+        currentPdfPageNum = 1;
+        renderPdfAndDrawPage(currentPdfPageNum);
+      } catch (err) {
+        console.error("Gagal memuat PDF ujian:", err);
+      }
+    }
+
+    async function renderPdfAndDrawPage(pageNum) {
+      if (!examPdfDoc) return;
+
+      // 1. Render halaman PDF
+      const page = await examPdfDoc.getPage(pageNum);
+      const renderCanvas = document.getElementById('pdf-render-canvas');
+      const drawCanvas = document.getElementById('pdf-draw-canvas');
+      const ctxRender = renderCanvas.getContext('2d');
+
+      const viewport = page.getViewport({ scale: 1.35 });
+      renderCanvas.width = viewport.width;
+      renderCanvas.height = viewport.height;
+      drawCanvas.width = viewport.width;
+      drawCanvas.height = viewport.height;
+
+      const renderContext = {
+        canvasContext: ctxRender,
+        viewport: viewport
+      };
+      await page.render(renderContext).promise;
+
+      // 2. Pulihkan coretan tersimpan di halaman ini (jika ada)
+      const ctxDraw = drawCanvas.getContext('2d');
+      ctxDraw.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+      if (drawingsPerPage[pageNum]) {
+        const img = new Image();
+        img.onload = function() {
+          ctxDraw.drawImage(img, 0, 0);
+        };
+        img.src = drawingsPerPage[pageNum];
+      }
+
+      // 3. Pasang Pointer Event Listener untuk Coretan & Penghapus
+      initPdfDrawListeners(drawCanvas);
+
+      const pageNumEl = document.getElementById('pdf-page-num');
+      if (pageNumEl) pageNumEl.innerText = 'Hal ' + pageNum + ' / ' + totalPdfPages;
+    }
+
+    function initPdfDrawListeners(drawCanvas) {
+      const ctx = drawCanvas.getContext('2d');
+
+      function getPos(e) {
+        const rect = drawCanvas.getBoundingClientRect();
+        const scaleX = drawCanvas.width / rect.width;
+        const scaleY = drawCanvas.height / rect.height;
+        return {
+          x: (e.clientX - rect.left) * scaleX,
+          y: (e.clientY - rect.top) * scaleY
+        };
+      }
+
+      drawCanvas.onpointerdown = function(e) {
+        e.preventDefault();
+        isDrawingOnPdf = true;
+        const pos = getPos(e);
+        lastPdfX = pos.x;
+        lastPdfY = pos.y;
+
+        ctx.beginPath();
+        if (currentDrawTool === 'eraser') {
+          ctx.globalCompositeOperation = 'destination-out';
+          ctx.arc(pos.x, pos.y, 14, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.arc(pos.x, pos.y, currentPenWidth / 2, 0, Math.PI * 2);
+          ctx.fillStyle = currentPenColor;
+          ctx.fill();
+        }
+      };
+
+      drawCanvas.onpointermove = function(e) {
+        if (!isDrawingOnPdf) return;
+        e.preventDefault();
+        const pos = getPos(e);
+
+        ctx.beginPath();
+        ctx.moveTo(lastPdfX, lastPdfY);
+        ctx.lineTo(pos.x, pos.y);
+
+        if (currentDrawTool === 'eraser') {
+          ctx.globalCompositeOperation = 'destination-out';
+          ctx.lineWidth = 26;
+        } else {
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.strokeStyle = currentPenColor;
+          ctx.lineWidth = currentPenWidth;
+        }
+
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+
+        lastPdfX = pos.x;
+        lastPdfY = pos.y;
+      };
+
+      function stopDraw() {
+        if (isDrawingOnPdf) {
+          isDrawingOnPdf = false;
+          // Simpan snapshot coretan halaman aktif
+          drawingsPerPage[currentPdfPageNum] = drawCanvas.toDataURL();
+        }
+      }
+
+      drawCanvas.onpointerup = stopDraw;
+      drawCanvas.onpointercancel = stopDraw;
+      drawCanvas.onpointerleave = stopDraw;
+    }
+
+    window.changePdfPage = function(delta) {
+      if (!examPdfDoc) return;
+      const targetPage = currentPdfPageNum + delta;
+      if (targetPage >= 1 && targetPage <= totalPdfPages) {
+        // Simpan gambar halaman saat ini
+        const drawCanvas = document.getElementById('pdf-draw-canvas');
+        if (drawCanvas) drawingsPerPage[currentPdfPageNum] = drawCanvas.toDataURL();
+
+        currentPdfPageNum = targetPage;
+        renderPdfAndDrawPage(currentPdfPageNum);
+      }
+    };
+
+    window.setAnnotationTool = function(tool) {
+      currentDrawTool = tool;
+      const btnPen = document.getElementById('btn-tool-pen');
+      const btnEraser = document.getElementById('btn-tool-eraser');
+      if (btnPen && btnEraser) {
+        btnPen.classList.toggle('active', tool === 'pen');
+        btnEraser.classList.toggle('active', tool === 'eraser');
+      }
+    };
+
+    window.setAnnotationColor = function(color, el) {
+      currentPenColor = color;
+      currentDrawTool = 'pen';
+      const btnPen = document.getElementById('btn-tool-pen');
+      const btnEraser = document.getElementById('btn-tool-eraser');
+      if (btnPen && btnEraser) {
+        btnPen.classList.add('active');
+        btnEraser.classList.remove('active');
+      }
+
+      const swatches = document.querySelectorAll('.color-swatch-btn');
+      swatches.forEach(s => s.classList.remove('active'));
+      if (el) el.classList.add('active');
+    };
+
+    window.clearCurrentPageDrawings = function() {
+      const drawCanvas = document.getElementById('pdf-draw-canvas');
+      if (!drawCanvas) return;
+      const ctx = drawCanvas.getContext('2d');
+      ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+      delete drawingsPerPage[currentPdfPageNum];
+    };
+
+    window.downloadAnnotatedPage = function() {
+      const renderCanvas = document.getElementById('pdf-render-canvas');
+      const drawCanvas = document.getElementById('pdf-draw-canvas');
+      if (!renderCanvas || !drawCanvas) return;
+
+      const mergedCanvas = document.createElement('canvas');
+      mergedCanvas.width = renderCanvas.width;
+      mergedCanvas.height = renderCanvas.height;
+      const mergedCtx = mergedCanvas.getContext('2d');
+
+      // Gambar halaman PDF + Gambar coretan tangan
+      mergedCtx.drawImage(renderCanvas, 0, 0);
+      mergedCtx.drawImage(drawCanvas, 0, 0);
+
+      const link = document.createElement('a');
+      link.href = mergedCanvas.toDataURL('image/png');
+      link.download = `Lembar_Ujian_${currentPlacementPackage ? currentPlacementPackage.testTitle : 'HSK'}_Hal_${currentPdfPageNum}.png`;
+      link.click();
+    };
+
+    // Render Lembar Jawaban Digital (LJD)
+    function renderLjdItems() {
+      const container = document.getElementById('ljd-items-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const isListening = (activeLjdSection === 'listening');
+      const startQ = isListening ? 1 : 21;
+      const endQ = isListening ? 20 : 40;
+
+      for (let q = startQ; q <= endQ; q++) {
+        const row = document.createElement('div');
+        row.style.background = '#1a0f0a';
+        row.style.padding = '8px 10px';
+        row.style.borderRadius = '8px';
+        row.style.border = '1px solid var(--amber-border)';
+        row.style.display = 'flex';
+        row.style.alignItems = 'center';
+        row.style.justifyContent = 'space-between';
+
+        const qLabel = document.createElement('span');
+        qLabel.style.fontWeight = '700';
+        qLabel.style.color = 'var(--gold-autumn)';
+        qLabel.style.fontSize = '12.5px';
+        qLabel.innerText = 'No. ' + q;
+        row.appendChild(qLabel);
+
+        const optionsDiv = document.createElement('div');
+        optionsDiv.style.display = 'flex';
+        optionsDiv.style.gap = '4px';
+
+        let optionsList = [];
+        if ((q >= 1 && q <= 5) || (q >= 21 && q <= 25)) {
+          optionsList = [
+            { label: "√", val: "TRUE" },
+            { label: "✕", val: "FALSE" }
+          ];
+        } else if ((q >= 6 && q <= 10) || (q >= 16 && q <= 20)) {
+          optionsList = [
+            { label: "A", val: "A" },
+            { label: "B", val: "B" },
+            { label: "C", val: "C" }
+          ];
+        } else {
+          optionsList = [
+            { label: "A", val: "A" },
+            { label: "B", val: "B" },
+            { label: "C", val: "C" },
+            { label: "D", val: "D" },
+            { label: "E", val: "E" },
+            { label: "F", val: "F" }
+          ];
+        }
+
+        optionsList.forEach(function(opt) {
+          const btn = document.createElement('button');
+          btn.className = 'pill-btn' + (userExamAnswers[q] === opt.val ? ' active' : '');
+          btn.style.padding = '4px 8px';
+          btn.style.fontSize = '11px';
+          btn.style.minWidth = '28px';
+          btn.innerText = opt.label;
+          btn.onclick = function() {
+            userExamAnswers[q] = opt.val;
+            const parentBtns = optionsDiv.querySelectorAll('.pill-btn');
+            parentBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+          };
+          optionsDiv.appendChild(btn);
+        });
+
+        row.appendChild(optionsDiv);
+        container.appendChild(row);
+      }
+    }
+
+    window.switchLjdSection = function(sec) {
+      activeLjdSection = sec;
+      const bList = document.getElementById('btn-ljd-listening');
+      const bRead = document.getElementById('btn-ljd-reading');
+      if (bList && bRead) {
+        bList.classList.toggle('active', sec === 'listening');
+        bRead.classList.toggle('active', sec === 'reading');
+      }
+      renderLjdItems();
+    };
+
+    // Evaluasi Skor Akhir & Tautkan ke Rapor/Sertifikat
+    window.submitPlacementExam = function() {
+      let listeningCorrect = 0;
+      let readingCorrect = 0;
+      const answerKey = (currentPlacementPackage && currentPlacementPackage.answerKey) ? currentPlacementPackage.answerKey : DEFAULT_HSK1_ANSWER_KEY;
+
+      for (let i = 1; i <= 20; i++) {
+        if (userExamAnswers[i] === answerKey[i]) listeningCorrect++;
+      }
+      for (let i = 21; i <= 40; i++) {
+        if (userExamAnswers[i] === answerKey[i]) readingCorrect++;
+      }
+
+      const listeningScore = listeningCorrect * 5;
+      const readingScore = readingCorrect * 5;
+      const totalScore = listeningScore + readingScore;
+      const isPassed = totalScore >= 120;
+
+      const resBox = document.getElementById('exam-score-result');
+      if (resBox) {
+        resBox.style.display = 'block';
+        resBox.innerHTML = `
+          <div style="font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 6px;">
+            ${isPassed ? '🎉 LULUS EVALUASI (合格)' : '⚠️ BELUM LULUS (不合格)'}
+          </div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+            Menyimak (听力): <b>${listeningScore}/100</b> (${listeningCorrect}/20 soal)<br>
+            Membaca (阅读): <b>${readingScore}/100</b> (${readingCorrect}/20 soal)
+          </div>
+          <div style="font-size: 15px; color: var(--gold-autumn); font-weight: 800;">
+            Total Skor: ${totalScore} / 200
+          </div>
+          <div style="font-size: 11px; color: #fed7aa; margin-top: 6px;">
+            Batas kelulusan resmi: 120 poin. Hasil ini dapat langsung dicetak pada menu Rapor & Sertifikat.
+          </div>
+        `;
+      }
+    };
+
+    // 9. TAB 3: CRUD PLACEMENT TEST ENGINE
+    window.submitCrudPlacementPackage = async function() {
+      const editId = (document.getElementById('crud-plc-edit-id') ? document.getElementById('crud-plc-edit-id').value.trim() : '');
+      const inHsk = document.getElementById('crud-plc-hsk');
+      const inTitle = document.getElementById('crud-plc-title');
+      const inPdfFile = document.getElementById('crud-plc-pdf-input');
+      const inAudioFile = document.getElementById('crud-plc-audio-input');
+      const inKeys = document.getElementById('crud-plc-keys');
+
+      const hskLvl = inHsk ? inHsk.value : "HSK 1";
+      const title = (inTitle ? inTitle.value.trim() : "") || ("Simulasi Ujian Resmi " + hskLvl);
+      const keysJson = inKeys ? inKeys.value.trim() : "";
+
+      let pdfData = "";
+      let audioData = "";
+
+      if (inPdfFile && inPdfFile.files.length > 0) {
+        const file = inPdfFile.files[0];
+        const buffer = await file.arrayBuffer();
+        let binary = '';
+        const bytes = new Uint8Array(buffer);
+        for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+        pdfData = "data:application/pdf;base64," + btoa(binary);
+      }
+
+      if (inAudioFile && inAudioFile.files.length > 0) {
+        const file = inAudioFile.files[0];
+        const buffer = await file.arrayBuffer();
+        let binary = '';
+        const bytes = new Uint8Array(buffer);
+        for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+        audioData = "data:" + file.type + ";base64," + btoa(binary);
+      }
+
+      if (!editId && !pdfData) {
+        alert("Mohon pilih file PDF soal ujian terlebih dahulu (Wajib).");
+        return;
+      }
+
+      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+        fetch(SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "savePlacementPackage",
+            testId: editId,
+            hskLevel: hskLvl,
+            testTitle: title,
+            pdfData: pdfData,
+            audioData: audioData,
+            answerKeyJson: keysJson
+          })
+        })
+        .then(res => res.json())
+        .then(res => {
+          alert(editId ? "✅ Paket ujian berhasil diperbarui!" : "✅ Paket ujian berhasil disimpan ke sheet PLACEMENT_TEST!");
+          cancelEditPlacementPackage();
+          loadPlacementPackagesTable();
+          loadPlacementPackagesView(res.testId);
+        })
+        .catch(err => alert("Gagal menyimpan: " + err.message));
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            alert(editId ? "✅ Paket ujian berhasil diperbarui!" : "✅ Paket ujian berhasil disimpan ke sheet PLACEMENT_TEST!");
+            cancelEditPlacementPackage();
+            loadPlacementPackagesTable();
+            loadPlacementPackagesView(res ? res.testId : null);
+          })
+          .saveOrUpdatePlacementPackage(editId, hskLvl, title, pdfData, audioData, keysJson);
+      } else {
+        alert("Fitur simpan membutuhkan koneksi ke backend.");
+      }
+    };
+
+    function loadPlacementPackagesTable() {
+      var tbody = document.getElementById('crud-plc-table-body');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--gold-autumn); padding: 14px;">Memuat data paket ujian...</td></tr>';
+
+      function renderTable(packages) {
+        if (!packages || packages.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 14px;">Belum ada paket ujian di database.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = '';
+        packages.forEach(function(pkg) {
+          var tr = document.createElement('tr');
+          var rawLvl = pkg.hskLevel || 'HSK 1';
+          var displayLvl = rawLvl.toUpperCase().includes('HSK') ? rawLvl : ('HSK ' + rawLvl);
+          var statusFiles = (pkg.pdfData ? '📄 PDF' : '✕ No PDF') + ' | ' + (pkg.audioData ? '🎧 Audio' : 'No Audio');
+
+          tr.innerHTML = 
+            '<td style="font-weight: 700; color: var(--gold-autumn);">' + (pkg.testId || '-') + '</td>' +
+            '<td><span class="badge" style="font-size: 10px; padding: 2px 6px; margin: 0;">' + displayLvl + '</span></td>' +
+            '<td style="font-weight: 600;">' + (pkg.testTitle || 'Paket Ujian') + '</td>' +
+            '<td style="font-size: 11px; color: var(--text-muted);">' + statusFiles + '</td>' +
+            '<td style="text-align: center;">' +
+              '<button class="table-action-btn btn-tbl-edit" onclick="editPlacementPackage(\'' + pkg.testId + '\')">✏️ Edit</button>' +
+              '<button class="table-action-btn btn-tbl-delete" onclick="deletePlacementPackageBtn(\'' + pkg.testId + '\')">🗑️ Hapus</button>' +
+            '</td>';
+          tbody.appendChild(tr);
+        });
+      }
+
+      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+        fetch(SCRIPT_URL + "?action=getPlacement&level=ALL")
+          .then(res => res.json())
+          .then(data => renderTable(data))
+          .catch(() => renderTable([]));
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(renderTable).getPlacementTestPackage('ALL');
+      } else {
+        renderTable(allPlacementPackages);
+      }
+    }
+
+    window.editPlacementPackage = function(testId) {
+      var found = allPlacementPackages.find(function(p) { return p.testId === testId; });
+      if (!found) return;
+
+      var inEditId = document.getElementById('crud-plc-edit-id');
+      var inHsk = document.getElementById('crud-plc-hsk');
+      var inTitle = document.getElementById('crud-plc-title');
+      var inKeys = document.getElementById('crud-plc-keys');
+      var btnSave = document.getElementById('btn-save-crud-plc');
+      var btnCancel = document.getElementById('btn-cancel-edit-plc');
+
+      if (inEditId) inEditId.value = found.testId;
+      if (inHsk) {
+        var raw = (found.hskLevel || 'HSK 1').toString().toUpperCase().replace(/\s+/g, '');
+        var num = raw.replace(/[^0-9]/g, '') || '1';
+        inHsk.value = 'HSK ' + num;
+      }
+      if (inTitle) inTitle.value = found.testTitle || '';
+      if (inKeys) inKeys.value = found.answerKeyJson || '';
+
+      if (btnSave) btnSave.innerText = '💾 Simpan Perubahan Paket (' + found.testId + ')';
+      if (btnCancel) btnCancel.style.display = 'block';
+
+      var modal = document.getElementById('admin-crud-modal');
+      if (modal) modal.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.cancelEditPlacementPackage = function() {
+      var inEditId = document.getElementById('crud-plc-edit-id');
+      var inTitle = document.getElementById('crud-plc-title');
+      var inKeys = document.getElementById('crud-plc-keys');
+      var btnSave = document.getElementById('btn-save-crud-plc');
+      var btnCancel = document.getElementById('btn-cancel-edit-plc');
+
+      if (inEditId) inEditId.value = '';
+      if (inTitle) inTitle.value = '';
+      if (inKeys) inKeys.value = '';
+
+      if (btnSave) btnSave.innerText = '💾 Simpan Paket ke Sheet PLACEMENT_TEST';
+      if (btnCancel) btnCancel.style.display = 'none';
+    };
+
+    window.deletePlacementPackageBtn = function(testId) {
+      if (!confirm("Apakah Anda yakin ingin menghapus paket ujian " + testId + " dari Spreadsheet?")) return;
+
+      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
+        fetch(SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "deletePlacementPackage",
+            testId: testId
+          })
+        })
+        .then(res => res.json())
+        .then(res => {
+          alert("✅ Paket ujian " + testId + " berhasil dihapus!");
+          loadPlacementPackagesTable();
+          loadPlacementPackagesView();
+        })
+        .catch(err => alert("Gagal menghapus: " + err.message));
+      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function() {
+            alert("✅ Paket ujian " + testId + " berhasil dihapus!");
+            loadPlacementPackagesTable();
+            loadPlacementPackagesView();
+          })
+          .deletePlacementPackage(testId);
+      }
+    };
+
+    // 10. CRUD SPEAKING & WORKBOOK SUBMISSION
     window.submitCrudSpeakingDialogue = function() {
       const editId = (document.getElementById('crud-spk-edit-id') ? document.getElementById('crud-spk-edit-id').value.trim() : '');
       const inTitle = document.getElementById('crud-spk-title');
@@ -1521,7 +3030,7 @@
         })
         .then(function(res) { return res.json(); })
         .then(function(res) {
-          alert(editId ? "✅ Skenario percakapan berhasil diperbarui di spreadsheet!" : "✅ Skenario percakapan berhasil disimpan ke sheet SPEAKING_DIALOGUES!");
+          alert(editId ? "✅ Skenario percakapan berhasil diperbarui!" : "✅ Skenario percakapan berhasil disimpan ke sheet SPEAKING_DIALOGUES!");
           cancelEditSpeakingDialogue();
           loadSpeakingDialoguesView(res.dialogueId);
           loadSpeakingDialoguesTable();
@@ -1532,19 +3041,15 @@
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
           .withSuccessHandler(function(res) {
-            alert(editId ? "✅ Skenario percakapan berhasil diperbarui di spreadsheet!" : "✅ Skenario percakapan berhasil disimpan ke sheet SPEAKING_DIALOGUES!");
+            alert(editId ? "✅ Skenario percakapan berhasil diperbarui!" : "✅ Skenario percakapan berhasil disimpan ke sheet SPEAKING_DIALOGUES!");
             cancelEditSpeakingDialogue();
             loadSpeakingDialoguesView(res ? res.dialogueId : null);
             loadSpeakingDialoguesTable();
           })
           .saveOrUpdateSpeakingDialogue(editId, hskLvl, title, roleA, roleB, parsedLines);
-      } else {
-        alert("✅ Naskah berhasil diterapkan ke sesi aktif!");
-        cancelEditSpeakingDialogue();
       }
     };
 
-    // TABEL CRUD SPEAKING AI & OPERASI EDIT / DELETE
     function loadSpeakingDialoguesTable() {
       var tbody = document.getElementById('crud-spk-table-body');
       if (!tbody) return;
@@ -1646,7 +3151,7 @@
       if (inLines) inLines.value = '';
       if (inPreview) inPreview.value = '';
 
-      if (btnSave) btnSave.innerText = '💾 Simpan ke Sheet SPEAKING_DIALOGUES[cite: 8, 9]';
+      if (btnSave) btnSave.innerText = '💾 Simpan ke Sheet SPEAKING_DIALOGUES';
       if (btnCancel) btnCancel.style.display = 'none';
     };
 
@@ -1680,7 +3185,6 @@
       }
     };
 
-    // CRUD WORKBOOK SUBMISSION (CREATE / UPDATE)
     window.submitCrudWorkbookQuestion = function() {
       const editId = (document.getElementById('crud-wb-edit-id') ? document.getElementById('crud-wb-edit-id').value.trim() : '');
       const inHsk = document.getElementById('crud-wb-hsk');
@@ -1726,9 +3230,7 @@
           loadWorkbookTable();
           loadWorkbookQuestions(hskLvl);
         })
-        .catch(err => {
-          alert("Gagal menyimpan ke Spreadsheet: " + err.message);
-        });
+        .catch(err => alert("Gagal menyimpan: " + err.message));
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
           .withSuccessHandler(function() {
@@ -1738,12 +3240,9 @@
             loadWorkbookQuestions(hskLvl);
           })
           .saveOrUpdateWorkbookQuestion(editId, hskLvl, qType, prompt, options, correct, explain);
-      } else {
-        alert("Fitur simpan membutuhkan koneksi ke Google Apps Script.");
       }
     };
 
-    // TABEL CRUD WORKBOOK & OPERASI EDIT / DELETE
     function loadWorkbookTable() {
       var tbody = document.getElementById('crud-wb-table-body');
       if (!tbody) return;
@@ -1752,7 +3251,7 @@
       function renderTable(questions) {
         allWorkbookQuestions = questions || [];
         if (!questions || questions.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 14px;">Belum ada butir soal di WORKBOOK_BANK[cite: 8].</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 14px;">Belum ada butir soal di WORKBOOK_BANK.</td></tr>';
           return;
         }
         tbody.innerHTML = '';
@@ -1833,7 +3332,7 @@
       if (inCorrect) inCorrect.value = '';
       if (inExplain) inExplain.value = '';
 
-      if (btnSave) btnSave.innerText = '💾 Tambah Soal ke WORKBOOK_BANK[cite: 8]';
+      if (btnSave) btnSave.innerText = '💾 Tambah Soal ke WORKBOOK_BANK';
       if (btnCancel) btnCancel.style.display = 'none';
     };
 
@@ -1867,56 +3366,30 @@
       }
     };
 
-    // 7. ENGINE GRAMMAR
-    function loadGrammarGuidesView() {
-      var container = document.getElementById('grammar-cards-container');
-      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
-        fetch(SCRIPT_URL + "?action=getGrammar&level=ALL")
-          .then(res => res.json())
-          .then(data => renderGrammarGuides(data))
-          .catch(err => renderGrammarGuides([]));
-      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler(renderGrammarGuides)
-          .getGrammarGuides('ALL');
+    window.switchTab = function(viewId) {
+      var views = document.querySelectorAll('.view-section');
+      for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+      var target = document.getElementById('view-' + viewId);
+      if (target) target.classList.add('active');
+
+      var navButtons = document.querySelectorAll('.nav-item button, .bottom-nav-btn');
+      for (var j = 0; j < navButtons.length; j++) navButtons[j].classList.remove('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (viewId === 'workbook') loadWorkbookQuestions('ALL');
+      if (viewId === 'stroke') {
+        setTimeout(function() { renderMultiTianZiGe(currentPracticeWord); }, 60);
       }
-    }
-
-    function renderGrammarGuides(guides) {
-      var container = document.getElementById('grammar-cards-container');
-      if (!container) return;
-      container.innerHTML = '';
-
-      if (!guides || guides.length === 0) {
-        container.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 30px;">Belum ada data materi di sheet GRAMMAR_GUIDE[cite: 8].</div>';
-        return;
+      if (viewId === 'placement') {
+        setTimeout(function() {
+          if (currentPlacementPackage && currentPlacementPackage.pdfData) {
+            loadPdfFromData(currentPlacementPackage.pdfData);
+          }
+        }, 100);
       }
+    };
 
-      guides.forEach(function(g) {
-        var card = document.createElement('div');
-        card.className = 'glass-card';
-
-        var exHtml = '';
-        if (g.examples) {
-          g.examples.forEach(function(ex) {
-            exHtml += '<div style="margin-bottom: 6px;"><b>' + ex.hanzi + '</b> <span style="color:var(--gold-autumn);">(' + ex.pinyin + ')</span> : ' + ex.indo + '</div>';
-          });
-        }
-
-        card.innerHTML = 
-          '<div style="display:flex; justify-content:space-between; margin-bottom: 8px;">' +
-            '<span class="badge">' + g.hskLevel + ' - ' + g.topic + '</span>' +
-          '</div>' +
-          '<h3 style="font-size: 18px; color: #fff; margin-bottom: 8px;">' + g.ruleTitle + '</h3>' +
-          '<div style="background: rgba(20, 11, 7, 0.6); padding: 10px; border-radius: 6px; border-left: 3px solid var(--gold-autumn); font-family: monospace; font-size: 13px; color: #fed7aa; margin-bottom: 12px;">' + g.formula + '</div>' +
-          '<p style="font-size: 13.5px; color: var(--text-main); margin-bottom: 14px; line-height: 1.6;">' + g.explanationIndo + '</p>' +
-          '<div style="background: rgba(40, 24, 16, 0.6); padding: 12px; border-radius: 8px; font-size: 12.5px; color: var(--text-muted);">' + exHtml + '</div>';
-
-        container.appendChild(card);
-      });
-    }
-
-    // 8. ENGINE SRS FLASHCARDS
+    // 11. ENGINE SRS FLASHCARDS
     function initSrsEngine() {
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
@@ -1959,84 +3432,7 @@
       renderCurrentSrsCard();
     };
 
-    // 9. ENGINE PLACEMENT TEST
-    window.startPlacementTest = function() {
-      var intro = document.getElementById('placement-intro-box');
-      var quizBox = document.getElementById('placement-quiz-box');
-      if (intro) intro.style.display = 'none';
-      if (quizBox) quizBox.style.display = 'block';
-
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler(function(data) {
-            placementQuestions = data || [];
-            currentPlacementStep = 0;
-            placementScore = 0;
-            renderPlacementStep();
-          })
-          .getPlacementTestPackage();
-      } else {
-        placementQuestions = [
-          { questionText: "Apa arti dari karakter '我' (wǒ)?", options: ["Saya / Aku", "Kamu", "Dia", "Buku"], correctAnswer: "Saya / Aku", hskLevel: "HSK 1", scoreWeight: 20 },
-          { questionText: "Pilihlah pinyin yang benar untuk '谢谢':", options: ["zàijiàn", "xièxie", "nǐ hǎo", "duìbuqǐ"], correctAnswer: "xièxie", hskLevel: "HSK 1", scoreWeight: 20 },
-          { questionText: "Apa makna dari kata '准备' (zhǔnbèi)?", options: ["Mempersiapkan", "Menjawab", "Beristirahat", "Membeli"], correctAnswer: "Mempersiapkan", hskLevel: "HSK 2", scoreWeight: 20 },
-          { questionText: "Karakter '简单' (jiǎndān) memiliki arti:", options: ["Sederhana / Mudah", "Rumit", "Mahal", "Panjang"], correctAnswer: "Sederhana / Mudah", hskLevel: "HSK 3", scoreWeight: 20 },
-          { questionText: "Apa arti dari '成功' (chénggōng)?", options: ["Sukses / Berhasil", "Gagal", "Menyerah", "Bekerja"], correctAnswer: "Sukses / Berhasil", hskLevel: "HSK 4", scoreWeight: 20 }
-        ];
-        currentPlacementStep = 0;
-        placementScore = 0;
-        renderPlacementStep();
-      }
-    };
-
-    function renderPlacementStep() {
-      var quizBox = document.getElementById('placement-quiz-box');
-      if (!quizBox) return;
-
-      if (placementQuestions.length === 0) {
-        quizBox.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted);">Sheet PLACEMENT_TEST belum berisi paket soal[cite: 8].</div>';
-        return;
-      }
-
-      if (currentPlacementStep >= placementQuestions.length) {
-        var estimated = (placementScore >= 40 ? 'HSK 2 - 3' : 'HSK 1');
-        quizBox.innerHTML = 
-          '<div style="text-align:center; padding: 20px;">' +
-            '<div style="font-size: 50px;">🎯</div>' +
-            '<h3 style="font-size: 22px; color: #fff; margin: 10px 0;">Hasil Diagnostic Placement Test</h3>' +
-            '<p style="font-size: 15px; color: var(--gold-autumn);">Estimasi Level: <b>' + estimated + '</b> (Skor: ' + placementScore + ')</p>' +
-            '<button class="btn-autumn-primary" style="margin-top: 20px;" onclick="startPlacementTest()">Ulangi Tes</button>' +
-          '</div>';
-        return;
-      }
-
-      var q = placementQuestions[currentPlacementStep];
-      var optHtml = '';
-      if (q.options) {
-        q.options.forEach(function(opt) {
-          optHtml += '<button class="pill-btn" style="text-align:left; padding: 12px;" onclick="answerPlacementQuestion(\'' + opt + '\')">' + opt + '</button>';
-        });
-      }
-
-      quizBox.innerHTML = 
-        '<div style="display:flex; justify-content:space-between; margin-bottom: 12px;">' +
-          '<span class="badge">Soal ' + (currentPlacementStep + 1) + ' / ' + placementQuestions.length + '</span>' +
-          '<span style="font-size: 12px; color: var(--gold-autumn);">' + q.hskLevel + '</span>' +
-        '</div>' +
-        '<div style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 16px;">' + q.questionText + '</div>' +
-        '<div style="display: flex; flex-direction: column; gap: 8px;">' + optHtml + '</div>';
-    }
-
-    window.answerPlacementQuestion = function(selected) {
-      var q = placementQuestions[currentPlacementStep];
-      if (selected === q.correctAnswer) {
-        placementScore += (q.scoreWeight || 20);
-      }
-      currentPlacementStep++;
-      renderPlacementStep();
-    };
-
-    // 10. ENGINE SERTIFIKAT PDF
+    // 12. ENGINE SERTIFIKAT PDF
     window.requestCertificatePdf = function() {
       var inName = document.getElementById('cert-user-name');
       var name = inName ? inName.value : '';
