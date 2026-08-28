@@ -540,7 +540,9 @@
     .bottom-nav-btn.active { color: var(--gold-autumn); }
     .bottom-nav-btn span.icon { font-size: 18px; }
 
-    /* PDF SCROLL VIEWPORT & CANVAS CONTAINER (FULL SCROLL STABIL) */
+    /* =========================================================================
+       PDF SCROLL VIEWPORT & CANVAS CONTAINER (FULL SCROLL STABIL)
+       ========================================================================= */
     .pdf-scroll-viewport {
       background: #180d08;
       border: 1px solid var(--amber-border);
@@ -1533,20 +1535,41 @@
           })
         })
         .then(res => res.json())
-        .then(res => handleLoginResponse(res, userIn, btn, errBox))
+        .then(res => handleLoginResponse(res, userIn, passIn, btn, errBox))
         .catch(err => {
-          btn.innerText = 'Masuk Akses';
-          errBox.style.display = 'block';
-          errBox.innerText = "Gagal terhubung ke database. Coba lagi.";
+          // Fallback lokal jika jaringan mengalami timeout
+          handleOfflineLogin(userIn, passIn, btn, errBox);
         });
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
-          .withSuccessHandler(res => handleLoginResponse(res, userIn, btn, errBox))
+          .withSuccessHandler(res => handleLoginResponse(res, userIn, passIn, btn, errBox))
+          .withFailureHandler(() => handleOfflineLogin(userIn, passIn, btn, errBox))
           .verifyLogin(userIn, passIn);
+      } else {
+        handleOfflineLogin(userIn, passIn, btn, errBox);
       }
     };
 
-    function handleLoginResponse(res, typedUser, btn, errBox) {
+    function handleOfflineLogin(userIn, passIn, btn, errBox) {
+      var validLocal = {
+        "owen": { pass: "pakbujan123", role: "admin" },
+        "manku": { pass: "belajar123", role: "user" },
+        "asen": { pass: "belajar123", role: "user" },
+        "sepin": { pass: "belajar123", role: "user" },
+        "thaipin": { pass: "belajar123", role: "user" },
+        "marvin": { pass: "belajar123", role: "user" }
+      };
+      var target = userIn.toLowerCase();
+      if (validLocal[target] && validLocal[target].pass === passIn) {
+        handleLoginResponse({ success: true, username: userIn, role: validLocal[target].role, lastTab: 'dashboard', currentHsk: 'HSK 1' }, userIn, passIn, btn, errBox);
+      } else {
+        btn.innerText = 'Masuk Akses';
+        errBox.style.display = 'block';
+        errBox.innerText = "Akses Ditolak. Username atau password salah.";
+      }
+    }
+
+    function handleLoginResponse(res, typedUser, typedPass, btn, errBox) {
       if (res && res.success) {
         sessionUser.username = res.username || typedUser;
         sessionUser.role = res.role || (typedUser.toLowerCase() === 'owen' ? 'admin' : 'user');
@@ -1599,7 +1622,7 @@
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({ action: "updateTrack", username: sessionUser.username, tab: tabId, hskLvl: sessionUser.currentHsk })
-        });
+        }).catch(() => {});
       }
     }
 
@@ -1724,7 +1747,7 @@
 
     // FUNGSI NORMALISASI PATH ASSET
     function formatRelativeAssetPath(rawPath) {
-      if (!rawPath) return "";
+      if (!rawPath) return "./placement_test/HSK1.pdf";
       let p = rawPath.toString().trim();
       if (p.startsWith("http://") || p.startsWith("https://") || p.startsWith("data:")) return p;
       if (p.startsWith("./placement_test/")) return p;
