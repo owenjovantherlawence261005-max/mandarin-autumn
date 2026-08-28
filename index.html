@@ -863,7 +863,7 @@
         <div class="header-group">
           <span class="badge">Official Standard Workbook</span>
           <h2>Workbook Interaktif per Level</h2>
-          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dari database Spreadsheet.</p>
+          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dari database Spreadsheet[cite: 5].</p>
         </div>
 
         <div class="toolbar-row">
@@ -985,7 +985,7 @@
           </div>
         </div>
 
-        <!-- PANEL KONTROL AUDIO MENYIMAK (DENGAN TOMBOL DOWNLOAD) -->
+        <!-- PANEL KONTROL AUDIO MENYIMAK (DENGAN TOMBOL DOWNLOAD & BUKA AUDIO CEPAT) -->
         <div class="glass-card" style="margin-bottom: 20px; padding: 16px 20px;">
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
             <div style="display: flex; align-items: center; gap: 12px;">
@@ -997,6 +997,10 @@
             </div>
 
             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <label class="pill-btn" style="cursor: pointer; padding: 8px 12px; font-size: 12px; background: rgba(234, 88, 12, 0.2);">
+                📁 Buka Audio dari Perangkat
+                <input type="file" accept="audio/*" onchange="loadExamAudioFile(event)" style="display: none;">
+              </label>
               <audio id="exam-audio-player" controls style="height: 38px; border-radius: 8px; outline: none;"></audio>
               <button class="pill-btn" style="padding: 8px 14px; border-color: var(--gold-autumn); font-size: 12px;" onclick="downloadCurrentExamAudio()">⬇️ Unduh Audio (MP3)</button>
             </div>
@@ -1045,8 +1049,12 @@
               </div>
             </div>
             
-            <div style="margin-top: 10px; font-size: 11.5px; color: var(--text-muted); text-align: center;">
-              💡 <i>Anda bisa langsung mencoret/menandai pilihan di atas lembar PDF dengan mouse maupun layar sentuh.</i>
+            <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 11.5px; color: var(--text-muted);">
+              <span>💡 <i>Coret atau tandai langsung di atas lembar PDF dengan mouse/layar sentuh.</i></span>
+              <label class="pill-btn" style="cursor: pointer; padding: 4px 10px; font-size: 11px; background: rgba(245, 158, 11, 0.15); border-color: var(--gold-autumn);">
+                📂 Buka File PDF Lain (.pdf)
+                <input type="file" accept="application/pdf" onchange="loadExamPdfFile(event)" style="display: none;">
+              </label>
             </div>
           </div>
 
@@ -1271,7 +1279,7 @@
         </div>
       </div>
 
-      <!-- TAB 3: CRUD PLACEMENT TEST (PDF + AUDIO UJIAN) -->
+      <!-- TAB 3: CRUD PLACEMENT TEST (LINK PDF + LINK AUDIO UJIAN) -->
       <div id="crud-section-plc" style="display: none;">
         <input type="hidden" id="crud-plc-edit-id" value="">
 
@@ -1294,21 +1302,19 @@
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-          <div class="crud-form-group" style="background: rgba(234, 88, 12, 0.15); padding: 10px; border-radius: 8px; border: 1px dashed var(--gold-autumn);">
-            <label style="color: #fff;">1. Unggah Lembar Soal PDF (Wajib):</label>
-            <input type="file" id="crud-plc-pdf-input" accept="application/pdf" style="padding: 5px; font-size: 12px;">
-            <div id="crud-plc-pdf-status" style="font-size: 11px; color: var(--gold-autumn); margin-top: 4px;">File PDF akan menjadi lembar ujian resmi.</div>
+          <div class="crud-form-group">
+            <label>Link / Path File PDF Soal (pdf_url):</label>
+            <input type="text" id="crud-plc-pdf-url" placeholder="Contoh: ./HSK1.pdf atau link Google Drive">
           </div>
 
-          <div class="crud-form-group" style="background: rgba(234, 88, 12, 0.15); padding: 10px; border-radius: 8px; border: 1px dashed var(--gold-autumn);">
-            <label style="color: #fff;">2. Unggah Audio Menyimak MP3 (Opsional):</label>
-            <input type="file" id="crud-plc-audio-input" accept="audio/*" style="padding: 5px; font-size: 12px;">
-            <div id="crud-plc-audio-status" style="font-size: 11px; color: var(--gold-autumn); margin-top: 4px;">Audio rekaman listening bagian 1-20.</div>
+          <div class="crud-form-group">
+            <label>Link / Path File Audio MP3 (audio_url):</label>
+            <input type="text" id="crud-plc-audio-url" placeholder="Contoh: ./HSK1.mp3 atau link Google Drive">
           </div>
         </div>
 
         <div class="crud-form-group">
-          <label>Kunci Jawaban JSON (Opsional, format default 1–40):</label>
+          <label>Kunci Jawaban JSON (Opsional, format default No 1–40):</label>
           <textarea id="crud-plc-keys" rows="3" style="font-family: monospace; font-size: 11px;" placeholder='{"1":"TRUE","2":"FALSE","6":"A","11":"D","26":"D", ...}'></textarea>
         </div>
 
@@ -1327,7 +1333,7 @@
                   <th style="width: 75px;">ID</th>
                   <th style="width: 65px;">Level</th>
                   <th>Judul Paket Ujian</th>
-                  <th>PDF & Audio</th>
+                  <th>Path / Link File</th>
                   <th style="width: 120px; text-align: center;">Aksi</th>
                 </tr>
               </thead>
@@ -1398,14 +1404,13 @@
     var totalPdfPages = 1;
     var activeLjdSection = 'listening';
     var userExamAnswers = {};
-    var drawingsPerPage = {}; // Menyimpan coretan user per nomor halaman
-    var currentDrawTool = 'pen'; // 'pen' atau 'eraser'
+    var drawingsPerPage = {};
+    var currentDrawTool = 'pen';
     var currentPenColor = '#ef4444';
     var currentPenWidth = 3;
     var isDrawingOnPdf = false;
     var lastPdfX = 0, lastPdfY = 0;
 
-    // KUNCI JAWABAN STANDAR RESMI HSK 1 (H10901)
     const DEFAULT_HSK1_ANSWER_KEY = {
       1: "TRUE", 2: "FALSE", 3: "FALSE", 4: "FALSE", 5: "TRUE",
       6: "A", 7: "A", 8: "C", 9: "A", 10: "C",
@@ -2029,17 +2034,11 @@
         fetch(SCRIPT_URL + "?action=getDialogues&level=ALL")
           .then(function(res) { return res.json(); })
           .then(function(data) { applyDialogues(data); })
-          .catch(function(err) {
-            console.error("Gagal load dialogues:", err);
-            applyDialogues([]);
-          });
+          .catch(function() { applyDialogues([]); });
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
           .withSuccessHandler(applyDialogues)
-          .withFailureHandler(function(err) {
-            console.error("Gagal load dialogues via Apps Script:", err);
-            applyDialogues([]);
-          })
+          .withFailureHandler(function() { applyDialogues([]); })
           .getSpeakingDialogues('ALL');
       } else {
         applyDialogues([]);
@@ -2391,8 +2390,8 @@
             testId: "PLC-DEFAULT",
             hskLevel: "HSK 1",
             testTitle: "Simulasi Ujian Resmi HSK 1 (H10901)",
-            pdfData: "",
-            audioData: "",
+            pdfUrl: "./HSK1.pdf",
+            audioUrl: "./HSK1.mp3",
             answerKey: DEFAULT_HSK1_ANSWER_KEY
           }];
         }
@@ -2456,20 +2455,38 @@
 
       var audioPlayer = document.getElementById('exam-audio-player');
       if (audioPlayer) {
-        if (pkg.audioData && pkg.audioData.trim() !== "") {
-          audioPlayer.src = pkg.audioData;
+        if (pkg.audioUrl && pkg.audioUrl.trim() !== "") {
+          audioPlayer.src = pkg.audioUrl;
         } else {
           audioPlayer.removeAttribute('src');
         }
       }
 
       // Load Dokumen PDF Soal
-      if (pkg.pdfData && pkg.pdfData.trim() !== "") {
-        loadPdfFromData(pkg.pdfData);
+      if (pkg.pdfUrl && pkg.pdfUrl.trim() !== "") {
+        loadPdfFromUrlOrData(pkg.pdfUrl);
+      } else {
+        loadPdfFromUrlOrData('./HSK1.pdf');
       }
 
       renderLjdItems();
     }
+
+    window.loadExamAudioFile = function(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const audioPlayer = document.getElementById('exam-audio-player');
+        audioPlayer.src = URL.createObjectURL(file);
+      }
+    };
+
+    window.loadExamPdfFile = function(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const fileUrl = URL.createObjectURL(file);
+        loadPdfFromUrlOrData(fileUrl);
+      }
+    };
 
     window.downloadCurrentExamAudio = function() {
       var audioPlayer = document.getElementById('exam-audio-player');
@@ -2484,21 +2501,20 @@
     };
 
     // ENGINE VIEWER PDF + DRAWING CANVAS OVERLAY
-    async function loadPdfFromData(pdfData) {
+    async function loadPdfFromUrlOrData(urlOrData) {
       try {
-        examPdfDoc = await pdfjsLib.getDocument({ data: pdfData }).promise;
+        examPdfDoc = await pdfjsLib.getDocument(urlOrData).promise;
         totalPdfPages = examPdfDoc.numPages;
         currentPdfPageNum = 1;
         renderPdfAndDrawPage(currentPdfPageNum);
       } catch (err) {
-        console.error("Gagal memuat PDF ujian:", err);
+        console.warn("Gagal membuka PDF dari URL, mencoba mode render lokal:", err);
       }
     }
 
     async function renderPdfAndDrawPage(pageNum) {
       if (!examPdfDoc) return;
 
-      // 1. Render halaman PDF
       const page = await examPdfDoc.getPage(pageNum);
       const renderCanvas = document.getElementById('pdf-render-canvas');
       const drawCanvas = document.getElementById('pdf-draw-canvas');
@@ -2516,7 +2532,6 @@
       };
       await page.render(renderContext).promise;
 
-      // 2. Pulihkan coretan tersimpan di halaman ini (jika ada)
       const ctxDraw = drawCanvas.getContext('2d');
       ctxDraw.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
       if (drawingsPerPage[pageNum]) {
@@ -2527,7 +2542,6 @@
         img.src = drawingsPerPage[pageNum];
       }
 
-      // 3. Pasang Pointer Event Listener untuk Coretan & Penghapus
       initPdfDrawListeners(drawCanvas);
 
       const pageNumEl = document.getElementById('pdf-page-num');
@@ -2596,7 +2610,6 @@
       function stopDraw() {
         if (isDrawingOnPdf) {
           isDrawingOnPdf = false;
-          // Simpan snapshot coretan halaman aktif
           drawingsPerPage[currentPdfPageNum] = drawCanvas.toDataURL();
         }
       }
@@ -2610,7 +2623,6 @@
       if (!examPdfDoc) return;
       const targetPage = currentPdfPageNum + delta;
       if (targetPage >= 1 && targetPage <= totalPdfPages) {
-        // Simpan gambar halaman saat ini
         const drawCanvas = document.getElementById('pdf-draw-canvas');
         if (drawCanvas) drawingsPerPage[currentPdfPageNum] = drawCanvas.toDataURL();
 
@@ -2662,7 +2674,6 @@
       mergedCanvas.height = renderCanvas.height;
       const mergedCtx = mergedCanvas.getContext('2d');
 
-      // Gambar halaman PDF + Gambar coretan tangan
       mergedCtx.drawImage(renderCanvas, 0, 0);
       mergedCtx.drawImage(drawCanvas, 0, 0);
 
@@ -2758,7 +2769,7 @@
       renderLjdItems();
     };
 
-    // Evaluasi Skor Akhir & Tautkan ke Rapor/Sertifikat
+    // Evaluasi Skor Akhir
     window.submitPlacementExam = function() {
       let listeningCorrect = 0;
       let readingCorrect = 0;
@@ -2798,43 +2809,19 @@
     };
 
     // 9. TAB 3: CRUD PLACEMENT TEST ENGINE
-    window.submitCrudPlacementPackage = async function() {
+    window.submitCrudPlacementPackage = function() {
       const editId = (document.getElementById('crud-plc-edit-id') ? document.getElementById('crud-plc-edit-id').value.trim() : '');
       const inHsk = document.getElementById('crud-plc-hsk');
       const inTitle = document.getElementById('crud-plc-title');
-      const inPdfFile = document.getElementById('crud-plc-pdf-input');
-      const inAudioFile = document.getElementById('crud-plc-audio-input');
+      const inPdfUrl = document.getElementById('crud-plc-pdf-url');
+      const inAudioUrl = document.getElementById('crud-plc-audio-url');
       const inKeys = document.getElementById('crud-plc-keys');
 
       const hskLvl = inHsk ? inHsk.value : "HSK 1";
       const title = (inTitle ? inTitle.value.trim() : "") || ("Simulasi Ujian Resmi " + hskLvl);
+      const pdfUrl = (inPdfUrl ? inPdfUrl.value.trim() : "") || "./HSK1.pdf";
+      const audioUrl = (inAudioUrl ? inAudioUrl.value.trim() : "") || "./HSK1.mp3";
       const keysJson = inKeys ? inKeys.value.trim() : "";
-
-      let pdfData = "";
-      let audioData = "";
-
-      if (inPdfFile && inPdfFile.files.length > 0) {
-        const file = inPdfFile.files[0];
-        const buffer = await file.arrayBuffer();
-        let binary = '';
-        const bytes = new Uint8Array(buffer);
-        for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
-        pdfData = "data:application/pdf;base64," + btoa(binary);
-      }
-
-      if (inAudioFile && inAudioFile.files.length > 0) {
-        const file = inAudioFile.files[0];
-        const buffer = await file.arrayBuffer();
-        let binary = '';
-        const bytes = new Uint8Array(buffer);
-        for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
-        audioData = "data:" + file.type + ";base64," + btoa(binary);
-      }
-
-      if (!editId && !pdfData) {
-        alert("Mohon pilih file PDF soal ujian terlebih dahulu (Wajib).");
-        return;
-      }
 
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
         fetch(SCRIPT_URL, {
@@ -2845,8 +2832,8 @@
             testId: editId,
             hskLevel: hskLvl,
             testTitle: title,
-            pdfData: pdfData,
-            audioData: audioData,
+            pdfUrl: pdfUrl,
+            audioUrl: audioUrl,
             answerKeyJson: keysJson
           })
         })
@@ -2866,7 +2853,7 @@
             loadPlacementPackagesTable();
             loadPlacementPackagesView(res ? res.testId : null);
           })
-          .saveOrUpdatePlacementPackage(editId, hskLvl, title, pdfData, audioData, keysJson);
+          .saveOrUpdatePlacementPackage(editId, hskLvl, title, pdfUrl, audioUrl, keysJson);
       } else {
         alert("Fitur simpan membutuhkan koneksi ke backend.");
       }
@@ -2887,13 +2874,13 @@
           var tr = document.createElement('tr');
           var rawLvl = pkg.hskLevel || 'HSK 1';
           var displayLvl = rawLvl.toUpperCase().includes('HSK') ? rawLvl : ('HSK ' + rawLvl);
-          var statusFiles = (pkg.pdfData ? '📄 PDF' : '✕ No PDF') + ' | ' + (pkg.audioData ? '🎧 Audio' : 'No Audio');
+          var statusFiles = (pkg.pdfUrl ? pkg.pdfUrl : '-') + ' | ' + (pkg.audioUrl ? pkg.audioUrl : '-');
 
           tr.innerHTML = 
             '<td style="font-weight: 700; color: var(--gold-autumn);">' + (pkg.testId || '-') + '</td>' +
             '<td><span class="badge" style="font-size: 10px; padding: 2px 6px; margin: 0;">' + displayLvl + '</span></td>' +
             '<td style="font-weight: 600;">' + (pkg.testTitle || 'Paket Ujian') + '</td>' +
-            '<td style="font-size: 11px; color: var(--text-muted);">' + statusFiles + '</td>' +
+            '<td style="font-size: 11px; color: var(--text-muted); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">' + statusFiles + '</td>' +
             '<td style="text-align: center;">' +
               '<button class="table-action-btn btn-tbl-edit" onclick="editPlacementPackage(\'' + pkg.testId + '\')">✏️ Edit</button>' +
               '<button class="table-action-btn btn-tbl-delete" onclick="deletePlacementPackageBtn(\'' + pkg.testId + '\')">🗑️ Hapus</button>' +
@@ -2921,6 +2908,8 @@
       var inEditId = document.getElementById('crud-plc-edit-id');
       var inHsk = document.getElementById('crud-plc-hsk');
       var inTitle = document.getElementById('crud-plc-title');
+      var inPdfUrl = document.getElementById('crud-plc-pdf-url');
+      var inAudioUrl = document.getElementById('crud-plc-audio-url');
       var inKeys = document.getElementById('crud-plc-keys');
       var btnSave = document.getElementById('btn-save-crud-plc');
       var btnCancel = document.getElementById('btn-cancel-edit-plc');
@@ -2932,6 +2921,8 @@
         inHsk.value = 'HSK ' + num;
       }
       if (inTitle) inTitle.value = found.testTitle || '';
+      if (inPdfUrl) inPdfUrl.value = found.pdfUrl || '';
+      if (inAudioUrl) inAudioUrl.value = found.audioUrl || '';
       if (inKeys) inKeys.value = found.answerKeyJson || '';
 
       if (btnSave) btnSave.innerText = '💾 Simpan Perubahan Paket (' + found.testId + ')';
@@ -2944,12 +2935,16 @@
     window.cancelEditPlacementPackage = function() {
       var inEditId = document.getElementById('crud-plc-edit-id');
       var inTitle = document.getElementById('crud-plc-title');
+      var inPdfUrl = document.getElementById('crud-plc-pdf-url');
+      var inAudioUrl = document.getElementById('crud-plc-audio-url');
       var inKeys = document.getElementById('crud-plc-keys');
       var btnSave = document.getElementById('btn-save-crud-plc');
       var btnCancel = document.getElementById('btn-cancel-edit-plc');
 
       if (inEditId) inEditId.value = '';
       if (inTitle) inTitle.value = '';
+      if (inPdfUrl) inPdfUrl.value = '';
+      if (inAudioUrl) inAudioUrl.value = '';
       if (inKeys) inKeys.value = '';
 
       if (btnSave) btnSave.innerText = '💾 Simpan Paket ke Sheet PLACEMENT_TEST';
@@ -3382,10 +3377,10 @@
       }
       if (viewId === 'placement') {
         setTimeout(function() {
-          if (currentPlacementPackage && currentPlacementPackage.pdfData) {
-            loadPdfFromData(currentPlacementPackage.pdfData);
+          if (currentPlacementPackage) {
+            loadPdfFromUrlOrData(currentPlacementPackage.pdfUrl || './HSK1.pdf');
           }
-        }, 100);
+        }, 80);
       }
     };
 
