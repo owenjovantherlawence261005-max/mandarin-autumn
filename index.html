@@ -528,9 +528,7 @@
     .bottom-nav-btn.active { color: var(--gold-autumn); }
     .bottom-nav-btn span.icon { font-size: 18px; }
 
-    /* =========================================================================
-       MODAL PANEL CRUD RAHASIA (KLIK 3X LOGO AUTUMN)
-       ========================================================================= */
+    /* MODAL PANEL CRUD RAHASIA (KLIK 3X LOGO AUTUMN) */
     #admin-crud-modal {
       display: none;
       position: fixed;
@@ -632,7 +630,6 @@
   <div class="app-container">
     <aside class="sidebar">
       <div class="brand-box">
-        <!-- LOGO AUTUMN (KLIK 3X UNTUK PANEL CRUD) -->
         <div class="brand-icon" id="autumn-logo-btn" onclick="handleLogoTripleClick()" title="Klik 3x Cepat untuk Buka Panel CRUD">秋</div>
         <div class="brand-text">
           <h1>ZETTBOT HSK</h1>
@@ -741,7 +738,7 @@
         <div class="header-group">
           <span class="badge">Official Standard Workbook</span>
           <h2>Workbook Interaktif per Level</h2>
-          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dari database Spreadsheet[cite: 2].</p>
+          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dari database Spreadsheet[cite: 11].</p>
         </div>
 
         <div class="toolbar-row">
@@ -874,9 +871,7 @@
     </main>
   </div>
 
-  <!-- =========================================================================
-       MODAL PANEL CRUD RAHASIA (KLIK 3X LOGO AUTUMN)
-       ========================================================================= -->
+  <!-- MODAL PANEL CRUD RAHASIA (KLIK 3X LOGO AUTUMN) -->
   <div id="admin-crud-modal">
     <div class="crud-modal-content">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
@@ -884,7 +879,7 @@
           <span style="font-size: 24px;">🍁</span>
           <div>
             <h3 style="font-size: 18px; color: #fff;">Panel Admin & CRUD Khusus</h3>
-            <p style="font-size: 11px; color: var(--gold-autumn);">Sinkronisasi Otomatis ke Sheet SPEAKING_DIALOGUES & WORKBOOK_BANK[cite: 3, 4]</p>
+            <p style="font-size: 11px; color: var(--gold-autumn);">Sinkronisasi Otomatis ke Sheet SPEAKING_DIALOGUES & WORKBOOK_BANK[cite: 10, 11]</p>
           </div>
         </div>
         <button onclick="closeAdminCrudModal()" style="background: none; border: none; color: #fca5a5; font-size: 24px; cursor: pointer;">✕</button>
@@ -900,7 +895,7 @@
         <div class="crud-form-group" style="background: rgba(234, 88, 12, 0.15); padding: 14px; border-radius: 10px; border: 1px dashed var(--gold-autumn);">
           <label>Unggah Naskah PDF Khusus Percakapan 2 Orang:</label>
           <input type="file" id="pdf-crud-file-input" accept="application/pdf" onchange="handleCrudPdfUpload(event)" style="padding: 6px;">
-          <div id="crud-pdf-status" style="font-size: 12px; color: var(--gold-autumn); margin-top: 6px;">Sistem akan membedah Hanzi, Pinyin, dan Terjemahan Indonesia secara otomatis sesuai rumus JSON database[cite: 3].</div>
+          <div id="crud-pdf-status" style="font-size: 12px; color: var(--gold-autumn); margin-top: 6px;">Sistem akan membedah Hanzi, Pinyin, dan Terjemahan Indonesia secara otomatis sesuai rumus JSON database[cite: 10].</div>
         </div>
 
         <div class="crud-form-group">
@@ -940,7 +935,7 @@
           <textarea id="crud-spk-json-preview" rows="4" readonly style="font-family: monospace; font-size: 11.5px; background: #120905; color: #86efac; border-color: rgba(134, 239, 172, 0.3);"></textarea>
         </div>
 
-        <button class="btn-autumn-primary" onclick="submitCrudSpeakingDialogue()" style="width: 100%;">💾 Simpan ke Sheet SPEAKING_DIALOGUES & Terapkan[cite: 3, 4]</button>
+        <button class="btn-autumn-primary" onclick="submitCrudSpeakingDialogue()" style="width: 100%;">💾 Simpan ke Sheet SPEAKING_DIALOGUES & Terapkan[cite: 10, 11]</button>
       </div>
 
       <!-- TAB 2: CRUD SOAL WORKBOOK -->
@@ -987,7 +982,7 @@
           <input type="text" id="crud-wb-explanation" placeholder="Contoh: 苹果 (píngguǒ) berarti buah apel.">
         </div>
 
-        <button class="btn-autumn-primary" onclick="submitCrudWorkbookQuestion()" style="width: 100%;">💾 Tambah Soal ke WORKBOOK_BANK[cite: 4]</button>
+        <button class="btn-autumn-primary" onclick="submitCrudWorkbookQuestion()" style="width: 100%;">💾 Tambah Soal ke WORKBOOK_BANK[cite: 11]</button>
       </div>
 
     </div>
@@ -996,6 +991,7 @@
   <nav class="bottom-nav">
     <button class="bottom-nav-btn active" onclick="switchTab('dashboard')"><span class="icon">🍂</span>Beranda</button>
     <button class="bottom-nav-btn" onclick="switchTab('dictionary')"><span class="icon">📖</span>Kamus</button>
+    <button class="bottom-nav-btn" onclick="switchTab('stroke')"><span class="icon">✍️</span>Menulis</button>
     <button class="bottom-nav-btn" onclick="switchTab('speaking')"><span class="icon">🎙️</span>Roleplay</button>
     <button class="bottom-nav-btn" onclick="switchTab('workbook')"><span class="icon">📝</span>Workbook</button>
     <button class="bottom-nav-btn" onclick="switchTab('srs')"><span class="icon">🎴</span>SRS</button>
@@ -1033,9 +1029,9 @@
     var logoClickCount = 0;
     var logoClickTimer = null;
 
+    // Inisialisasi Saat Dokumen Siap
     window.addEventListener('DOMContentLoaded', function() {
       initFallingLeaves();
-      initTianZiGeCanvas();
       loadDatabaseVocab();
       initPracticeCharacters();
       loadGrammarGuidesView();
@@ -1043,6 +1039,66 @@
       initSrsEngine();
     });
 
+    // 1. ENGINE EFEK DAUN GUGUR AUTUMN (PERBAIKAN UTAMA REFERENCE ERROR)
+    function initFallingLeaves() {
+      var canvas = document.getElementById('leaves-canvas');
+      if (!canvas) return;
+      var ctx = canvas.getContext('2d');
+      var leaves = [];
+      var colors = ['#ea580c', '#c2410c', '#f59e0b', '#d97706', '#9a3412'];
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      for (var i = 0; i < 24; i++) {
+        leaves.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - canvas.height,
+          size: Math.random() * 8 + 6,
+          speedX: Math.random() * 1.5 - 0.75,
+          speedY: Math.random() * 1.5 + 0.8,
+          rotation: Math.random() * 360,
+          rotSpeed: Math.random() * 2 - 1,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          opacity: Math.random() * 0.4 + 0.2
+        });
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (var i = 0; i < leaves.length; i++) {
+          var l = leaves[i];
+          l.x += l.speedX + Math.sin(l.y * 0.01) * 0.5;
+          l.y += l.speedY;
+          l.rotation += l.rotSpeed;
+
+          if (l.y > canvas.height) {
+            l.y = -20;
+            l.x = Math.random() * canvas.width;
+          }
+
+          ctx.save();
+          ctx.translate(l.x, l.y);
+          ctx.rotate((l.rotation * Math.PI) / 180);
+          ctx.fillStyle = l.color;
+          ctx.globalAlpha = l.opacity;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.bezierCurveTo(l.size, -l.size, l.size * 2, 0, 0, l.size * 2);
+          ctx.bezierCurveTo(-l.size * 2, 0, -l.size, -l.size, 0, 0);
+          ctx.fill();
+          ctx.restore();
+        }
+        requestAnimationFrame(animate);
+      }
+      animate();
+    }
+
+    // Deteksi Klik 3x Cepat Logo Autumn
     window.handleLogoTripleClick = function() {
       logoClickCount++;
       clearTimeout(logoClickTimer);
@@ -1079,6 +1135,7 @@
       }
     };
 
+    // SMART PDF PARSER
     window.handleCrudPdfUpload = async function(event) {
       const file = event.target.files[0];
       if (!file || file.type !== "application/pdf") {
@@ -1354,7 +1411,7 @@
       }
     };
 
-  window.switchTab = function(viewId) {
+    window.switchTab = function(viewId) {
       var views = document.querySelectorAll('.view-section');
       for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
       var target = document.getElementById('view-' + viewId);
@@ -1366,11 +1423,12 @@
 
       if (viewId === 'workbook') loadWorkbookQuestions('ALL');
       if (viewId === 'stroke') {
-        setTimeout(function() { drawTianZiGeGrid(); }, 50);
+        setTimeout(function() { initTianZiGeCanvas(); }, 60);
       }
     };
-    
-function loadDatabaseVocab() {
+
+    // 2. ENGINE PENARIK KOSAKATA GITHUB PAGES
+    function loadDatabaseVocab() {
       var container = document.getElementById('vocab-cards-container');
       if (container) container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--gold-autumn);">Memuat data dari Spreadsheet Database... 🍂</div>';
 
@@ -1404,6 +1462,7 @@ function loadDatabaseVocab() {
         useFallbackVocab();
       }
     }
+
     function useFallbackVocab() {
       allVocabularies = [
         {hanzi:"我", pinyin:"wǒ", indonesian:"saya", partOfSpeech:"Kata Ganti", level:"1"},
@@ -1416,84 +1475,79 @@ function loadDatabaseVocab() {
       initPracticeCharacters();
       renderCurrentSrsCard();
     }
-function renderVocabUI() {
-  var container = document.getElementById('vocab-cards-container');
-  if (!container) return;
-  container.innerHTML = '';
 
-  var filtered = allVocabularies.filter(function(v) {
-    // Normalisasi level target (dari tombol) dan level data (dari spreadsheet)
-    var targetLvl = currentDictLevel.toString().toUpperCase().replace(/\s+/g, '').trim();
-    var itemLvl = (v.level || '').toString().toUpperCase().replace(/\s+/g, '').trim();
-    var itemHsk = (v.hskLevel || '').toString().toUpperCase().replace(/\s+/g, '').trim();
+    function renderVocabUI() {
+      var container = document.getElementById('vocab-cards-container');
+      if (!container) return;
+      container.innerHTML = '';
 
-    // Cocokkan secara fleksibel (bisa 'ALL', 'HSK 1', maupun angka '1')
-    var matchLvl = false;
-    if (currentDictLevel === 'ALL' || targetLvl === 'ALL' || targetLvl === '') {
-      matchLvl = true;
-    } else if (itemHsk === targetLvl || itemHsk === 'HSK' + targetLvl || itemLvl === targetLvl.replace(/[^0-9]/g, '')) {
-      matchLvl = true;
+      var targetNum = currentDictLevel.toString().replace(/[^0-9]/g, '').trim();
+
+      var filtered = allVocabularies.filter(function(v) {
+        var vLvl = (v.level || v.hskLevel || '').toString().replace(/[^0-9]/g, '').trim();
+        var matchLvl = (currentDictLevel === 'ALL' || targetNum === '' || vLvl === targetNum);
+
+        var sTerm = currentDictSearch.toLowerCase().trim();
+        var matchSearch = (!sTerm || 
+          (v.hanzi && v.hanzi.toLowerCase().includes(sTerm)) || 
+          (v.pinyin && v.pinyin.toLowerCase().includes(sTerm)) || 
+          (v.indonesian && v.indonesian.toLowerCase().includes(sTerm))
+        );
+        
+        return matchLvl && matchSearch;
+      });
+
+      var pageSize = 12;
+      var totalPages = Math.ceil(filtered.length / pageSize) || 1;
+      currentDictPage = Math.max(1, Math.min(currentDictPage, totalPages));
+
+      var pagedItems = filtered.slice((currentDictPage - 1) * pageSize, currentDictPage * pageSize);
+
+      if (pagedItems.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--text-muted);">Tidak ada kosakata yang cocok.</div>';
+      } else {
+        pagedItems.forEach(function(item) {
+          var rawLvl = (item.hskLevel || item.level || '1').toString();
+          var displayTag = rawLvl.toUpperCase().includes('HSK') ? rawLvl : ('HSK ' + rawLvl);
+
+          var card = document.createElement('div');
+          card.className = 'vocab-card';
+          card.innerHTML = 
+            '<div class="vocab-head">' +
+              '<div class="vocab-hanzi">' + (item.hanzi || '') + '</div>' +
+              '<div class="vocab-level-tag">' + displayTag + '</div>' +
+            '</div>' +
+            '<div class="vocab-pinyin">' + (item.pinyin || '') + '</div>' +
+            '<div class="vocab-indo">' + (item.indonesian || '') + '</div>' +
+            '<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px;">[' + (item.partOfSpeech || 'Umum') + ']</div>' +
+            '<div class="vocab-actions">' +
+              '<button class="icon-action-btn" onclick="speakText(\'' + (item.hanzi || '') + '\')">🔊 Dengar</button>' +
+              '<button class="icon-action-btn" onclick="selectCharForWriting(\'' + (item.hanzi ? item.hanzi.charAt(0) : '') + '\')">✍️ Tulis</button>' +
+            '</div>';
+          container.appendChild(card);
+        });
+      }
+
+      var elPage = document.getElementById('dict-page-indicator');
+      var elPrev = document.getElementById('btn-prev-page');
+      var elNext = document.getElementById('btn-next-page');
+
+      if (elPage) elPage.innerText = 'Halaman ' + currentDictPage + ' / ' + totalPages;
+      if (elPrev) elPrev.disabled = (currentDictPage <= 1);
+      if (elNext) elNext.disabled = (currentDictPage >= totalPages);
     }
 
-    var sTerm = currentDictSearch.toLowerCase().trim();
-    var matchSearch = (!sTerm || 
-      (v.hanzi && v.hanzi.toLowerCase().includes(sTerm)) || 
-      (v.pinyin && v.pinyin.toLowerCase().includes(sTerm)) || 
-      (v.indonesian && v.indonesian.toLowerCase().includes(sTerm))
-    );
-    
-    return matchLvl && matchSearch;
-  });
+    window.filterDictLevel = function(lvl, btn) {
+      currentDictLevel = lvl;
+      currentDictPage = 1;
+      if (btn && btn.parentElement) {
+        var buttons = btn.parentElement.querySelectorAll('.pill-btn');
+        for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove('active');
+        btn.classList.add('active');
+      }
+      renderVocabUI();
+    };
 
-  var pageSize = 12;
-  var totalPages = Math.ceil(filtered.length / pageSize) || 1;
-  currentDictPage = Math.max(1, Math.min(currentDictPage, totalPages));
-
-  var pagedItems = filtered.slice((currentDictPage - 1) * pageSize, currentDictPage * pageSize);
-
-  if (pagedItems.length === 0) {
-    container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--text-muted);">Tidak ada kosakata yang cocok.</div>';
-  } else {
-    pagedItems.forEach(function(item) {
-      var rawLvl = (item.hskLevel || item.level || '1').toString();
-      var displayTag = rawLvl.toUpperCase().includes('HSK') ? rawLvl : ('HSK ' + rawLvl);
-
-      var card = document.createElement('div');
-      card.className = 'vocab-card';
-      card.innerHTML = 
-        '<div class="vocab-head">' +
-          '<div class="vocab-hanzi">' + (item.hanzi || '') + '</div>' +
-          '<div class="vocab-level-tag">' + displayTag + '</div>' +
-        '</div>' +
-        '<div class="vocab-pinyin">' + (item.pinyin || '') + '</div>' +
-        '<div class="vocab-indo">' + (item.indonesian || '') + '</div>' +
-        '<div style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px;">[' + (item.partOfSpeech || 'Umum') + ']</div>' +
-        '<div class="vocab-actions">' +
-          '<button class="icon-action-btn" onclick="speakText(\'' + (item.hanzi || '') + '\')">🔊 Dengar</button>' +
-          '<button class="icon-action-btn" onclick="selectCharForWriting(\'' + (item.hanzi ? item.hanzi.charAt(0) : '') + '\')">✍️ Tulis</button>' +
-        '</div>';
-      container.appendChild(card);
-    });
-  }
-
-  var elPage = document.getElementById('dict-page-indicator');
-  var elPrev = document.getElementById('btn-prev-page');
-  var elNext = document.getElementById('btn-next-page');
-
-  if (elPage) elPage.innerText = 'Halaman ' + currentDictPage + ' / ' + totalPages;
-  if (elPrev) elPrev.disabled = (currentDictPage <= 1);
-  if (elNext) elNext.disabled = (currentDictPage >= totalPages);
-}
-window.filterDictLevel = function(lvl, btn) {
-  currentDictLevel = lvl;
-  currentDictPage = 1;
-  if (btn && btn.parentElement) {
-    var buttons = btn.parentElement.querySelectorAll('.pill-btn');
-    for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove('active');
-    btn.classList.add('active');
-  }
-  renderVocabUI();
-};
     window.handleSearchDebounce = function() {
       clearTimeout(searchDebounceTimer);
       searchDebounceTimer = setTimeout(function() {
@@ -1509,7 +1563,7 @@ window.filterDictLevel = function(lvl, btn) {
       renderVocabUI();
     };
 
-   // Tian Zi Ge Engine (Mouse, Touchscreen & Stylus Pen Ready)
+    // 3. ENGINE TIAN ZI GE CANVAS (POINTER EVENTS READY)
     var canvas, ctx, isDrawing = false;
     var lastX = 0, lastY = 0;
 
@@ -1521,13 +1575,15 @@ window.filterDictLevel = function(lvl, btn) {
 
       function getCanvasPos(e) {
         var rect = canvas.getBoundingClientRect();
+        var scaleX = canvas.width / (rect.width || 320);
+        var scaleY = canvas.height / (rect.height || 320);
         return {
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top
+          x: (e.clientX - rect.left) * scaleX,
+          y: (e.clientY - rect.top) * scaleY
         };
       }
 
-      canvas.addEventListener('pointerdown', function(e) {
+      canvas.onpointerdown = function(e) {
         e.preventDefault();
         isDrawing = true;
         var pos = getCanvasPos(e);
@@ -1537,9 +1593,9 @@ window.filterDictLevel = function(lvl, btn) {
         ctx.arc(pos.x, pos.y, 4.5, 0, Math.PI * 2);
         ctx.fillStyle = '#1e293b';
         ctx.fill();
-      });
+      };
 
-      canvas.addEventListener('pointermove', function(e) {
+      canvas.onpointermove = function(e) {
         if (!isDrawing) return;
         e.preventDefault();
         var pos = getCanvasPos(e);
@@ -1553,11 +1609,11 @@ window.filterDictLevel = function(lvl, btn) {
         ctx.stroke();
         lastX = pos.x;
         lastY = pos.y;
-      });
+      };
 
-      canvas.addEventListener('pointerup', function() { isDrawing = false; });
-      canvas.addEventListener('pointercancel', function() { isDrawing = false; });
-      canvas.addEventListener('pointerleave', function() { isDrawing = false; });
+      canvas.onpointerup = function() { isDrawing = false; };
+      canvas.onpointercancel = function() { isDrawing = false; };
+      canvas.onpointerleave = function() { isDrawing = false; };
     }
 
     function drawTianZiGeGrid() {
@@ -1616,11 +1672,11 @@ window.filterDictLevel = function(lvl, btn) {
       currentPracticeChar = char;
       var el = document.getElementById('active-char-display');
       if (el) el.innerText = char;
-      drawTianZiGeGrid();
       switchTab('stroke');
+      setTimeout(function() { initTianZiGeCanvas(); }, 60);
     };
-    
-    // Roleplay Engine
+
+    // 4. ENGINE SPEAKING AI ROLEPLAY
     function loadSpeakingDialoguesView() {
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
         fetch(SCRIPT_URL + "?action=getDialogues&level=ALL")
@@ -1835,7 +1891,7 @@ window.filterDictLevel = function(lvl, btn) {
       }
     };
 
-    // Workbook Viewer
+    // 5. ENGINE WORKBOOK
     function loadWorkbookQuestions(hskLevel, btn) {
       if (btn && btn.parentElement) {
         var buttons = btn.parentElement.querySelectorAll('.pill-btn');
@@ -1864,7 +1920,7 @@ window.filterDictLevel = function(lvl, btn) {
       container.innerHTML = '';
 
       if (!questions || questions.length === 0) {
-        container.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 30px;">Belum ada butir soal di sheet WORKBOOK_BANK untuk level ini. Gunakan panel CRUD untuk menambahkannya![cite: 4]</div>';
+        container.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 30px;">Belum ada butir soal di sheet WORKBOOK_BANK untuk level ini. Gunakan panel CRUD untuk menambahkannya![cite: 11]</div>';
         return;
       }
 
@@ -1906,7 +1962,7 @@ window.filterDictLevel = function(lvl, btn) {
           btnElement.style.background = '#16a34a';
           btnElement.style.color = '#fff';
         }
-        feedbackBox.style.background = 'rgba(220, 38, 38, 0.2)';
+        feedbackBox.style.background = 'rgba(22, 163, 74, 0.2)';
         feedbackBox.style.border = '1px solid #16a34a';
         feedbackBox.style.color = '#86efac';
         feedbackBox.innerHTML = '🎉 <b>Benar Sekali!</b> Jawaban Anda tepat.';
@@ -1922,7 +1978,7 @@ window.filterDictLevel = function(lvl, btn) {
       }
     };
 
-    // Grammar Guides
+    // 6. ENGINE GRAMMAR
     function loadGrammarGuidesView() {
       var container = document.getElementById('grammar-cards-container');
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
@@ -1971,7 +2027,7 @@ window.filterDictLevel = function(lvl, btn) {
       });
     }
 
-    // SRS Flashcards
+    // 7. ENGINE SRS FLASHCARDS
     function initSrsEngine() {
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
@@ -2014,7 +2070,7 @@ window.filterDictLevel = function(lvl, btn) {
       renderCurrentSrsCard();
     };
 
-    // Placement Test
+    // 8. ENGINE PLACEMENT TEST
     window.startPlacementTest = function() {
       var intro = document.getElementById('placement-intro-box');
       var quizBox = document.getElementById('placement-quiz-box');
@@ -2058,7 +2114,7 @@ window.filterDictLevel = function(lvl, btn) {
         quizBox.innerHTML = 
           '<div style="text-align:center; padding: 20px;">' +
             '<div style="font-size: 50px;">🎯</div>' +
-            '<h3 style="font-size: 22px; color: #fff; margin-状况: 10px 0;">Hasil Diagnostic Placement Test</h3>' +
+            '<h3 style="font-size: 22px; color: #fff; margin: 10px 0;">Hasil Diagnostic Placement Test</h3>' +
             '<p style="font-size: 15px; color: var(--gold-autumn);">Estimasi Level: <b>' + estimated + '</b> (Skor: ' + placementScore + ')</p>' +
             '<button class="btn-autumn-primary" style="margin-top: 20px;" onclick="startPlacementTest()">Ulangi Tes</button>' +
           '</div>';
@@ -2091,6 +2147,7 @@ window.filterDictLevel = function(lvl, btn) {
       renderPlacementStep();
     };
 
+    // 9. ENGINE SERTIFIKAT PDF
     window.requestCertificatePdf = function() {
       var inName = document.getElementById('cert-user-name');
       var name = inName ? inName.value : '';
