@@ -136,7 +136,7 @@
     .main-viewport {
       flex-grow: 1;
       padding: 32px 40px 100px 40px;
-      max-width: 1200px;
+      max-width: 1240px;
       margin: 0 auto;
       width: 100%;
     }
@@ -524,17 +524,37 @@
     .bottom-nav-btn.active { color: var(--gold-autumn); }
     .bottom-nav-btn span.icon { font-size: 18px; }
 
-    /* PDF Canvas with Annotation Overlay Wrapper */
+    /* =========================================================================
+       PDF VIEWER & DRAWING OVERLAY RESPONSIVE CONTAINER
+       ========================================================================= */
+    .pdf-scroll-viewport {
+      background: #180d08;
+      border: 1px solid var(--amber-border);
+      border-radius: 12px;
+      max-height: 820px;
+      overflow-y: scroll;
+      overflow-x: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 10px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--gold-autumn) #180d08;
+    }
+
     .pdf-viewer-outer-wrap {
       position: relative;
       display: inline-block;
-      box-shadow: 0 6px 24px rgba(0,0,0,0.6);
-      border-radius: 8px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.7);
+      border-radius: 6px;
       overflow: hidden;
-      background: #fff;
+      background: #ffffff;
+      margin: 0 auto;
     }
     #pdf-render-canvas {
       display: block;
+      max-width: 100%;
+      height: auto;
     }
     #pdf-draw-canvas {
       position: absolute;
@@ -546,7 +566,6 @@
       touch-action: none;
     }
 
-    /* Color Swatch Button */
     .color-swatch-btn {
       width: 22px;
       height: 22px;
@@ -635,7 +654,6 @@
       border-color: var(--gold-autumn);
     }
 
-    /* CRUD Table Styling */
     .crud-table-wrap {
       max-height: 260px;
       overflow-y: auto;
@@ -824,7 +842,6 @@
             </div>
           </div>
 
-          <!-- KONTENER KANVAS DINAMIS SEBARIS -->
           <div id="tianzige-multi-container" class="canvas-multi-grid"></div>
 
           <div style="background: rgba(20, 11, 7, 0.6); padding: 14px; border-radius: 10px; border: 1px solid var(--amber-border); margin-top: 10px;">
@@ -863,7 +880,7 @@
         <div class="header-group">
           <span class="badge">Official Standard Workbook</span>
           <h2>Workbook Interaktif per Level</h2>
-          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dari database Spreadsheet[cite: 5].</p>
+          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dari database Spreadsheet.</p>
         </div>
 
         <div class="toolbar-row">
@@ -888,7 +905,6 @@
             <p>Simulasi percakapan dua arah interaktif berbasis Web Speech API.</p>
           </div>
 
-          <!-- Pilihan Filter Skenario di Kanan Atas Mengikuti Database SPEAKING_DIALOGUES -->
           <div style="display: flex; align-items: center; gap: 10px; background: rgba(40, 24, 16, 0.85); padding: 10px 16px; border-radius: 12px; border: 1px solid var(--amber-border); box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
             <label for="speaking-scenario-select" style="font-size: 12.5px; font-weight: 700; color: var(--gold-autumn); white-space: nowrap; display: flex; align-items: center; gap: 6px;">
               <span>🎭</span> Skenario:
@@ -966,13 +982,13 @@
         </div>
       </section>
 
-      <!-- 8. HSK DIAGNOSTIC & MOCK PLACEMENT TEST (AUDIO + PDF + INTERACTIVE ANNOTATION CANVAS) -->
+      <!-- 8. HSK DIAGNOSTIC & MOCK PLACEMENT TEST (JALUR RELATIF LANGSUNG GITHUB + VIEWER SCROLL + ANNOTATION CANVAS) -->
       <section id="view-placement" class="view-section">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
           <div class="header-group" style="margin-bottom: 0;">
             <span class="badge">Official Standard Mock Exam</span>
             <h2>HSK Standard Placement & Mock Exam</h2>
-            <p>Ujian penentuan kemampuan resmi dengan lembar PDF yang bisa dicoret, audio menyimak, dan lembar jawaban digital.</p>
+            <p>Ujian penentuan kemampuan resmi dengan lembar PDF yang bisa dicoret, audio menyimak langsung, dan lembar jawaban digital.</p>
           </div>
 
           <!-- Dropdown Filter Pilihan Paket Ujian Placement HSK -->
@@ -986,7 +1002,7 @@
           </div>
         </div>
 
-        <!-- PANEL KONTROL AUDIO MENYIMAK (STREAMING LANGSUNG GOOGLE DRIVE) -->
+        <!-- PANEL KONTROL AUDIO MENYIMAK (STREAMING LANGSUNG JALUR RELATIF GITHUB) -->
         <div class="glass-card" style="margin-bottom: 20px; padding: 16px 20px;">
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
             <div style="display: flex; align-items: center; gap: 12px;">
@@ -1008,11 +1024,11 @@
           </div>
         </div>
 
-        <!-- LAYOUT UTAMA: VIEWER PDF BERCORETAN + LEMBAR JAWABAN DIGITAL (LJD) -->
+        <!-- LAYOUT UTAMA: VIEWER PDF SCROLL BERCORETAN + LEMBAR JAWABAN DIGITAL (LJD) -->
         <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start;">
           
-          <!-- SISI KIRI: LEMBAR SOAL PDF DENGAN KANVAS CORETAN PENSIL & PENGHAPUS -->
-          <div class="glass-card" style="flex: 1; min-width: 320px; padding: 18px;">
+          <!-- SISI KIRI: LEMBAR SOAL PDF DENGAN BILAH SCROLL & KANVAS CORETAN -->
+          <div class="glass-card" style="flex: 1; min-width: 320px; padding: 18px;" id="pdf-container-card">
             
             <!-- TOOLBAR ALAT CORETAN / DRAWING TOOLBAR -->
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; background: rgba(20, 11, 7, 0.6); padding: 10px 14px; border-radius: 10px; border: 1px solid var(--amber-border);">
@@ -1042,8 +1058,8 @@
               </div>
             </div>
 
-            <!-- CONTAINER VIEWER CANVAS (PDF + OVERLAY DRAWING LAYER) -->
-            <div style="background: #180d08; border: 1px solid var(--amber-border); border-radius: 10px; overflow: auto; max-height: 760px; display: flex; justify-content: center; padding: 12px;">
+            <!-- CONTAINER VIEWER CANVAS DENGAN VERTICAL SCROLLBAR PENUH -->
+            <div class="pdf-scroll-viewport" id="pdf-scroll-box">
               <div class="pdf-viewer-outer-wrap" id="pdf-viewer-wrapper">
                 <canvas id="pdf-render-canvas"></canvas>
                 <canvas id="pdf-draw-canvas"></canvas>
@@ -1051,7 +1067,7 @@
             </div>
             
             <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 11.5px; color: var(--text-muted);">
-              <span>💡 <i>Coret atau tandai langsung di atas lembar PDF dengan mouse/layar sentuh.</i></span>
+              <span>💡 <i>Gunakan mouse scroll untuk membaca soal ke bawah. Coretan tangan tersimpan otomatis per halaman.</i></span>
               <label class="pill-btn" style="cursor: pointer; padding: 4px 10px; font-size: 11px; background: rgba(245, 158, 11, 0.15); border-color: var(--gold-autumn);">
                 📂 Buka File PDF Lokal (.pdf)
                 <input type="file" accept="application/pdf" onchange="loadExamPdfFile(event)" style="display: none;">
@@ -1060,7 +1076,7 @@
           </div>
 
           <!-- SISI KANAN: LEMBAR JAWABAN DIGITAL INTERAKTIF (LJD 40 SOAL) -->
-          <div class="glass-card" style="width: 360px; max-height: 870px; display: flex; flex-direction: column; padding: 18px;">
+          <div class="glass-card" style="width: 360px; max-height: 920px; display: flex; flex-direction: column; padding: 18px;">
             <div style="border-bottom: 1px solid var(--amber-border); padding-bottom: 10px; margin-bottom: 12px;">
               <div style="font-size: 15px; font-weight: 800; color: #fff;">📝 Lembar Jawaban Digital</div>
               <div style="font-size: 11.5px; color: var(--gold-autumn);">Pilih jawaban sesuai naskah soal di PDF</div>
@@ -1115,7 +1131,7 @@
           <span style="font-size: 24px;">🍁</span>
           <div>
             <h3 style="font-size: 18px; color: #fff;">Panel Admin & CRUD Khusus</h3>
-            <p style="font-size: 11px; color: var(--gold-autumn);">Sinkronisasi Otomatis ke Sheet SPEAKING, WORKBOOK & PLACEMENT_TEST</p>
+            <p style="font-size: 11px; color: var(--gold-autumn);">Sinkronisasi Otomatis ke Sheet SPEAKING, WORKBOOK & PLACEMENT_TEST[cite: 5]</p>
           </div>
         </div>
         <button onclick="closeAdminCrudModal()" style="background: none; border: none; color: #fca5a5; font-size: 24px; cursor: pointer;">✕</button>
@@ -1124,7 +1140,7 @@
       <div class="crud-tab-header">
         <button class="crud-tab-btn active" id="crud-tab-spk" onclick="switchCrudTab('spk')">🎙️ Speaking AI (PDF 2 Orang)</button>
         <button class="crud-tab-btn" id="crud-tab-wb" onclick="switchCrudTab('wb')">📝 Soal Workbook</button>
-        <button class="crud-tab-btn" id="crud-tab-plc" onclick="switchCrudTab('plc')">🎯 Placement Test (PDF + Audio)</button>
+        <button class="crud-tab-btn" id="crud-tab-plc" onclick="switchCrudTab('plc')">🎯 Placement Test (Jalur Relatif PDF/Audio)</button>
       </div>
 
       <!-- TAB 1: CRUD SPEAKING AI -->
@@ -1280,7 +1296,7 @@
         </div>
       </div>
 
-      <!-- TAB 3: CRUD PLACEMENT TEST (LINK DRIVE PDF & LINK DRIVE AUDIO) -->
+      <!-- TAB 3: CRUD PLACEMENT TEST (JALUR RELATIF FILE PDF & AUDIO) -->
       <div id="crud-section-plc" style="display: none;">
         <input type="hidden" id="crud-plc-edit-id" value="">
 
@@ -1304,13 +1320,13 @@
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div class="crud-form-group">
-            <label>Link Google Drive PDF Soal (pdf_url):</label>
-            <input type="text" id="crud-plc-pdf-url" placeholder="https://drive.google.com/file/d/.../view">
+            <label>Nama File / Path PDF Soal (pdf_url):</label>
+            <input type="text" id="crud-plc-pdf-url" placeholder="Contoh: ./HSK1.pdf atau HSK1_Set2.pdf">
           </div>
 
           <div class="crud-form-group">
-            <label>Link Google Drive Audio MP3 (audio_url):</label>
-            <input type="text" id="crud-plc-audio-url" placeholder="https://drive.google.com/file/d/.../view">
+            <label>Nama File / Path Audio MP3 (audio_url):</label>
+            <input type="text" id="crud-plc-audio-url" placeholder="Contoh: ./HSK1.mp3 atau HSK1_Set2.mp3">
           </div>
         </div>
 
@@ -1334,7 +1350,7 @@
                   <th style="width: 75px;">ID</th>
                   <th style="width: 65px;">Level</th>
                   <th>Judul Paket Ujian</th>
-                  <th>Link File Drive</th>
+                  <th>Path File Relatif</th>
                   <th style="width: 120px; text-align: center;">Aksi</th>
                 </tr>
               </thead>
@@ -1398,12 +1414,13 @@
     var allWorkbookQuestions = [];
 
     // =========================================================================
-    // STATE PLACEMENT TEST & MOCK EXAM (PANDUAN MENAMBAH TES DI MASA DEPAN)
+    // STATE PLACEMENT TEST & MOCK EXAM (JALUR RELATIF RESMI GITHUB)
     // =========================================================================
-    // Catatan: Jika ingin menambah tes baru secara langsung di code atau spreadsheet:
-    // 1. Cukup masukkan judul (misal: "HSK 1 (Set 1)", "HSK 1 (Set 2)", "HSK 2 (Set 1)")
-    // 2. Masukkan link Google Drive PDF dan link Google Drive Audio MP3.
-    // 3. Sistem otomatis mengekstrak ID Drive & langsung memutar audio di web.
+    // Catatan: Jika ingin menambah tes baru di masa depan:
+    // 1. Taruh file PDF (misal HSK1_Set2.pdf) & MP3 (HSK1_Set2.mp3) di repo GitHub.
+    // 2. Buka menu Admin CRUD > Tab Placement Test.
+    // 3. Masukkan path: ./HSK1_Set2.pdf dan ./HSK1_Set2.mp3.
+    // 4. Sistem otomatis memuat lembar PDF dan audio langsung tanpa kendala CORS!
     // =========================================================================
     var allPlacementPackages = [];
     var currentPlacementPackage = null;
@@ -2386,39 +2403,7 @@
       });
     }
 
-    // =========================================================================
-    // 8. HELPER URL GOOGLE DRIVE (OTOMATIS STREAMING AUDIO & PDF)
-    // =========================================================================
-    function extractGoogleDriveFileId(url) {
-      if (!url) return "";
-      var match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-      if (match) return match[1];
-      var matchId = url.match(/id=([a-zA-Z0-9_-]+)/);
-      if (matchId) return matchId[1];
-      return url;
-    }
-
-    function formatDriveAudioUrl(url) {
-      if (!url) return "";
-      var driveId = extractGoogleDriveFileId(url);
-      if (driveId && driveId.length > 20 && !url.endsWith('.mp3')) {
-        // Direct audio stream endpoint dari Google Drive
-        return "https://docs.google.com/uc?export=download&id=" + driveId;
-      }
-      return url;
-    }
-
-    function formatDrivePdfUrl(url) {
-      if (!url) return "";
-      var driveId = extractGoogleDriveFileId(url);
-      if (driveId && driveId.length > 20 && !url.endsWith('.pdf')) {
-        // Direct PDF stream endpoint dari Google Drive
-        return "https://docs.google.com/uc?export=download&id=" + driveId;
-      }
-      return url;
-    }
-
-    // ENGINE PLACEMENT TEST VIEW
+    // 8. ENGINE PLACEMENT TEST (MEMANGGIL JALUR RELATIF FILE GITHUB)
     function loadPlacementPackagesView(preferredId) {
       var selectEl = document.getElementById('placement-package-select');
 
@@ -2429,8 +2414,8 @@
             testId: "PLC-DEFAULT",
             hskLevel: "HSK 1",
             testTitle: "Simulasi Ujian Resmi HSK 1 (H10901)",
-            pdfUrl: "https://drive.google.com/file/d/1LjKngEVcS0_SdpcVNfnRG4wZoDHxHcY-/view?usp=drive_link",
-            audioUrl: "https://drive.google.com/file/d/1EzZWdnMxjySApkyCJMwqvL8hboZbb_GI/view?usp=drive_link",
+            pdfUrl: "./HSK1.pdf",
+            audioUrl: "./HSK1.mp3",
             answerKey: DEFAULT_HSK1_ANSWER_KEY
           }];
         }
@@ -2492,21 +2477,17 @@
       var elTitle = document.getElementById('exam-audio-title');
       if (elTitle) elTitle.innerText = 'Audio Menyimak: ' + (pkg.testTitle || 'Ujian');
 
-      // 1. Tautkan Audio Google Drive Langsung
+      // 1. Tautkan File Audio MP3 Jalur Relatif
       var audioPlayer = document.getElementById('exam-audio-player');
       if (audioPlayer) {
-        var formattedAudioUrl = formatDriveAudioUrl(pkg.audioUrl);
-        if (formattedAudioUrl) {
-          audioPlayer.src = formattedAudioUrl;
-          audioPlayer.preload = "auto";
-        } else {
-          audioPlayer.removeAttribute('src');
-        }
+        var audioSrc = pkg.audioUrl || "./HSK1.mp3";
+        audioPlayer.src = audioSrc;
+        audioPlayer.preload = "auto";
       }
 
-      // 2. Muat PDF dari Google Drive / Link Langsung
-      var targetPdfUrl = formatDrivePdfUrl(pkg.pdfUrl) || "https://docs.google.com/uc?export=download&id=1LjKngEVcS0_SdpcVNfnRG4wZoDHxHcY-";
-      loadPdfFromUrlOrData(targetPdfUrl);
+      // 2. Muat File PDF Jalur Relatif
+      var pdfSrc = pkg.pdfUrl || "./HSK1.pdf";
+      loadPdfFromUrlOrData(pdfSrc);
 
       renderLjdItems();
     }
@@ -2535,35 +2516,26 @@
       }
       var link = document.createElement('a');
       link.href = audioPlayer.src;
-      link.target = "_blank";
       link.download = (currentPlacementPackage ? currentPlacementPackage.testTitle : 'Audio_Ujian') + '.mp3';
       link.click();
     };
 
-    // ENGINE VIEWER PDF + DRAWING CANVAS OVERLAY
+    // ENGINE VIEWER PDF (RESPONSIVE FIT-TO-CONTAINER & SYNCHRONIZED SCROLL)
     async function loadPdfFromUrlOrData(urlOrData) {
       try {
-        examPdfDoc = await pdfjsLib.getDocument({
-          url: urlOrData,
-          withCredentials: false
-        }).promise;
+        examPdfDoc = await pdfjsLib.getDocument(urlOrData).promise;
         totalPdfPages = examPdfDoc.numPages;
         currentPdfPageNum = 1;
         renderPdfAndDrawPage(currentPdfPageNum);
       } catch (err) {
-        console.warn("Gagal membuka PDF via stream langsung, mencoba fallback converter:", err);
-        // Fallback untuk link drive jika browser memblokir CORS
+        console.warn("Gagal membuka PDF dari path URL, mencoba fallback lokal:", err);
         try {
-          var gId = extractGoogleDriveFileId(urlOrData);
-          if (gId) {
-            var directDownloadUrl = "https://drive.google.com/uc?export=download&id=" + gId;
-            examPdfDoc = await pdfjsLib.getDocument(directDownloadUrl).promise;
-            totalPdfPages = examPdfDoc.numPages;
-            currentPdfPageNum = 1;
-            renderPdfAndDrawPage(currentPdfPageNum);
-          }
+          examPdfDoc = await pdfjsLib.getDocument('./HSK1.pdf').promise;
+          totalPdfPages = examPdfDoc.numPages;
+          currentPdfPageNum = 1;
+          renderPdfAndDrawPage(currentPdfPageNum);
         } catch(e) {
-          console.error("PDF tidak dapat dimuat:", e);
+          console.error("PDF tidak dapat dimuat otomatis:", e);
         }
       }
     }
@@ -2574,9 +2546,17 @@
       const page = await examPdfDoc.getPage(pageNum);
       const renderCanvas = document.getElementById('pdf-render-canvas');
       const drawCanvas = document.getElementById('pdf-draw-canvas');
+      const scrollBox = document.getElementById('pdf-scroll-box');
       const ctxRender = renderCanvas.getContext('2d');
 
-      const viewport = page.getViewport({ scale: 1.35 });
+      // Hitung skala agar pas 100% dengan lebar kontainer tanpa terpotong
+      const containerWidth = scrollBox ? scrollBox.clientWidth : 650;
+      const unscaledViewport = page.getViewport({ scale: 1.0 });
+      let dynamicScale = (containerWidth - 40) / unscaledViewport.width;
+      dynamicScale = Math.max(0.9, Math.min(dynamicScale, 1.15));
+
+      const viewport = page.getViewport({ scale: dynamicScale });
+
       renderCanvas.width = viewport.width;
       renderCanvas.height = viewport.height;
       drawCanvas.width = viewport.width;
@@ -2588,6 +2568,7 @@
       };
       await page.render(renderContext).promise;
 
+      // Pulihkan coretan tersimpan di halaman ini
       const ctxDraw = drawCanvas.getContext('2d');
       ctxDraw.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
       if (drawingsPerPage[pageNum]) {
@@ -2602,6 +2583,8 @@
 
       const pageNumEl = document.getElementById('pdf-page-num');
       if (pageNumEl) pageNumEl.innerText = 'Hal ' + pageNum + ' / ' + totalPdfPages;
+
+      if (scrollBox) scrollBox.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function initPdfDrawListeners(drawCanvas) {
@@ -2875,8 +2858,8 @@
 
       const hskLvl = inHsk ? inHsk.value : "HSK 1";
       const title = (inTitle ? inTitle.value.trim() : "") || ("Simulasi Ujian Resmi " + hskLvl);
-      const pdfUrl = (inPdfUrl ? inPdfUrl.value.trim() : "");
-      const audioUrl = (inAudioUrl ? inAudioUrl.value.trim() : "");
+      const pdfUrl = (inPdfUrl ? inPdfUrl.value.trim() : "") || "./HSK1.pdf";
+      const audioUrl = (inAudioUrl ? inAudioUrl.value.trim() : "") || "./HSK1.mp3";
       const keysJson = inKeys ? inKeys.value.trim() : "";
 
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
@@ -2930,7 +2913,7 @@
           var tr = document.createElement('tr');
           var rawLvl = pkg.hskLevel || 'HSK 1';
           var displayLvl = rawLvl.toUpperCase().includes('HSK') ? rawLvl : ('HSK ' + rawLvl);
-          var statusFiles = (pkg.pdfUrl ? '📄 PDF Set' : '-') + ' | ' + (pkg.audioUrl ? '🎧 Audio Set' : '-');
+          var statusFiles = (pkg.pdfUrl ? pkg.pdfUrl : '-') + ' | ' + (pkg.audioUrl ? pkg.audioUrl : '-');
 
           tr.innerHTML = 
             '<td style="font-weight: 700; color: var(--gold-autumn);">' + (pkg.testId || '-') + '</td>' +
@@ -3433,10 +3416,10 @@
       }
       if (viewId === 'placement') {
         setTimeout(function() {
-          if (currentPlacementPackage && currentPlacementPackage.pdfUrl) {
-            loadPdfFromUrlOrData(formatDrivePdfUrl(currentPlacementPackage.pdfUrl));
+          if (currentPlacementPackage) {
+            selectPlacementPackage(currentPlacementPackage);
           }
-        }, 100);
+        }, 80);
       }
     };
 
