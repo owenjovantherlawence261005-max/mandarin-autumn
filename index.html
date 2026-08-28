@@ -509,7 +509,7 @@
     }
     .btn-fail { background: rgba(220, 38, 38, 0.25); border: 1px solid #dc2626; color: #fca5a5; }
     .btn-fail:hover { background: #dc2626; color: #fff; }
-    .btn-pass { background: rgba(220, 38, 38, 0.25); border: 1px solid #16a34a; color: #86efac; }
+    .btn-pass { background: rgba(22, 163, 74, 0.25); border: 1px solid #16a34a; color: #86efac; }
     .btn-pass:hover { background: #16a34a; color: #fff; }
 
     .bottom-nav {
@@ -541,7 +541,7 @@
     .bottom-nav-btn span.icon { font-size: 18px; }
 
     /* =========================================================================
-       PDF SCROLL VIEWPORT & CANVAS CONTAINER (FULL SCROLL STABIL TANPA KEPOTONG)
+       PDF SCROLL VIEWPORT & CANVAS CONTAINER (FULL SCROLL STABIL)
        ========================================================================= */
     .pdf-scroll-viewport {
       background: #180d08;
@@ -933,7 +933,7 @@
         <div class="header-group">
           <span class="badge">Official Standard Workbook</span>
           <h2>Workbook Interaktif per Level</h2>
-          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dari database Spreadsheet[cite: 10].</p>
+          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dari database Spreadsheet.</p>
         </div>
 
         <div class="toolbar-row">
@@ -1756,88 +1756,6 @@
       return "./placement_test/" + p;
     }
 
-  function loadPlacementPackagesView(preferredId) {
-      var selectEl = document.getElementById('placement-package-select');
-
-      function applyPackages(packages) {
-        allPlacementPackages = packages || [];
-        if (!allPlacementPackages || allPlacementPackages.length === 0) {
-          allPlacementPackages = [{
-            testId: "PLC-DEFAULT", hskLevel: "HSK 1", testTitle: "Simulasi Ujian Resmi HSK 1 (H10901)",
-            pdfUrl: "./placement_test/HSK1.pdf", audioUrl: "./placement_test/HSK1.mp3", answerKey: DEFAULT_HSK1_ANSWER_KEY
-          }];
-        }
-
-        if (selectEl) {
-          selectEl.innerHTML = '';
-          allPlacementPackages.forEach(function(pkg) {
-            var rawLvl = pkg.hskLevel || 'HSK 1'; 
-            var lvlStr = rawLvl.toUpperCase().includes('HSK') ? rawLvl : ('HSK ' + rawLvl);
-            var opt = document.createElement('option'); 
-            opt.value = pkg.testId; 
-            opt.innerText = (pkg.testTitle || 'Paket Ujian') + ' (' + lvlStr + ')'; 
-            selectEl.appendChild(opt);
-          });
-        }
-
-        var targetPkg = null;
-        if (preferredId) {
-          targetPkg = allPlacementPackages.find(function(p) { return p.testId === preferredId; });
-        }
-        if (!targetPkg) {
-          targetPkg = allPlacementPackages[0];
-        }
-
-        if (selectEl && targetPkg) {
-          selectEl.value = targetPkg.testId;
-        }
-
-        selectPlacementPackage(targetPkg);
-      }
-
-      // 1. Ambil dari Cache Browser Terlebih Dahulu (0 Detik / Instan)
-      var cachedPackages = localStorage.getItem('cache_placement_packages_client');
-      if (cachedPackages) {
-        try {
-          var parsedCache = JSON.parse(cachedPackages);
-          if (parsedCache && parsedCache.length > 0) {
-            applyPackages(parsedCache);
-          }
-        } catch(e) {}
-      } else if (selectEl) {
-        selectEl.innerHTML = '<option value="">Memuat paket kilat...</option>';
-      }
-
-      // 2. Ambil data terbaru dari Spreadsheet di latar belakang
-      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
-        fetch(SCRIPT_URL + "?action=getPlacement&level=ALL")
-          .then(res => res.json())
-          .then(data => {
-            if (data && data.length > 0) {
-              localStorage.setItem('cache_placement_packages_client', JSON.stringify(data));
-              applyPackages(data);
-            }
-          })
-          .catch(() => {
-            if (!cachedPackages) applyPackages([]);
-          });
-      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler(data => {
-            if (data && data.length > 0) {
-              localStorage.setItem('cache_placement_packages_client', JSON.stringify(data));
-              applyPackages(data);
-            }
-          })
-          .withFailureHandler(() => {
-            if (!cachedPackages) applyPackages([]);
-          })
-          .getPlacementTestPackage('ALL');
-      } else {
-        if (!cachedPackages) applyPackages([]);
-      }
-    }
-
     // 1. PLACEMENT PACKAGES TABLE
     function loadPlacementPackagesTable() {
       var tbody = document.getElementById('crud-plc-table-body');
@@ -2144,7 +2062,7 @@
         }).then(res => res.json()).then(res => {
           alert(editId ? "✅ Soal berhasil diperbarui!" : "✅ Soal berhasil ditambahkan!");
           cancelEditWorkbookQuestion(); loadWorkbookTable(); loadWorkbookQuestions(hskLvl);
-        }).catch(err => alert("Gagal menyimpan: " + err.message));
+        }).catch(err => alert("Gagal: " + err.message));
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run.withSuccessHandler(function() {
           alert(editId ? "✅ Soal berhasil diperbarui!" : "✅ Soal berhasil ditambahkan!");
