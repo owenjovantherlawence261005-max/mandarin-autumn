@@ -3433,32 +3433,125 @@
     };
 
     // 12. ENGINE SERTIFIKAT PDF
+ // 12. ENGINE SERTIFIKAT INSTAN (< 1 DETIK BERBASIS CANVAS CLIENT-SIDE)
     window.requestCertificatePdf = function() {
       var inName = document.getElementById('cert-user-name');
-      var name = inName ? inName.value : '';
-      if (!name.trim()) {
-        alert('Mohon masukkan nama Anda untuk terbitan sertifikat.');
+      var name = inName ? inName.value.trim() : '';
+      if (!name) {
+        alert('Mohon masukkan nama lengkap Anda terlebih dahulu.');
         return;
       }
 
       var status = document.getElementById('cert-status-msg');
-      if (status) status.innerHTML = '⏳ <i>Memproses dokumen PDF resmi Emo Anlon...</i>';
+      if (status) status.innerHTML = '⏳ <i>Menerbitkan sertifikat kelulusan resmi...</i>';
 
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler(function(res) {
-            if (res.success) {
-              if (status) status.innerHTML = '✅ <b>Sertifikat Berhasil Diterbitkan!</b> Mengunduh file...';
-              var link = document.createElement('a');
-              link.href = 'data:application/pdf;base64,' + res.pdfBase64;
-              link.download = res.fileName;
-              link.click();
-            } else {
-              if (status) status.innerHTML = '❌ Terjadi kendala saat menerbitkan PDF.';
-            }
-          })
-          .generateCertificatePdf(name, 'HSK 1 - 6 Autumn Curriculum', 100);
-      }
+      // 1. Buat Canvas Sertifikat Resolusi Tinggi (1200 x 850 Landscape)
+      var certCanvas = document.createElement('canvas');
+      certCanvas.width = 1200;
+      certCanvas.height = 850;
+      var ctx = certCanvas.getContext('2d');
+
+      // 2. Background Gradient Mewah Autumn
+      var bgGrad = ctx.createLinearGradient(0, 0, 1200, 850);
+      bgGrad.addColorStop(0, '#1a0f0a');
+      bgGrad.addColorStop(0.5, '#281810');
+      bgGrad.addColorStop(1, '#140b07');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, 1200, 850);
+
+      // 3. Border Bingkai Ganda Emas & Oranye
+      ctx.strokeStyle = '#ea580c';
+      ctx.lineWidth = 14;
+      ctx.strokeRect(25, 25, 1150, 800);
+
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(40, 40, 1120, 770);
+
+      ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([8, 6]);
+      ctx.strokeRect(52, 52, 1096, 746);
+      ctx.setLineDash([]);
+
+      // 4. Ornamen Logo Autumn (秋)
+      ctx.font = 'bold 50px "Noto Serif SC", serif';
+      ctx.fillStyle = '#ea580c';
+      ctx.textAlign = 'center';
+      ctx.fillText('秋', 600, 115);
+
+      // 5. Header Sertifikat
+      ctx.font = 'bold 18px "Plus Jakarta Sans", sans-serif';
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillText('OFFICIAL PROFICIENCY CERTIFICATE', 600, 160);
+
+      ctx.font = 'bold 36px "Plus Jakarta Sans", sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText('ZETTBOT MANDARIN ACADEMY', 600, 215);
+
+      ctx.font = 'italic 16px "Plus Jakarta Sans", sans-serif';
+      ctx.fillStyle = '#fed7aa';
+      ctx.fillText('Dengan bangga menyatakan bahwa:', 600, 275);
+
+      // 6. Nama Siswa / Penerima
+      ctx.font = 'bold 44px "Plus Jakarta Sans", sans-serif';
+      ctx.fillStyle = '#fcd34d';
+      ctx.fillText(name, 600, 355);
+
+      // Garis Bawah Nama
+      ctx.strokeStyle = '#ea580c';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(350, 375);
+      ctx.lineTo(850, 375);
+      ctx.stroke();
+
+      // 7. Deskripsi Pencapaian & Skor
+      var examTitle = (currentPlacementPackage ? currentPlacementPackage.testTitle : 'HSK Standard Curriculum');
+      ctx.font = '18px "Plus Jakarta Sans", sans-serif';
+      ctx.fillStyle = '#fff7ed';
+      ctx.fillText('Telah berhasil menyelesaikan dan lulus evaluasi kurikulum:', 600, 435);
+
+      ctx.font = 'bold 22px "Plus Jakarta Sans", sans-serif';
+      ctx.fillStyle = '#f97316';
+      ctx.fillText(examTitle, 600, 480);
+
+      ctx.font = '16px "Plus Jakarta Sans", sans-serif';
+      ctx.fillStyle = '#fed7aa';
+      ctx.fillText('Memenuhi standar kompetensi membaca, menulis, dan menyimak bahasa Mandarin.', 600, 525);
+
+      // 8. Cap & Tanda Tangan Digital
+      var certCode = "HSK-" + Math.floor(100000 + Math.random() * 900000);
+      var todayStr = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+
+      // Tanggal & Nomor Registrasi
+      ctx.font = '13px "Plus Jakarta Sans", sans-serif';
+      ctx.fillStyle = '#fdba74';
+      ctx.textAlign = 'left';
+      ctx.fillText('Tanggal Terbit: ' + todayStr, 90, 720);
+      ctx.fillText('No. Registrasi: ' + certCode, 90, 745);
+
+      // Tanda Tangan Instruktur
+      ctx.textAlign = 'right';
+      ctx.font = 'bold 18px "Noto Serif SC", serif';
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillText('汉语考试委员会', 1110, 700);
+      ctx.font = '14px "Plus Jakarta Sans", sans-serif';
+      ctx.fillStyle = '#fff7ed';
+      ctx.fillText('Zettbot Academic Board', 1110, 725);
+      ctx.font = '11px "Plus Jakarta Sans", sans-serif';
+      ctx.fillStyle = '#fed7aa';
+      ctx.fillText('Verified & Authenticated', 1110, 745);
+
+      // 9. Langsung Unduh File Gambar/Dokumen Berkualitas HD
+      setTimeout(function() {
+        var link = document.createElement('a');
+        link.href = certCanvas.toDataURL('image/png');
+        link.download = 'Sertifikat_HSK_' + name.replace(/\s+/g, '_') + '.png';
+        link.click();
+
+        if (status) status.innerHTML = '✅ <b>Sertifikat Berhasil Diunduh!</b> (Format HD siap cetak).';
+      }, 150);
     };
   </script>
 </body>
