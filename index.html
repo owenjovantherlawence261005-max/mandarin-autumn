@@ -1600,7 +1600,7 @@
     };
 
     // 3. ENGINE MULTI-TIAN ZI GE (MENAMPILKAN KOTAK MENULIS UNTUK SETIAP KARAKTER DALAM KATA)
-    function renderMultiTianZiGe(wordObj) {
+  function renderMultiTianZiGe(wordObj) {
       var container = document.getElementById('tianzige-multi-container');
       if (!container) return;
       container.innerHTML = '';
@@ -1616,20 +1616,40 @@
       }
       if (chars.length === 0) chars = [hanziStr.charAt(0) || '你'];
 
-      // Ukuran kanvas dinamis (jika 1 huruf: 300x300, jika multi: 260x260)
-      var canvasDim = (chars.length === 1) ? 300 : 260;
+      // SATU BINGKAI UTAMA UNTUK SELURUH KARAKTER
+      var mainPanel = document.createElement('div');
+      mainPanel.className = 'canvas-panel';
+      mainPanel.style.width = '100%';
+      mainPanel.style.maxWidth = (chars.length === 1 ? '360px' : (chars.length === 2 ? '680px' : '980px'));
+      mainPanel.style.padding = '20px';
+      mainPanel.style.margin = '0 auto';
+      mainPanel.style.display = 'flex';
+      mainPanel.style.flexDirection = 'column';
+      mainPanel.style.alignItems = 'center';
+
+      // Baris Tempat Meletakkan Kanvas Bersanding
+      var canvasRow = document.createElement('div');
+      canvasRow.style.display = 'flex';
+      canvasRow.style.flexWrap = 'wrap';
+      canvasRow.style.gap = '16px';
+      canvasRow.style.justifyContent = 'center';
+      canvasRow.style.width = '100%';
+
+      var canvasDim = (chars.length === 1) ? 290 : (chars.length === 2 ? 260 : 210);
 
       chars.forEach(function(ch, idx) {
-        var panel = document.createElement('div');
-        panel.className = 'canvas-panel';
+        var charCol = document.createElement('div');
+        charCol.style.display = 'flex';
+        charCol.style.flexDirection = 'column';
+        charCol.style.alignItems = 'center';
 
         var title = document.createElement('div');
         title.style.color = 'var(--gold-autumn)';
-        title.style.fontSize = '13.5px';
+        title.style.fontSize = '13px';
         title.style.fontWeight = '700';
         title.style.marginBottom = '8px';
-        title.innerText = 'Karakter #' + (idx + 1) + ': ' + ch;
-        panel.appendChild(title);
+        title.innerText = (chars.length > 1 ? 'Karakter #' + (idx + 1) + ': ' : '') + ch;
+        charCol.appendChild(title);
 
         var cvs = document.createElement('canvas');
         cvs.width = canvasDim;
@@ -1640,30 +1660,40 @@
         cvs.style.borderRadius = '8px';
         cvs.style.cursor = 'crosshair';
         cvs.style.touchAction = 'none';
-        panel.appendChild(cvs);
+        charCol.appendChild(cvs);
 
-        var ctrl = document.createElement('div');
-        ctrl.className = 'canvas-controls';
-
-        var btnClr = document.createElement('button');
-        btnClr.className = 'canvas-btn btn-clear';
-        btnClr.innerText = 'Hapus';
-        btnClr.onclick = function() { drawSingleTianZiGe(cvs, ch); };
-        ctrl.appendChild(btnClr);
-
-        var btnSpk = document.createElement('button');
-        btnSpk.className = 'canvas-btn btn-anim';
-        btnSpk.innerText = '🔊 Pelafalan';
-        btnSpk.onclick = function() { speakText(ch); };
-        ctrl.appendChild(btnSpk);
-
-        panel.appendChild(ctrl);
-        container.appendChild(panel);
+        canvasRow.appendChild(charCol);
 
         drawSingleTianZiGe(cvs, ch);
         attachPointerDrawing(cvs);
         strokeCanvases.push({ canvas: cvs, char: ch });
       });
+
+      mainPanel.appendChild(canvasRow);
+
+      // SATU KONTROL BERSAMA DI BAWAH BINGKAI
+      var ctrl = document.createElement('div');
+      ctrl.className = 'canvas-controls';
+      ctrl.style.marginTop = '18px';
+      ctrl.style.maxWidth = '420px';
+      ctrl.style.width = '100%';
+      ctrl.style.display = 'flex';
+      ctrl.style.gap = '10px';
+
+      var btnClr = document.createElement('button');
+      btnClr.className = 'canvas-btn btn-clear';
+      btnClr.innerText = '🔄 Hapus Goresan';
+      btnClr.onclick = function() { clearAllStrokeCanvases(); };
+      ctrl.appendChild(btnClr);
+
+      var btnSpk = document.createElement('button');
+      btnSpk.className = 'canvas-btn btn-anim';
+      btnSpk.innerText = '🔊 Pelafalan Kata';
+      btnSpk.onclick = function() { speakCurrentWord(); };
+      ctrl.appendChild(btnSpk);
+
+      mainPanel.appendChild(ctrl);
+      container.appendChild(mainPanel);
     }
 
     function drawSingleTianZiGe(canvas, charToGuide) {
