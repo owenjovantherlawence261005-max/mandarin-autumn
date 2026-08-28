@@ -888,6 +888,7 @@
             <p>Simulasi percakapan dua arah interaktif berbasis Web Speech API.</p>
           </div>
 
+          <!-- Pilihan Filter Skenario di Kanan Atas Mengikuti Database SPEAKING_DIALOGUES -->
           <div style="display: flex; align-items: center; gap: 10px; background: rgba(40, 24, 16, 0.85); padding: 10px 16px; border-radius: 12px; border: 1px solid var(--amber-border); box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
             <label for="speaking-scenario-select" style="font-size: 12.5px; font-weight: 700; color: var(--gold-autumn); white-space: nowrap; display: flex; align-items: center; gap: 6px;">
               <span>🎭</span> Skenario:
@@ -985,7 +986,7 @@
           </div>
         </div>
 
-        <!-- PANEL KONTROL AUDIO MENYIMAK (DENGAN TOMBOL DOWNLOAD & BUKA AUDIO CEPAT) -->
+        <!-- PANEL KONTROL AUDIO MENYIMAK (STREAMING LANGSUNG GOOGLE DRIVE) -->
         <div class="glass-card" style="margin-bottom: 20px; padding: 16px 20px;">
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
             <div style="display: flex; align-items: center; gap: 12px;">
@@ -998,7 +999,7 @@
 
             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
               <label class="pill-btn" style="cursor: pointer; padding: 8px 12px; font-size: 12px; background: rgba(234, 88, 12, 0.2);">
-                📁 Buka Audio dari Perangkat
+                📁 Buka Audio Lokal
                 <input type="file" accept="audio/*" onchange="loadExamAudioFile(event)" style="display: none;">
               </label>
               <audio id="exam-audio-player" controls style="height: 38px; border-radius: 8px; outline: none;"></audio>
@@ -1052,7 +1053,7 @@
             <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 11.5px; color: var(--text-muted);">
               <span>💡 <i>Coret atau tandai langsung di atas lembar PDF dengan mouse/layar sentuh.</i></span>
               <label class="pill-btn" style="cursor: pointer; padding: 4px 10px; font-size: 11px; background: rgba(245, 158, 11, 0.15); border-color: var(--gold-autumn);">
-                📂 Buka File PDF Lain (.pdf)
+                📂 Buka File PDF Lokal (.pdf)
                 <input type="file" accept="application/pdf" onchange="loadExamPdfFile(event)" style="display: none;">
               </label>
             </div>
@@ -1279,7 +1280,7 @@
         </div>
       </div>
 
-      <!-- TAB 3: CRUD PLACEMENT TEST (LINK PDF + LINK AUDIO UJIAN) -->
+      <!-- TAB 3: CRUD PLACEMENT TEST (LINK DRIVE PDF & LINK DRIVE AUDIO) -->
       <div id="crud-section-plc" style="display: none;">
         <input type="hidden" id="crud-plc-edit-id" value="">
 
@@ -1297,24 +1298,24 @@
           </div>
           <div class="crud-form-group" style="flex: 1;">
             <label>Judul Paket Ujian (test_title):</label>
-            <input type="text" id="crud-plc-title" placeholder="Contoh: Simulasi Ujian Resmi HSK 1 (H10901)">
+            <input type="text" id="crud-plc-title" placeholder="Contoh: HSK 1 (Set 1) atau HSK 1 (Set 2)">
           </div>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div class="crud-form-group">
-            <label>Link / Path File PDF Soal (pdf_url):</label>
-            <input type="text" id="crud-plc-pdf-url" placeholder="Contoh: ./HSK1.pdf atau link Google Drive">
+            <label>Link Google Drive PDF Soal (pdf_url):</label>
+            <input type="text" id="crud-plc-pdf-url" placeholder="https://drive.google.com/file/d/.../view">
           </div>
 
           <div class="crud-form-group">
-            <label>Link / Path File Audio MP3 (audio_url):</label>
-            <input type="text" id="crud-plc-audio-url" placeholder="Contoh: ./HSK1.mp3 atau link Google Drive">
+            <label>Link Google Drive Audio MP3 (audio_url):</label>
+            <input type="text" id="crud-plc-audio-url" placeholder="https://drive.google.com/file/d/.../view">
           </div>
         </div>
 
         <div class="crud-form-group">
-          <label>Kunci Jawaban JSON (Opsional, format default No 1–40):</label>
+          <label>Kunci Jawaban JSON No 1–40 (Opsional, jika kosong pakai kunci default):</label>
           <textarea id="crud-plc-keys" rows="3" style="font-family: monospace; font-size: 11px;" placeholder='{"1":"TRUE","2":"FALSE","6":"A","11":"D","26":"D", ...}'></textarea>
         </div>
 
@@ -1333,7 +1334,7 @@
                   <th style="width: 75px;">ID</th>
                   <th style="width: 65px;">Level</th>
                   <th>Judul Paket Ujian</th>
-                  <th>Path / Link File</th>
+                  <th>Link File Drive</th>
                   <th style="width: 120px; text-align: center;">Aksi</th>
                 </tr>
               </thead>
@@ -1396,7 +1397,14 @@
     // State Soal Workbook
     var allWorkbookQuestions = [];
 
-    // State Placement Test & Mock Exam
+    // =========================================================================
+    // STATE PLACEMENT TEST & MOCK EXAM (PANDUAN MENAMBAH TES DI MASA DEPAN)
+    // =========================================================================
+    // Catatan: Jika ingin menambah tes baru secara langsung di code atau spreadsheet:
+    // 1. Cukup masukkan judul (misal: "HSK 1 (Set 1)", "HSK 1 (Set 2)", "HSK 2 (Set 1)")
+    // 2. Masukkan link Google Drive PDF dan link Google Drive Audio MP3.
+    // 3. Sistem otomatis mengekstrak ID Drive & langsung memutar audio di web.
+    // =========================================================================
     var allPlacementPackages = [];
     var currentPlacementPackage = null;
     var examPdfDoc = null;
@@ -1411,6 +1419,7 @@
     var isDrawingOnPdf = false;
     var lastPdfX = 0, lastPdfY = 0;
 
+    // Kunci Jawaban Standar Resmi HSK 1 (H10901)
     const DEFAULT_HSK1_ANSWER_KEY = {
       1: "TRUE", 2: "FALSE", 3: "FALSE", 4: "FALSE", 5: "TRUE",
       6: "A", 7: "A", 8: "C", 9: "A", 10: "C",
@@ -1424,7 +1433,6 @@
 
     var srsCardsQueue = [];
     var currentSrsIndex = 0;
-
     var logoClickCount = 0;
     var logoClickTimer = null;
 
@@ -2069,8 +2077,7 @@
       characterBName = "Pelanggan";
       activeDialogueFlow = [
         { role: "A", speaker: characterAName, hanzi: "你好！请问你想吃什么？", pinyin: "Nǐ hǎo! Qǐngwèn xiǎng chī shénme?", indo: "Halo! Permisi mau makan apa?" },
-        { role: "B", speaker: characterBName, hanzi: "我要一份炒饭和一杯茶。", pinyin: "Wǒ yào yí fèn chǎofàn hé yì bēi chá.", indo: "Saya mau seporsi nasi goreng dan segelas teh." },
-        { role: "A", speaker: characterAName, hanzi: "好的，请稍等一下。", pinyin: "Hǎo de, qǐng shāo děng yíxià.", indo: "Baiklah, tolong tunggu sebentar." }
+        { role: "B", speaker: characterBName, hanzi: "我要一份炒饭和一杯茶。", pinyin: "Wǒ yào yí fèn chǎofàn hé yì bēi chá.", indo: "Saya mau seporsi nasi goreng dan segelas teh." }
       ];
       updateRoleSwitcherButtons();
       initSpeakingDialogue();
@@ -2379,7 +2386,39 @@
       });
     }
 
-    // 8. ENGINE PLACEMENT TEST (AUDIO PLAYER + PDF.JS + INTERACTIVE ANNOTATION CANVAS + LJD)
+    // =========================================================================
+    // 8. HELPER URL GOOGLE DRIVE (OTOMATIS STREAMING AUDIO & PDF)
+    // =========================================================================
+    function extractGoogleDriveFileId(url) {
+      if (!url) return "";
+      var match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      if (match) return match[1];
+      var matchId = url.match(/id=([a-zA-Z0-9_-]+)/);
+      if (matchId) return matchId[1];
+      return url;
+    }
+
+    function formatDriveAudioUrl(url) {
+      if (!url) return "";
+      var driveId = extractGoogleDriveFileId(url);
+      if (driveId && driveId.length > 20 && !url.endsWith('.mp3')) {
+        // Direct audio stream endpoint dari Google Drive
+        return "https://docs.google.com/uc?export=download&id=" + driveId;
+      }
+      return url;
+    }
+
+    function formatDrivePdfUrl(url) {
+      if (!url) return "";
+      var driveId = extractGoogleDriveFileId(url);
+      if (driveId && driveId.length > 20 && !url.endsWith('.pdf')) {
+        // Direct PDF stream endpoint dari Google Drive
+        return "https://docs.google.com/uc?export=download&id=" + driveId;
+      }
+      return url;
+    }
+
+    // ENGINE PLACEMENT TEST VIEW
     function loadPlacementPackagesView(preferredId) {
       var selectEl = document.getElementById('placement-package-select');
 
@@ -2390,8 +2429,8 @@
             testId: "PLC-DEFAULT",
             hskLevel: "HSK 1",
             testTitle: "Simulasi Ujian Resmi HSK 1 (H10901)",
-            pdfUrl: "./HSK1.pdf",
-            audioUrl: "./HSK1.mp3",
+            pdfUrl: "https://drive.google.com/file/d/1LjKngEVcS0_SdpcVNfnRG4wZoDHxHcY-/view?usp=drive_link",
+            audioUrl: "https://drive.google.com/file/d/1EzZWdnMxjySApkyCJMwqvL8hboZbb_GI/view?usp=drive_link",
             answerKey: DEFAULT_HSK1_ANSWER_KEY
           }];
         }
@@ -2453,21 +2492,21 @@
       var elTitle = document.getElementById('exam-audio-title');
       if (elTitle) elTitle.innerText = 'Audio Menyimak: ' + (pkg.testTitle || 'Ujian');
 
+      // 1. Tautkan Audio Google Drive Langsung
       var audioPlayer = document.getElementById('exam-audio-player');
       if (audioPlayer) {
-        if (pkg.audioUrl && pkg.audioUrl.trim() !== "") {
-          audioPlayer.src = pkg.audioUrl;
+        var formattedAudioUrl = formatDriveAudioUrl(pkg.audioUrl);
+        if (formattedAudioUrl) {
+          audioPlayer.src = formattedAudioUrl;
+          audioPlayer.preload = "auto";
         } else {
           audioPlayer.removeAttribute('src');
         }
       }
 
-      // Load Dokumen PDF Soal
-      if (pkg.pdfUrl && pkg.pdfUrl.trim() !== "") {
-        loadPdfFromUrlOrData(pkg.pdfUrl);
-      } else {
-        loadPdfFromUrlOrData('./HSK1.pdf');
-      }
+      // 2. Muat PDF dari Google Drive / Link Langsung
+      var targetPdfUrl = formatDrivePdfUrl(pkg.pdfUrl) || "https://docs.google.com/uc?export=download&id=1LjKngEVcS0_SdpcVNfnRG4wZoDHxHcY-";
+      loadPdfFromUrlOrData(targetPdfUrl);
 
       renderLjdItems();
     }
@@ -2496,6 +2535,7 @@
       }
       var link = document.createElement('a');
       link.href = audioPlayer.src;
+      link.target = "_blank";
       link.download = (currentPlacementPackage ? currentPlacementPackage.testTitle : 'Audio_Ujian') + '.mp3';
       link.click();
     };
@@ -2503,12 +2543,28 @@
     // ENGINE VIEWER PDF + DRAWING CANVAS OVERLAY
     async function loadPdfFromUrlOrData(urlOrData) {
       try {
-        examPdfDoc = await pdfjsLib.getDocument(urlOrData).promise;
+        examPdfDoc = await pdfjsLib.getDocument({
+          url: urlOrData,
+          withCredentials: false
+        }).promise;
         totalPdfPages = examPdfDoc.numPages;
         currentPdfPageNum = 1;
         renderPdfAndDrawPage(currentPdfPageNum);
       } catch (err) {
-        console.warn("Gagal membuka PDF dari URL, mencoba mode render lokal:", err);
+        console.warn("Gagal membuka PDF via stream langsung, mencoba fallback converter:", err);
+        // Fallback untuk link drive jika browser memblokir CORS
+        try {
+          var gId = extractGoogleDriveFileId(urlOrData);
+          if (gId) {
+            var directDownloadUrl = "https://drive.google.com/uc?export=download&id=" + gId;
+            examPdfDoc = await pdfjsLib.getDocument(directDownloadUrl).promise;
+            totalPdfPages = examPdfDoc.numPages;
+            currentPdfPageNum = 1;
+            renderPdfAndDrawPage(currentPdfPageNum);
+          }
+        } catch(e) {
+          console.error("PDF tidak dapat dimuat:", e);
+        }
       }
     }
 
@@ -2819,8 +2875,8 @@
 
       const hskLvl = inHsk ? inHsk.value : "HSK 1";
       const title = (inTitle ? inTitle.value.trim() : "") || ("Simulasi Ujian Resmi " + hskLvl);
-      const pdfUrl = (inPdfUrl ? inPdfUrl.value.trim() : "") || "./HSK1.pdf";
-      const audioUrl = (inAudioUrl ? inAudioUrl.value.trim() : "") || "./HSK1.mp3";
+      const pdfUrl = (inPdfUrl ? inPdfUrl.value.trim() : "");
+      const audioUrl = (inAudioUrl ? inAudioUrl.value.trim() : "");
       const keysJson = inKeys ? inKeys.value.trim() : "";
 
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
@@ -2874,7 +2930,7 @@
           var tr = document.createElement('tr');
           var rawLvl = pkg.hskLevel || 'HSK 1';
           var displayLvl = rawLvl.toUpperCase().includes('HSK') ? rawLvl : ('HSK ' + rawLvl);
-          var statusFiles = (pkg.pdfUrl ? pkg.pdfUrl : '-') + ' | ' + (pkg.audioUrl ? pkg.audioUrl : '-');
+          var statusFiles = (pkg.pdfUrl ? '📄 PDF Set' : '-') + ' | ' + (pkg.audioUrl ? '🎧 Audio Set' : '-');
 
           tr.innerHTML = 
             '<td style="font-weight: 700; color: var(--gold-autumn);">' + (pkg.testId || '-') + '</td>' +
@@ -3377,10 +3433,10 @@
       }
       if (viewId === 'placement') {
         setTimeout(function() {
-          if (currentPlacementPackage) {
-            loadPdfFromUrlOrData(currentPlacementPackage.pdfUrl || './HSK1.pdf');
+          if (currentPlacementPackage && currentPlacementPackage.pdfUrl) {
+            loadPdfFromUrlOrData(formatDrivePdfUrl(currentPlacementPackage.pdfUrl));
           }
-        }, 80);
+        }, 100);
       }
     };
 
