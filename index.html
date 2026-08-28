@@ -880,7 +880,7 @@
         <div class="header-group">
           <span class="badge">Official Standard Workbook</span>
           <h2>Workbook Interaktif per Level</h2>
-          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dari database Spreadsheet.</p>
+          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dari database Spreadsheet[cite: 5].</p>
         </div>
 
         <div class="toolbar-row">
@@ -982,7 +982,7 @@
         </div>
       </section>
 
-      <!-- 8. HSK DIAGNOSTIC & MOCK PLACEMENT TEST (JALUR RELATIF LANGSUNG GITHUB + VIEWER SCROLL + ANNOTATION CANVAS) -->
+      <!-- 8. HSK DIAGNOSTIC & MOCK PLACEMENT TEST (JALUR RELATIF RESMI GITHUB + FIT SCROLL VIEWER) -->
       <section id="view-placement" class="view-section">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
           <div class="header-group" style="margin-bottom: 0;">
@@ -1002,7 +1002,7 @@
           </div>
         </div>
 
-        <!-- PANEL KONTROL AUDIO MENYIMAK (STREAMING LANGSUNG JALUR RELATIF GITHUB) -->
+        <!-- PANEL KONTROL AUDIO MENYIMAK (STREAMING OTOMATIS) -->
         <div class="glass-card" style="margin-bottom: 20px; padding: 16px 20px;">
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
             <div style="display: flex; align-items: center; gap: 12px;">
@@ -1014,10 +1014,6 @@
             </div>
 
             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-              <label class="pill-btn" style="cursor: pointer; padding: 8px 12px; font-size: 12px; background: rgba(234, 88, 12, 0.2);">
-                📁 Buka Audio Lokal
-                <input type="file" accept="audio/*" onchange="loadExamAudioFile(event)" style="display: none;">
-              </label>
               <audio id="exam-audio-player" controls style="height: 38px; border-radius: 8px; outline: none;"></audio>
               <button class="pill-btn" style="padding: 8px 14px; border-color: var(--gold-autumn); font-size: 12px;" onclick="downloadCurrentExamAudio()">⬇️ Unduh Audio (MP3)</button>
             </div>
@@ -1066,12 +1062,8 @@
               </div>
             </div>
             
-            <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 11.5px; color: var(--text-muted);">
-              <span>💡 <i>Gunakan mouse scroll untuk membaca soal ke bawah. Coretan tangan tersimpan otomatis per halaman.</i></span>
-              <label class="pill-btn" style="cursor: pointer; padding: 4px 10px; font-size: 11px; background: rgba(245, 158, 11, 0.15); border-color: var(--gold-autumn);">
-                📂 Buka File PDF Lokal (.pdf)
-                <input type="file" accept="application/pdf" onchange="loadExamPdfFile(event)" style="display: none;">
-              </label>
+            <div style="margin-top: 10px; font-size: 11.5px; color: var(--text-muted); text-align: center;">
+              💡 <i>Gunakan mouse scroll untuk membaca soal ke bawah. Coretan tangan tersimpan otomatis per halaman.</i>
             </div>
           </div>
 
@@ -1321,12 +1313,12 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div class="crud-form-group">
             <label>Nama File / Path PDF Soal (pdf_url):</label>
-            <input type="text" id="crud-plc-pdf-url" placeholder="Contoh: ./HSK1.pdf atau HSK1_Set2.pdf">
+            <input type="text" id="crud-plc-pdf-url" placeholder="Contoh: ./HSK1.pdf atau ./HSK1_Set2.pdf">
           </div>
 
           <div class="crud-form-group">
             <label>Nama File / Path Audio MP3 (audio_url):</label>
-            <input type="text" id="crud-plc-audio-url" placeholder="Contoh: ./HSK1.mp3 atau HSK1_Set2.mp3">
+            <input type="text" id="crud-plc-audio-url" placeholder="Contoh: ./HSK1.mp3 atau ./HSK1_Set2.mp3">
           </div>
         </div>
 
@@ -1415,12 +1407,6 @@
 
     // =========================================================================
     // STATE PLACEMENT TEST & MOCK EXAM (JALUR RELATIF RESMI GITHUB)
-    // =========================================================================
-    // Catatan: Jika ingin menambah tes baru di masa depan:
-    // 1. Taruh file PDF (misal HSK1_Set2.pdf) & MP3 (HSK1_Set2.mp3) di repo GitHub.
-    // 2. Buka menu Admin CRUD > Tab Placement Test.
-    // 3. Masukkan path: ./HSK1_Set2.pdf dan ./HSK1_Set2.mp3.
-    // 4. Sistem otomatis memuat lembar PDF dan audio langsung tanpa kendala CORS!
     // =========================================================================
     var allPlacementPackages = [];
     var currentPlacementPackage = null;
@@ -2403,7 +2389,7 @@
       });
     }
 
-    // 8. ENGINE PLACEMENT TEST (MEMANGGIL JALUR RELATIF FILE GITHUB)
+    // 8. ENGINE PLACEMENT TEST VIEW (JALUR RELATIF RESMI GITHUB)
     function loadPlacementPackagesView(preferredId) {
       var selectEl = document.getElementById('placement-package-select');
 
@@ -2491,22 +2477,6 @@
 
       renderLjdItems();
     }
-
-    window.loadExamAudioFile = function(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const audioPlayer = document.getElementById('exam-audio-player');
-        audioPlayer.src = URL.createObjectURL(file);
-      }
-    };
-
-    window.loadExamPdfFile = function(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const fileUrl = URL.createObjectURL(file);
-        loadPdfFromUrlOrData(fileUrl);
-      }
-    };
 
     window.downloadCurrentExamAudio = function() {
       var audioPlayer = document.getElementById('exam-audio-player');
