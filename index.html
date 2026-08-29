@@ -540,9 +540,7 @@
     .bottom-nav-btn.active { color: var(--gold-autumn); }
     .bottom-nav-btn span.icon { font-size: 18px; }
 
-    /* =========================================================================
-       PDF SCROLL VIEWPORT & CANVAS CONTAINER (FULL SCROLL STABIL)
-       ========================================================================= */
+    /* PDF SCROLL VIEWPORT & CANVAS CONTAINER */
     .pdf-scroll-viewport {
       background: #180d08;
       border: 1px solid var(--amber-border);
@@ -1065,7 +1063,7 @@
               <span style="font-size: 26px;">🎧</span>
               <div>
                 <div style="font-size: 15px; font-weight: 800; color: #fff;" id="exam-audio-title">Audio Menyimak (听力录音)</div>
-                <div style="font-size: 11.5px; color: var(--gold-autumn);">Putar rekaman saat mengerjakan Bagian Menyimak (No. 1–20)</div>
+                <div style="font-size: 11.5px; color: var(--gold-autumn);">Putar rekaman saat mengerjakan Bagian Menyimak</div>
               </div>
             </div>
 
@@ -1119,11 +1117,11 @@
             </div>
             
             <div style="margin-top: 10px; font-size: 11.5px; color: var(--text-muted); text-align: center;">
-              💡 <i>Gunakan mouse scroll atau drag untuk membaca lembar soal ke atas/bawah sampai nomor 25 dan seterusnya.</i>
+              💡 <i>Gunakan mouse scroll atau drag untuk membaca lembar soal ke atas/bawah.</i>
             </div>
           </div>
 
-          <!-- SISI KANAN: LEMBAR JAWABAN DIGITAL INTERAKTIF (LJD 40 SOAL) -->
+          <!-- SISI KANAN: LEMBAR JAWABAN DIGITAL INTERAKTIF OTOMATIS MENYESUAIKAN JENJANG HSK -->
           <div class="glass-card" style="width: 360px; max-height: 920px; display: flex; flex-direction: column; padding: 18px;">
             <div style="border-bottom: 1px solid var(--amber-border); padding-bottom: 10px; margin-bottom: 12px;">
               <div style="font-size: 15px; font-weight: 800; color: #fff;">📝 Lembar Jawaban Digital</div>
@@ -1131,8 +1129,8 @@
             </div>
 
             <div style="display: flex; gap: 6px; margin-bottom: 12px;">
-              <button class="pill-btn active" id="btn-ljd-listening" style="flex: 1; padding: 6px; font-size: 11.5px;" onclick="switchLjdSection('listening')">🎧 Menyimak (1-20)</button>
-              <button class="pill-btn" id="btn-ljd-reading" style="flex: 1; padding: 6px; font-size: 11.5px;" onclick="switchLjdSection('reading')">📖 Membaca (21-40)</button>
+              <button class="pill-btn active" id="btn-ljd-listening" style="flex: 1; padding: 6px; font-size: 11.5px;" onclick="switchLjdSection('listening')">🎧 Menyimak</button>
+              <button class="pill-btn" id="btn-ljd-reading" style="flex: 1; padding: 6px; font-size: 11.5px;" onclick="switchLjdSection('reading')">📖 Membaca</button>
             </div>
 
             <div id="ljd-items-container" style="flex: 1; overflow-y: auto; padding-right: 6px; display: flex; flex-direction: column; gap: 9px; margin-bottom: 14px;"></div>
@@ -1379,7 +1377,7 @@
         </div>
 
         <div class="crud-form-group">
-          <label>Kunci Jawaban JSON No 1–40 (correct_answer):</label>
+          <label>Kunci Jawaban JSON (correct_answer):</label>
           <textarea id="crud-plc-keys" rows="3" style="font-family: monospace; font-size: 11px;" placeholder='{"1":"TRUE","2":"FALSE","6":"A","11":"D","26":"D", ...}'></textarea>
         </div>
 
@@ -2778,7 +2776,56 @@
       if (statusEl) statusEl.innerText = '✅ Sertifikat berhasil diunduh!';
     };
 
-    // PLACEMENT TEST ENGINE
+    // =========================================================================
+    // 8. PLACEMENT TEST ENGINE & DINAMIS LEMBAR JAWABAN DIGITAL (LJD)
+    // =========================================================================
+    function getExamStructure(pkg) {
+      const rawLvl = (pkg && pkg.hskLevel ? pkg.hskLevel : (sessionUser.currentHsk || 'HSK 1')).toString().toUpperCase();
+      const numLvl = parseInt(rawLvl.replace(/[^0-9]/g, '')) || 1;
+
+      if (numLvl === 2) {
+        return {
+          totalQuestions: 60,
+          listeningRange: [1, 35],
+          readingRange: [36, 60],
+          passScore: 120,
+          maxScore: 200
+        };
+      } else if (numLvl === 3) {
+        return {
+          totalQuestions: 80,
+          listeningRange: [1, 40],
+          readingRange: [41, 70],
+          passScore: 180,
+          maxScore: 300
+        };
+      } else if (numLvl >= 4) {
+        return {
+          totalQuestions: 100,
+          listeningRange: [1, 45],
+          readingRange: [46, 85],
+          passScore: 180,
+          maxScore: 300
+        };
+      }
+      
+      // Default HSK 1
+      return {
+        totalQuestions: 40,
+        listeningRange: [1, 20],
+        readingRange: [21, 40],
+        passScore: 120,
+        maxScore: 200
+      };
+    }
+
+    function updateLjdTabButtons(structure) {
+      const bList = document.getElementById('btn-ljd-listening');
+      const bRead = document.getElementById('btn-ljd-reading');
+      if (bList) bList.innerText = `🎧 Menyimak (${structure.listeningRange[0]}-${structure.listeningRange[1]})`;
+      if (bRead) bRead.innerText = `📖 Membaca (${structure.readingRange[0]}-${structure.readingRange[1]})`;
+    }
+
     function loadPlacementPackagesView(preferredId) {
       var selectEl = document.getElementById('placement-package-select');
 
@@ -2882,7 +2929,7 @@
       }
     }
 
-    // FUNGSI DETEKSI OTOMATIS PEMBLOKIRAN HALAMAN KUNCI JAWABAN
+    // FUNGSI DETEKSI OTOMATIS PEMBLOKIRAN HALAMAN KUNCI JAWABAN & AUDIO SCRIPT
     async function detectMaxQuestionPage(pdf) {
       const totalRawPages = pdf.numPages;
       if (totalRawPages <= 1) return 1;
@@ -2893,6 +2940,7 @@
         "试卷答案",
         "参考答案",
         "答案",
+        "卷听力材料",
         "样卷听力材料",
         "听力材料",
         "听力文本",
@@ -2914,7 +2962,7 @@
           const isForbiddenPage = blockKeywords.some(keyword => pageCleanText.includes(keyword));
 
           if (isForbiddenPage) {
-            console.log(`[Security] Kunci jawaban '${pageCleanText.slice(0, 30)}...' terdeteksi di hal ${pageNum}. Membatasi akses hingga hal ${pageNum - 1}.`);
+            console.log(`[Security] Kunci/Naskah '${pageCleanText.slice(0, 30)}...' terdeteksi di hal ${pageNum}. Membatasi akses soal sampai hal ${pageNum - 1}.`);
             return Math.max(1, pageNum - 1);
           }
         } catch (err) {
@@ -3096,14 +3144,22 @@
       link.click();
     };
 
-    // LJD (LEMBAR JAWABAN DIGITAL)
+    // RENDER LJD OTOMATIS & DINAMIS
     function renderLjdItems() {
       const container = document.getElementById('ljd-items-container');
       if (!container) return;
       container.innerHTML = '';
+
+      const structure = getExamStructure(currentPlacementPackage);
+      updateLjdTabButtons(structure);
+
       const isListening = (activeLjdSection === 'listening');
-      const startQ = isListening ? 1 : 21;
-      const endQ = isListening ? 20 : 40;
+      const startQ = isListening ? structure.listeningRange[0] : structure.readingRange[0];
+      const endQ = isListening ? structure.listeningRange[1] : structure.readingRange[1];
+
+      const answerKey = (currentPlacementPackage && currentPlacementPackage.answerKey) 
+        ? currentPlacementPackage.answerKey 
+        : DEFAULT_HSK1_ANSWER_KEY;
 
       for (let q = startQ; q <= endQ; q++) {
         const row = document.createElement('div');
@@ -3127,12 +3183,28 @@
         optionsDiv.style.gap = '4px';
 
         let optionsList = [];
-        if ((q >= 1 && q <= 5) || (q >= 21 && q <= 25)) {
+        const targetKey = (answerKey[q] || answerKey[q.toString()] || "").toString().trim().toUpperCase();
+
+        if (targetKey === "TRUE" || targetKey === "FALSE" || targetKey === "√" || targetKey === "✕") {
           optionsList = [{ label: "√", val: "TRUE" }, { label: "✕", val: "FALSE" }];
-        } else if ((q >= 6 && q <= 10) || (q >= 16 && q <= 20)) {
+        } else if (targetKey === "D" || targetKey === "E" || targetKey === "F") {
+          optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }, { label: "E", val: "E" }, { label: "F", val: "F" }];
+        } else if (targetKey === "A" || targetKey === "B" || targetKey === "C") {
           optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }];
         } else {
-          optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }, { label: "E", val: "E" }, { label: "F", val: "F" }];
+          // Fallback cerdas berdasarkan standar jenjang HSK
+          const numLvl = parseInt((currentPlacementPackage && currentPlacementPackage.hskLevel ? currentPlacementPackage.hskLevel : 'HSK 1').replace(/[^0-9]/g, '')) || 1;
+          if (numLvl === 1) {
+            if ((q >= 1 && q <= 5) || (q >= 21 && q <= 25)) optionsList = [{ label: "√", val: "TRUE" }, { label: "✕", val: "FALSE" }];
+            else if ((q >= 6 && q <= 10) || (q >= 16 && q <= 20)) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }];
+            else optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }, { label: "E", val: "E" }, { label: "F", val: "F" }];
+          } else if (numLvl === 2) {
+            if ((q >= 1 && q <= 10) || (q >= 36 && q <= 40)) optionsList = [{ label: "√", val: "TRUE" }, { label: "✕", val: "FALSE" }];
+            else if ((q >= 11 && q <= 20) || (q >= 41 && q <= 50)) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }, { label: "E", val: "E" }, { label: "F", val: "F" }];
+            else optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }];
+          } else {
+            optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }];
+          }
         }
 
         optionsList.forEach(function(opt) {
@@ -3150,6 +3222,7 @@
           };
           optionsDiv.appendChild(btn);
         });
+
         row.appendChild(optionsDiv);
         container.appendChild(row);
       }
@@ -3167,21 +3240,35 @@
     };
 
     window.submitPlacementExam = function() {
+      const structure = getExamStructure(currentPlacementPackage);
+      const answerKey = (currentPlacementPackage && currentPlacementPackage.answerKey) 
+        ? currentPlacementPackage.answerKey 
+        : DEFAULT_HSK1_ANSWER_KEY;
+
       let listeningCorrect = 0;
       let readingCorrect = 0;
-      const answerKey = (currentPlacementPackage && currentPlacementPackage.answerKey) ? currentPlacementPackage.answerKey : DEFAULT_HSK1_ANSWER_KEY;
 
-      for (let i = 1; i <= 20; i++) {
-        if (userExamAnswers[i] === answerKey[i]) listeningCorrect++;
-      }
-      for (let i = 21; i <= 40; i++) {
-        if (userExamAnswers[i] === answerKey[i]) readingCorrect++;
+      const listStart = structure.listeningRange[0], listEnd = structure.listeningRange[1];
+      const readStart = structure.readingRange[0], readEnd = structure.readingRange[1];
+      const listTotal = (listEnd - listStart + 1);
+      const readTotal = (readEnd - readStart + 1);
+
+      for (let i = listStart; i <= listEnd; i++) {
+        const userAns = (userExamAnswers[i] || "").toString().toUpperCase();
+        const correctAns = (answerKey[i] || answerKey[i.toString()] || "").toString().toUpperCase();
+        if (userAns && userAns === correctAns) listeningCorrect++;
       }
 
-      const listeningScore = listeningCorrect * 5;
-      const readingScore = readingCorrect * 5;
+      for (let i = readStart; i <= readEnd; i++) {
+        const userAns = (userExamAnswers[i] || "").toString().toUpperCase();
+        const correctAns = (answerKey[i] || answerKey[i.toString()] || "").toString().toUpperCase();
+        if (userAns && userAns === correctAns) readingCorrect++;
+      }
+
+      const listeningScore = Math.round((listeningCorrect / listTotal) * 100);
+      const readingScore = Math.round((readingCorrect / readTotal) * 100);
       const totalScore = listeningScore + readingScore;
-      const isPassed = totalScore >= 120;
+      const isPassed = totalScore >= structure.passScore;
 
       const resBox = document.getElementById('exam-score-result');
       if (resBox) {
@@ -3191,30 +3278,30 @@
             ${isPassed ? '🎉 LULUS EVALUASI (合格)' : '⚠️ BELUM LULUS (不合格)'}
           </div>
           <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
-            Menyimak (听力): <b>${listeningScore}/100</b> (${listeningCorrect}/20 soal)<br>
-            Membaca (阅读): <b>${readingScore}/100</b> (${readingCorrect}/20 soal)
+            Menyimak (听力): <b>${listeningScore}/100</b> (${listeningCorrect}/${listTotal} soal)<br>
+            Membaca (阅读): <b>${readingScore}/100</b> (${readingCorrect}/${readTotal} soal)
           </div>
           <div style="font-size: 15px; color: var(--gold-autumn); font-weight: 800;">
-            Total Skor: ${totalScore} / 200
+            Total Skor: ${totalScore} / ${structure.maxScore}
           </div>
         `;
 
         if (isPassed && currentPlacementPackage) {
-          var passedLvl = currentPlacementPackage.hskLevel || 'HSK 1';
-          resBox.innerHTML += `<div style="font-size: 11.5px; color: #86efac; background: rgba(22, 163, 74, 0.2); padding: 8px; border-radius: 6px;">Anda telah menyelesaikan level <b>${passedLvl}</b>. Track level Anda berhasil diperbarui ke tingkat selanjutnya! Silakan unduh sertifikat resmi Anda.</div>`;
+          const passedLvl = currentPlacementPackage.hskLevel || 'HSK 1';
+          resBox.innerHTML += `<div style="font-size: 11.5px; color: #86efac; background: rgba(22, 163, 74, 0.2); padding: 8px; border-radius: 6px; margin-top: 8px;">Selamat! Anda telah menyelesaikan level <b>${passedLvl}</b>. Track level Anda berhasil diperbarui ke tingkat selanjutnya! Silakan unduh sertifikat resmi Anda.</div>`;
           
-          var numLvl = parseInt(passedLvl.replace(/[^0-9]/g, ''));
+          const numLvl = parseInt(passedLvl.replace(/[^0-9]/g, ''));
           if (!isNaN(numLvl) && numLvl < 6) {
             sessionUser.currentHsk = 'HSK ' + (numLvl + 1);
             pingTrackLevel('placement');
 
-            var elTrackHsk = document.getElementById('track-hsk-badge');
-            var elTrackDesc = document.getElementById('track-hsk-desc');
+            const elTrackHsk = document.getElementById('track-hsk-badge');
+            const elTrackDesc = document.getElementById('track-hsk-desc');
             if (elTrackHsk) elTrackHsk.innerText = sessionUser.currentHsk;
             if (elTrackDesc) elTrackDesc.innerText = 'Selesaikan Placement Test untuk naik ke HSK ' + (numLvl + 2 <= 6 ? numLvl + 2 : 6);
           }
         } else {
-          resBox.innerHTML += `<div style="font-size: 11px; color: #fed7aa; margin-top: 6px;">Batas kelulusan resmi: 120 poin. Silakan pelajari lagi materi yang belum dipahami dan coba kembali.</div>`;
+          resBox.innerHTML += `<div style="font-size: 11px; color: #fed7aa; margin-top: 6px;">Batas kelulusan resmi: ${structure.passScore} poin. Silakan pelajari lagi materi yang belum dipahami dan coba kembali.</div>`;
         }
       }
     };
