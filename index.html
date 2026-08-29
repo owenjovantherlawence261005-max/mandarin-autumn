@@ -1016,7 +1016,7 @@
         <div id="workbook-cards-container"></div>
       </section>
 
-      <!-- 5. SPEAKING AI ROLEPLAY (DENGAN TOMBOL PLAY/STOP TOGGLE) -->
+      <!-- 5. SPEAKING AI ROLEPLAY (DENGAN KONTROL TOMBOL CERDAS BERBASIS GILIRAN) -->
       <section id="view-speaking" class="view-section">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
           <div class="header-group" style="margin-bottom: 0;">
@@ -1049,7 +1049,7 @@
               <div class="transcript-box" id="transcript-display">
                 Pilih skenario lalu klik tombol <b>▶️ Mulai / Bicara AI</b> saat Anda siap...
               </div>
-              <button class="btn-autumn-primary" id="btn-trigger-ai" style="padding: 8px 14px; font-size: 12px;" onclick="manualStartOrPlayAi()">▶️ Mulai / Bicara AI</button>
+              <button class="btn-autumn-primary" id="btn-trigger-ai" style="padding: 8px 14px; font-size: 12px; display: none;" onclick="manualStartOrPlayAi()">▶️ Mulai / Bicara AI</button>
               <button class="pill-btn" onclick="playCurrentAiTurn()">🔊 Ulangi AI</button>
               <button class="pill-btn" onclick="skipUserTurn()" style="border-color: var(--maple-red);">⏭️ Lanjut Giliran</button>
             </div>
@@ -1382,8 +1382,8 @@
             <label>Tipe Soal:</label>
             <select id="crud-wb-type">
               <option value="Pilihan Ganda">Pilihan Ganda</option>
-              <option value="Kalimat Rumpang">Kalimat Rumpang (选词填空)</option>
-              <option value="Menyusun Kalimat">Menyusun Kalimat (排序组句)</option>
+              <option value="Kalimat Rumpang (选词填空)">Kalimat Rumpang (选词填空)</option>
+              <option value="Menyusun Kalimat (排序组句)">Menyusun Kalimat (排序组句)</option>
             </select>
           </div>
         </div>
@@ -2983,18 +2983,30 @@
       checkTurnAndAct(false); 
     };
 
+    // LOGIKA ADAPTIF KONTROL TOMBOL BICARA AI BERDASARKAN GILIRAN
     function checkTurnAndAct(shouldSpeakAi) {
       var display = document.getElementById('transcript-display');
+      var btnAi = document.getElementById('btn-trigger-ai');
+
       if (!activeDialogueFlow || activeDialogueFlow.length === 0) return;
       if (currentDialogueStep >= activeDialogueFlow.length) { 
         if (display) display.innerHTML = '🎉 <b>Skenario Percakapan Selesai!</b> Kerja bagus!'; 
+        if (btnAi) btnAi.style.display = 'none';
         return; 
       }
+
       var currentLine = activeDialogueFlow[currentDialogueStep]; 
       var isAiTurn = (currentLine.role !== currentUserRole);
       highlightChatBubble(currentDialogueStep);
 
       if (isAiTurn) {
+        // GILIRAN AI: Tampilkan tombol Bicara AI
+        if (btnAi) {
+          btnAi.style.display = 'inline-block';
+          btnAi.innerHTML = '▶️ Mulai / Bicara AI';
+          btnAi.style.background = 'linear-gradient(135deg, var(--terracotta), var(--maple-red))';
+        }
+
         if (shouldSpeakAi) {
           if (display) display.innerHTML = `🤖 <i>${currentLine.speaker} (AI) sedang berbicara...</i>`;
           speakText(currentLine.hanzi, function() { 
@@ -3005,6 +3017,10 @@
           if (display) display.innerHTML = `🤖 Giliran <b>${currentLine.speaker} (AI)</b>. Klik tombol <b>▶️ Mulai / Bicara AI</b> untuk mendengarkan.`;
         }
       } else {
+        // GILIRAN PENGGUNA: Sembunyikan tombol Bicara AI agar tidak membingungkan
+        if (btnAi) {
+          btnAi.style.display = 'none';
+        }
         if (display) display.innerHTML = `👉 <b>Giliran Anda (${currentLine.speaker})!</b> Ucapkan: <i>"${currentLine.hanzi}"</i>`;
       }
     }
@@ -3440,7 +3456,7 @@
     function resetExamTimer() {
       clearInterval(examTimerInterval);
       isExamTimerRunning = false;
-      examTimeRemaining = 7200;
+      examTimeRemaining = 7200; // 2 Jam = 120 Menit
       updateExamTimerUI();
     }
 
@@ -3991,7 +4007,7 @@
             const elTrackHsk = document.getElementById('track-hsk-badge');
             const elTrackDesc = document.getElementById('track-hsk-desc');
             if (elTrackHsk) elTrackHsk.innerText = sessionUser.currentHsk;
-            if (elTrackDesc) elTrackDesc.innerText = 'Selesaikan Placement Test untuk naik ke HSK ' + (numLvl + 2 <= 6 ? numLvl + 2 : 6);
+            if (elTrackDesc) elTrackDesc.innerText = 'Selesaikan Placement Test untuk naik ke level berikutnya';
           }
         } else {
           resBox.innerHTML += `<div style="font-size: 11px; color: #fed7aa; margin-top: 6px;">Batas kelulusan resmi: ${structure.passScore} poin. Silakan unduh PDF soal lengkap untuk mencocokkan jawaban dengan kunci di halaman terakhir, pelajari lagi materi yang belum dipahami dan coba kembali.</div>`;
