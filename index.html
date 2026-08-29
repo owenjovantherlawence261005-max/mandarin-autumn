@@ -987,7 +987,7 @@
         <div id="workbook-cards-container"></div>
       </section>
 
-      <!-- 5. SPEAKING AI ROLEPLAY -->
+      <!-- 5. SPEAKING AI ROLEPLAY (DENGAN KONTROL MANUAL PLAY) -->
       <section id="view-speaking" class="view-section">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
           <div class="header-group" style="margin-bottom: 0;">
@@ -1018,8 +1018,9 @@
             <div class="speaking-footer">
               <button class="mic-button" id="mic-btn" onclick="toggleSpeechRecognition()">🎙️</button>
               <div class="transcript-box" id="transcript-display">
-                Klik tombol mikrofon dan bicaralah dalam bahasa Mandarin saat giliran Anda...
+                Pilih skenario lalu klik tombol <b>▶️ Mulai / Bicara AI</b> saat Anda siap...
               </div>
+              <button class="btn-autumn-primary" id="btn-trigger-ai" style="padding: 8px 14px; font-size: 12px;" onclick="manualStartOrPlayAi()">▶️ Mulai / Bicara AI</button>
               <button class="pill-btn" onclick="playCurrentAiTurn()">🔊 Ulangi AI</button>
               <button class="pill-btn" onclick="skipUserTurn()" style="border-color: var(--maple-red);">⏭️ Lanjut Giliran</button>
             </div>
@@ -1055,7 +1056,7 @@
             <div class="flashcard-inner">
               <div class="card-face front">
                 <span class="badge" id="srs-card-level">HSK 1</span>
-                <div style="font-family: var(--font-hanzi); font-size: 54px; font-weight: 900; color: #fff; margin-動作: 16px 0;" id="srs-card-hz">我</div>
+                <div style="font-family: var(--font-hanzi); font-size: 54px; font-weight: 900; color: #fff; margin: 16px 0;" id="srs-card-hz">我</div>
                 <div style="font-size: 13px; color: var(--gold-autumn);">Klik kartu untuk membalik & melihat arti</div>
               </div>
               <div class="card-face back">
@@ -1073,7 +1074,7 @@
         </div>
       </section>
 
-      <!-- 8. HSK DIAGNOSTIC & MOCK PLACEMENT TEST (FULL SCROLL STABIL) -->
+      <!-- 8. HSK DIAGNOSTIC & MOCK PLACEMENT TEST (DENGAN TIMER 2 JAM OTOMATIS) -->
       <section id="view-placement" class="view-section">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
           <div class="header-group" style="margin-bottom: 0;">
@@ -1082,13 +1083,24 @@
             <p>Ujian penentuan kemampuan resmi dengan lembar PDF yang bisa dicoret, audio menyimak langsung, dan lembar jawaban digital.</p>
           </div>
 
-          <div style="display: flex; align-items: center; gap: 10px; background: rgba(40, 24, 16, 0.85); padding: 10px 16px; border-radius: 12px; border: 1px solid var(--amber-border); box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
-            <label for="placement-package-select" style="font-size: 12.5px; font-weight: 700; color: var(--gold-autumn); white-space: nowrap; display: flex; align-items: center; gap: 6px;">
-              <span>🎯</span> Pilih Paket Ujian:
-            </label>
-            <select id="placement-package-select" onchange="handlePlacementPackageChange(this.value)" style="background: #180d08; color: #fff; border: 1px solid var(--amber-border); padding: 8px 14px; border-radius: 8px; font-size: 13.5px; font-weight: 600; outline: none; cursor: pointer; min-width: 250px; transition: border-color 0.2s ease;">
-              <option value="">Memuat paket dari database...</option>
-            </select>
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <!-- BADGE TIMER UJIAN 2 JAM -->
+            <div id="exam-timer-badge" style="background: rgba(40, 24, 16, 0.9); border: 1.5px solid var(--gold-autumn); padding: 8px 14px; border-radius: 10px; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px var(--terracotta-glow);">
+              <span style="font-size: 18px;">⏳</span>
+              <div>
+                <div style="font-size: 10px; font-weight: 700; color: var(--gold-autumn); text-transform: uppercase;">Waktu Ujian (2 Jam):</div>
+                <div id="exam-timer-display" style="font-size: 15px; font-weight: 800; color: #fff; font-family: monospace;">02:00:00</div>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px; background: rgba(40, 24, 16, 0.85); padding: 10px 16px; border-radius: 12px; border: 1px solid var(--amber-border); box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
+              <label for="placement-package-select" style="font-size: 12.5px; font-weight: 700; color: var(--gold-autumn); white-space: nowrap; display: flex; align-items: center; gap: 6px;">
+                <span>🎯</span> Pilih Paket:
+              </label>
+              <select id="placement-package-select" onchange="handlePlacementPackageChange(this.value)" style="background: #180d08; color: #fff; border: 1px solid var(--amber-border); padding: 8px 14px; border-radius: 8px; font-size: 13.5px; font-weight: 600; outline: none; cursor: pointer; min-width: 230px; transition: border-color 0.2s ease;">
+                <option value="">Memuat paket dari database...</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -1141,8 +1153,8 @@
 
                 <button class="pill-btn" style="padding: 5px 10px; font-size: 11.5px; border-color: var(--maple-red);" onclick="clearCurrentPageDrawings()">🔄 Hapus Coretan Hal Ini</button>
                 
-                <!-- TOMBOL UNDUH SOAL LENGKAP PDF (TERMASUK KUNCI UNTUK BELAJAR MANDIRI) -->
-                <button class="btn-autumn-primary" style="padding: 6px 12px; font-size: 11.5px;" onclick="downloadFullExamPdf()">📥 Unduh File Soal Lengkap (PDF)</button>
+                <!-- TOMBOL UNDUH SOAL LENGKAP PDF (TERMASUK KUNCI DI HALAMAN TERAKHIR) -->
+                <button class="btn-autumn-primary" style="padding: 6px 12px; font-size: 11.5px;" onclick="downloadFullExamPdf()">📥 Unduh PDF Soal Lengkap</button>
               </div>
             </div>
 
@@ -1159,11 +1171,11 @@
             </div>
           </div>
 
-          <!-- SISI KANAN: LEMBAR JAWABAN DIGITAL INTERAKTIF OTOMATIS MENYESUAIKAN JENJANG HSK -->
+          <!-- SISI KANAN: LEMBAR JAWABAN DIGITAL INTERAKTIF -->
           <div class="glass-card" style="width: 360px; max-height: 920px; display: flex; flex-direction: column; padding: 18px;">
             <div style="border-bottom: 1px solid var(--amber-border); padding-bottom: 10px; margin-bottom: 12px;">
               <div style="font-size: 15px; font-weight: 800; color: #fff;">📝 Lembar Jawaban Digital</div>
-              <div style="font-size: 11.5px; color: var(--gold-autumn);">Pilih jawaban sesuai naskah soal di PDF</div>
+              <div style="font-size: 11.5px; color: var(--gold-autumn);">Waktu ujian otomatis berjalan saat Anda memilih jawaban pertama</div>
             </div>
 
             <div style="display: flex; gap: 6px; margin-bottom: 12px;">
@@ -1176,8 +1188,8 @@
             <div style="border-top: 1px solid var(--amber-border); padding-top: 12px;">
               <button class="btn-autumn-primary" style="width: 100%; padding: 12px;" onclick="submitPlacementExam()">📊 Kumpulkan & Hitung Skor</button>
               
-              <!-- TOMBOL DOWNLOAD REKAP JAWABAN DIGITAL SISWA -->
-              <button class="pill-btn" style="width: 100%; margin-top: 8px; padding: 8px; font-size: 12px; border-color: var(--gold-autumn);" onclick="downloadUserAnswerSheet()">📥 Unduh Rekap Jawaban Digital (.txt)</button>
+              <!-- TOMBOL UNDUH REKAP JAWABAN DIGITAL SISWA (MURNI HANYA JAWABAN SISWA) -->
+              <button class="pill-btn" style="width: 100%; margin-top: 8px; padding: 8px; font-size: 12px; border-color: var(--gold-autumn);" onclick="downloadUserAnswerSheet()">📥 Unduh Lembar Jawaban Saya (.txt)</button>
               
               <div id="exam-score-result" style="display: none; margin-top: 12px; padding: 12px; border-radius: 8px; text-align: center; background: rgba(234, 88, 12, 0.15); border: 1px solid var(--gold-autumn);"></div>
             </div>
@@ -1515,6 +1527,11 @@
     var currentPenWidth = 3;
     var isDrawingOnPdf = false;
     var lastPdfX = 0, lastPdfY = 0;
+
+    // SISTEM TIMER UJIAN 2 JAM
+    var examTimerInterval = null;
+    var examTimeRemaining = 7200; // 2 Jam = 7200 Detik
+    var isExamTimerRunning = false;
 
     const DEFAULT_HSK1_ANSWER_KEY = {
       1: "TRUE", 2: "FALSE", 3: "FALSE", 4: "FALSE", 5: "TRUE",
@@ -2451,7 +2468,7 @@
       if (!canvas) return;
       var ctx = canvas.getContext('2d'); var w = canvas.width, h = canvas.height; ctx.clearRect(0, 0, w, h);
       ctx.strokeStyle = '#fcd34d'; ctx.lineWidth = 1.5; ctx.setLineDash([5, 5]);
-      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(w, h); ctx.moveTo(w, 0); ctx.lineTo(0, h); ctx.moveTo(w / 2, 0); ctx.lineTo(w / 2, h); ctx.moveTo(0, h / 2); ctx.lineTo(w / 2, h); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(w, h); ctx.moveTo(w, 0); ctx.lineTo(0, h); ctx.moveTo(w / 2, 0); ctx.lineTo(w / 2, h); ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2); ctx.stroke();
       ctx.setLineDash([]); ctx.strokeStyle = '#c2410c'; ctx.lineWidth = 4; ctx.strokeRect(0, 0, w, h);
       if (charToGuide) {
         ctx.save(); var fontSize = Math.round(w * 0.72); ctx.font = fontSize + 'px "Noto Serif SC", "PingFang SC", serif'; ctx.fillStyle = 'rgba(234, 88, 12, 0.16)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -2561,7 +2578,7 @@
       });
     }
 
-    // SPEAKING AI ROLEPLAY VIEW
+    // SPEAKING AI ROLEPLAY VIEW (TANPA AUTOPLAY SAAT BUKA)
     function loadSpeakingDialoguesView(preferredId) {
       var selectEl = document.getElementById('speaking-scenario-select');
       function applyDialogues(dialogues) {
@@ -2604,7 +2621,7 @@
     function selectScenarioDialogue(dlg) {
       if (!dlg) return;
       currentDialogueId = dlg.dialogueId || ""; activeDialogueFlow = dlg.scriptFlow || []; characterAName = dlg.roleAName || "Pelayan Restoran"; characterBName = dlg.roleBName || "Pelanggan";
-      updateRoleSwitcherButtons(); initSpeakingDialogue();
+      updateRoleSwitcherButtons(); initSpeakingDialogue(false); // Parameter false: TIDAK autoplay
     }
 
     function useDefaultDialogue() {
@@ -2613,7 +2630,7 @@
         { role: "A", speaker: characterAName, hanzi: "你好！请问你想吃什么？", pinyin: "Nǐ hǎo! Qǐngwèn xiǎng chī shénme?", indo: "Halo! Permisi mau makan apa?" },
         { role: "B", speaker: characterBName, hanzi: "我要一份炒饭和一杯茶。", pinyin: "Wǒ yào yí fèn chǎofàn hé yì bēi chá.", indo: "Saya mau seporsi nasi goreng dan segelas teh." }
       ];
-      updateRoleSwitcherButtons(); initSpeakingDialogue();
+      updateRoleSwitcherButtons(); initSpeakingDialogue(false);
     }
 
     function updateRoleSwitcherButtons() {
@@ -2622,7 +2639,11 @@
                              <button class="role-btn ${currentUserRole === 'A' ? 'active' : ''}" id="btn-role-a" onclick="setUserRole('A')">Saya Perankan: <b>${characterAName}</b> (AI: ${characterBName})</button>`;
     }
 
-    function initSpeakingDialogue() { currentDialogueStep = 0; renderDialogueChat(); checkTurnAndAct(); }
+    function initSpeakingDialogue(autoPlay) { 
+      currentDialogueStep = 0; 
+      renderDialogueChat(); 
+      checkTurnAndAct(autoPlay === true); 
+    }
 
     function renderDialogueChat() {
       var chatBox = document.getElementById('roleplay-chat-box'); if (!chatBox) return; chatBox.innerHTML = '';
@@ -2633,22 +2654,49 @@
       }
     }
 
-    window.setUserRole = function(role) { currentUserRole = role; updateRoleSwitcherButtons(); currentDialogueStep = 0; checkTurnAndAct(); };
+    window.setUserRole = function(role) { 
+      currentUserRole = role; 
+      updateRoleSwitcherButtons(); 
+      currentDialogueStep = 0; 
+      checkTurnAndAct(false); 
+    };
 
-    function checkTurnAndAct() {
+    function checkTurnAndAct(shouldSpeakAi) {
       var display = document.getElementById('transcript-display');
       if (!activeDialogueFlow || activeDialogueFlow.length === 0) return;
-      if (currentDialogueStep >= activeDialogueFlow.length) { if (display) display.innerHTML = '🎉 <b>Skenario Percakapan Selesai!</b> Kerja bagus!'; return; }
-      var currentLine = activeDialogueFlow[currentDialogueStep]; var isAiTurn = (currentLine.role !== currentUserRole);
+      if (currentDialogueStep >= activeDialogueFlow.length) { 
+        if (display) display.innerHTML = '🎉 <b>Skenario Percakapan Selesai!</b> Kerja bagus!'; 
+        return; 
+      }
+      var currentLine = activeDialogueFlow[currentDialogueStep]; 
+      var isAiTurn = (currentLine.role !== currentUserRole);
       highlightChatBubble(currentDialogueStep);
 
       if (isAiTurn) {
-        if (display) display.innerHTML = `🤖 <i>${currentLine.speaker} (AI) sedang berbicara...</i>`;
-        speakText(currentLine.hanzi, function() { currentDialogueStep++; checkTurnAndAct(); });
+        if (shouldSpeakAi) {
+          if (display) display.innerHTML = `🤖 <i>${currentLine.speaker} (AI) sedang berbicara...</i>`;
+          speakText(currentLine.hanzi, function() { 
+            currentDialogueStep++; 
+            checkTurnAndAct(false); 
+          });
+        } else {
+          if (display) display.innerHTML = `🤖 Giliran <b>${currentLine.speaker} (AI)</b>. Klik tombol <b>▶️ Mulai / Bicara AI</b> untuk mendengarkan.`;
+        }
       } else {
         if (display) display.innerHTML = `👉 <b>Giliran Anda (${currentLine.speaker})!</b> Ucapkan: <i>"${currentLine.hanzi}"</i>`;
       }
     }
+
+    window.manualStartOrPlayAi = function() {
+      if (!activeDialogueFlow || activeDialogueFlow.length === 0) return;
+      if (currentDialogueStep >= activeDialogueFlow.length) currentDialogueStep = 0;
+      var currentLine = activeDialogueFlow[currentDialogueStep];
+      if (currentLine.role !== currentUserRole) {
+        checkTurnAndAct(true);
+      } else {
+        playCurrentAiTurn();
+      }
+    };
 
     function highlightChatBubble(step) {
       var bubbles = document.querySelectorAll('.chat-bubble');
@@ -2659,7 +2707,12 @@
     }
 
     window.playCurrentAiTurn = function() { if (activeDialogueFlow && currentDialogueStep < activeDialogueFlow.length) speakText(activeDialogueFlow[currentDialogueStep].hanzi); };
-    window.skipUserTurn = function() { if (activeDialogueFlow && currentDialogueStep < activeDialogueFlow.length) { currentDialogueStep++; checkTurnAndAct(); } };
+    window.skipUserTurn = function() { 
+      if (activeDialogueFlow && currentDialogueStep < activeDialogueFlow.length) { 
+        currentDialogueStep++; 
+        checkTurnAndAct(false); 
+      } 
+    };
 
     window.speakText = function(text, onEndCallback) {
       if (!('speechSynthesis' in window)) { if (onEndCallback) onEndCallback(); return; }
@@ -2681,7 +2734,12 @@
         recognition.onresult = function(e) {
           var transcript = e.results[0][0].transcript; if (statusBox) statusBox.innerHTML = 'Suara Anda: "<b>' + transcript + '</b>"';
           var currentTarget = activeDialogueFlow[currentDialogueStep];
-          if (currentTarget && currentTarget.role === currentUserRole) { setTimeout(function() { currentDialogueStep++; checkTurnAndAct(); }, 600); }
+          if (currentTarget && currentTarget.role === currentUserRole) { 
+            setTimeout(function() { 
+              currentDialogueStep++; 
+              checkTurnAndAct(true); // Otomatis respon giliran AI berikutnya setelah user bicara
+            }, 600); 
+          }
         };
         recognition.onerror = function(e) { isListening = false; if (micBtn) micBtn.classList.remove('listening'); if (statusBox) statusBox.innerHTML = '⚠️ <i>Izin mikrofon dibatasi. Klik <b>Lanjut Giliran</b>.</i>'; };
         recognition.onend = function() { isListening = false; if (micBtn) micBtn.classList.remove('listening'); };
@@ -2877,7 +2935,7 @@
     };
 
     // =========================================================================
-    // 8. PLACEMENT TEST ENGINE & DINAMIS LEMBAR JAWABAN DIGITAL (LJD)
+    // 8. PLACEMENT TEST ENGINE & DINAMIS LEMBAR JAWABAN DIGITAL (LJD) + TIMER 2 JAM
     // =========================================================================
     function getExamStructure(pkg) {
       const rawLvl = (pkg && pkg.hskLevel ? pkg.hskLevel : (sessionUser.currentHsk || 'HSK 1')).toString().toUpperCase();
@@ -2909,7 +2967,6 @@
         };
       }
       
-      // Default HSK 1
       return {
         totalQuestions: 40,
         listeningRange: [1, 20],
@@ -2924,6 +2981,52 @@
       const bRead = document.getElementById('btn-ljd-reading');
       if (bList) bList.innerText = `🎧 Menyimak (${structure.listeningRange[0]}-${structure.listeningRange[1]})`;
       if (bRead) bRead.innerText = `📖 Membaca (${structure.readingRange[0]}-${structure.readingRange[1]})`;
+    }
+
+    // FUNGSI TIMER UJIAN 2 JAM OTOMATIS
+    function startExamTimerIfNeeded() {
+      if (isExamTimerRunning) return;
+      isExamTimerRunning = true;
+      clearInterval(examTimerInterval);
+
+      examTimerInterval = setInterval(function() {
+        if (examTimeRemaining <= 0) {
+          clearInterval(examTimerInterval);
+          isExamTimerRunning = false;
+          alert("⏰ Waktu ujian 2 jam telah habis! Jawaban Anda akan otomatis dikumpulkan dan dinilai.");
+          submitPlacementExam();
+          return;
+        }
+
+        examTimeRemaining--;
+        updateExamTimerUI();
+      }, 1000);
+    }
+
+    function resetExamTimer() {
+      clearInterval(examTimerInterval);
+      isExamTimerRunning = false;
+      examTimeRemaining = 7200; // 2 Jam
+      updateExamTimerUI();
+    }
+
+    function updateExamTimerUI() {
+      var display = document.getElementById('exam-timer-display');
+      if (!display) return;
+      var hrs = Math.floor(examTimeRemaining / 3600);
+      var mins = Math.floor((examTimeRemaining % 3600) / 60);
+      var secs = examTimeRemaining % 60;
+
+      var formatted = (hrs < 10 ? '0' + hrs : hrs) + ':' +
+                      (mins < 10 ? '0' + mins : mins) + ':' +
+                      (secs < 10 ? '0' + secs : secs);
+      display.innerText = formatted;
+
+      if (examTimeRemaining < 600) { // Kurang dari 10 menit
+        display.style.color = '#ef4444';
+      } else {
+        display.style.color = '#fff';
+      }
     }
 
     function loadPlacementPackagesView(preferredId) {
@@ -2973,6 +3076,7 @@
     function selectPlacementPackage(pkg) {
       if (!pkg) return;
       currentPlacementPackage = pkg; drawingsPerPage = {}; userExamAnswers = {};
+      resetExamTimer();
       
       var elTitle = document.getElementById('exam-audio-title');
       var audioPlayer = document.getElementById('exam-audio-player');
@@ -3006,47 +3110,44 @@
       var link = document.createElement('a'); link.href = audioPlayer.src; link.download = (currentPlacementPackage ? currentPlacementPackage.testTitle : 'Audio_Ujian') + '.mp3'; link.click();
     };
 
-    // FUNGSI UNDUH PDF SOAL ASLI LENGKAP BERSERTA KUNCI JAWABAN
+    // FUNGSI UNDUH PDF SOAL LENGKAP TERMASUK KUNCI JAWABAN DI HALAMAN TERAKHIR
     window.downloadFullExamPdf = function() {
       var rawPath = (currentPlacementPackage && currentPlacementPackage.pdfUrl) ? currentPlacementPackage.pdfUrl : "./placement_test/HSK1.pdf";
       var pdfSrc = formatRelativeAssetPath(rawPath);
       var link = document.createElement('a');
       link.href = pdfSrc;
-      link.download = (currentPlacementPackage ? currentPlacementPackage.testTitle : 'Naskah_Soal_HSK') + '_Lengkap_Beserta_Kunci.pdf';
+      link.download = (currentPlacementPackage ? currentPlacementPackage.testTitle : 'Naskah_Soal_HSK') + '_Lengkap.pdf';
       link.target = '_blank';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     };
 
-    // FUNGSI UNDUH REKAP LEMBAR JAWABAN DIGITAL SISWA (.TXT)
+    // FUNGSI UNDUH REKAP LEMBAR JAWABAN DIGITAL (MURNI HANYA JAWABAN SISWA)
     window.downloadUserAnswerSheet = function() {
       if (!currentPlacementPackage) return;
       const structure = getExamStructure(currentPlacementPackage);
-      const answerKey = currentPlacementPackage.answerKey || DEFAULT_HSK1_ANSWER_KEY;
       const title = currentPlacementPackage.testTitle || "HSK Mock Exam";
       const user = sessionUser.username || "Siswa";
       const today = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
       let text = `=====================================================\n`;
-      text += `LEMBAR JAWABAN DIGITAL - PAKBUJAN ACADEMY MANDARIN\n`;
+      text += `LEMBAR JAWABAN PESERTA - PAKBUJAN ACADEMY MANDARIN\n`;
       text += `=====================================================\n`;
       text += `Nama Peserta  : ${user}\n`;
       text += `Paket Ujian   : ${title} (${currentPlacementPackage.hskLevel || 'HSK'})\n`;
       text += `Waktu Selesai : ${today}\n`;
       text += `-----------------------------------------------------\n`;
-      text += `DETAIL JAWABAN ANDA & KUNCI RESMI:\n`;
+      text += `DAFTAR JAWABAN ANDA:\n`;
       text += `-----------------------------------------------------\n`;
 
       for (let q = 1; q <= structure.totalQuestions; q++) {
         const userAns = (userExamAnswers[q] || "-").toString().toUpperCase();
-        const correctAns = (answerKey[q] || answerKey[q.toString()] || "-").toString().toUpperCase();
-        const status = (userAns !== "-" && userAns === correctAns) ? "BENAR" : (userAns === "-" ? "KOSONG" : "SALAH");
-        text += `No. ${q.toString().padEnd(3)} | Jawaban Anda: ${userAns.padEnd(6)} | Kunci: ${correctAns.padEnd(6)} | [${status}]\n`;
+        text += `No. ${q.toString().padEnd(3)} : ${userAns}\n`;
       }
 
       text += `-----------------------------------------------------\n`;
-      text += `Catatan: Kunci jawaban lengkap & transkrip audio ada di halaman terakhir file PDF soal.\n`;
+      text += `Catatan: Kunci jawaban resmi tersedia pada halaman terakhir di file PDF soal yang Anda unduh.\n`;
       text += `=====================================================\n`;
 
       const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
@@ -3280,7 +3381,7 @@
       delete drawingsPerPage[currentPdfPageNum];
     };
 
-    // RENDER LJD OTOMATIS & DINAMIS
+    // RENDER LJD OTOMATIS & DINAMIS (TRIGGER TIMER SAAT KLIK JAWABAN PERTAMA)
     function renderLjdItems() {
       const container = document.getElementById('ljd-items-container');
       if (!container) return;
@@ -3350,6 +3451,7 @@
           btn.style.minWidth = '28px';
           btn.innerText = opt.label;
           btn.onclick = function() {
+            startExamTimerIfNeeded(); // TIMER OTOMATIS BERJALAN SAAT KLIK JAWABAN
             userExamAnswers[q] = opt.val;
             const parentBtns = optionsDiv.querySelectorAll('.pill-btn');
             parentBtns.forEach(b => b.classList.remove('active'));
@@ -3375,6 +3477,9 @@
     };
 
     window.submitPlacementExam = function() {
+      clearInterval(examTimerInterval);
+      isExamTimerRunning = false;
+
       const structure = getExamStructure(currentPlacementPackage);
       const answerKey = (currentPlacementPackage && currentPlacementPackage.answerKey) 
         ? currentPlacementPackage.answerKey 
