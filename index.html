@@ -561,9 +561,7 @@
     .btn-pass { background: rgba(22, 163, 74, 0.25); border: 1px solid #16a34a; color: #86efac; }
     .btn-pass:hover { background: #16a34a; color: #fff; }
 
-    /* =========================================================================
-       PERBAIKAN BOTTOM NAV: HORIZONTAL SCROLL LENGKAP SEMUA TAB (TERMASUK SERTIFIKAT)
-       ========================================================================= */
+    /* BOTTOM NAV HORIZONTAL SCROLL LENGKAP SEMUA TAB */
     .bottom-nav {
       display: none;
       position: fixed;
@@ -859,7 +857,6 @@
         <li class="nav-item"><button onclick="switchTab('certificate')"><span class="nav-icon">📜</span> Rapor & Sertifikat</button></li>
       </ul>
 
-      <!-- TOMBOL LOG OUT DI SEBELAH KIRI BAWAH -->
       <div class="sidebar-footer">
         <button type="button" class="btn-logout" onclick="handleLogout()">
           <span style="font-size: 16px;">🚪</span> Keluar (Log Out)
@@ -877,7 +874,6 @@
           <p>Kuasai kurikulum Mandarin HSK 1 sampai HSK 6 dengan metode terstruktur, simulasi percakapan AI, dan SRS Leitner.</p>
         </div>
 
-        <!-- KARTU STATUS TRACK LEVEL -->
         <div class="glass-card" style="margin-bottom: 20px; background: linear-gradient(135deg, rgba(59, 29, 17, 0.9), rgba(40, 24, 16, 0.8)); border-left: 4px solid var(--gold-autumn);">
           <div style="font-size: 12px; font-weight: 700; color: var(--gold-autumn); text-transform: uppercase; margin-bottom: 8px;">
             📊 Status & Progres Belajar Anda:
@@ -1105,26 +1101,26 @@
         </div>
       </section>
 
-      <!-- 8. HSK DIAGNOSTIC & MOCK PLACEMENT TEST (TIMER 2 JAM) -->
+      <!-- 8. HSK DIAGNOSTIC & MOCK PLACEMENT TEST (LOBBY + FULL FOCUS LOCK + ANTI-CONTEK) -->
       <section id="view-placement" class="view-section">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
           <div class="header-group" style="margin-bottom: 0;">
             <span class="badge">Official Standard Mock Exam</span>
             <h2>HSK Standard Placement & Mock Exam</h2>
-            <p>Ujian penentuan kemampuan resmi dengan lembar PDF yang bisa dicoret, audio menyimak langsung, dan lembar jawaban digital.</p>
+            <p>Ujian penentuan kemampuan resmi dengan sistem penguncian layar fokus dan lembar jawaban digital.</p>
           </div>
 
           <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
             <!-- BADGE TIMER UJIAN 2 JAM -->
-            <div id="exam-timer-badge" style="background: rgba(40, 24, 16, 0.9); border: 1.5px solid var(--gold-autumn); padding: 8px 14px; border-radius: 10px; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px var(--terracotta-glow);">
+            <div id="exam-timer-badge" style="display: none; background: rgba(40, 24, 16, 0.9); border: 1.5px solid var(--gold-autumn); padding: 8px 14px; border-radius: 10px; align-items: center; gap: 8px; box-shadow: 0 4px 14px var(--terracotta-glow);">
               <span style="font-size: 18px;">⏳</span>
               <div>
-                <div style="font-size: 10px; font-weight: 700; color: var(--gold-autumn); text-transform: uppercase;">Waktu Ujian (2 Jam):</div>
+                <div style="font-size: 10px; font-weight: 700; color: var(--gold-autumn); text-transform: uppercase;">Sisa Waktu (2 Jam):</div>
                 <div id="exam-timer-display" style="font-size: 15px; font-weight: 800; color: #fff; font-family: monospace;">02:00:00</div>
               </div>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 10px; background: rgba(40, 24, 16, 0.85); padding: 10px 16px; border-radius: 12px; border: 1px solid var(--amber-border); box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
+            <div id="exam-pkg-selector-wrap" style="display: flex; align-items: center; gap: 10px; background: rgba(40, 24, 16, 0.85); padding: 10px 16px; border-radius: 12px; border: 1px solid var(--amber-border); box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
               <label for="placement-package-select" style="font-size: 12.5px; font-weight: 700; color: var(--gold-autumn); white-space: nowrap; display: flex; align-items: center; gap: 6px;">
                 <span>🎯</span> Pilih Paket:
               </label>
@@ -1135,90 +1131,105 @@
           </div>
         </div>
 
-        <!-- PANEL KONTROL AUDIO MENYIMAK -->
-        <div class="glass-card" style="margin-bottom: 20px; padding: 16px 20px;" id="exam-audio-card">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <span style="font-size: 26px;">🎧</span>
-              <div>
-                <div style="font-size: 15px; font-weight: 800; color: #fff;" id="exam-audio-title">Audio Menyimak (听力录音)</div>
-                <div style="font-size: 11.5px; color: var(--gold-autumn);">Putar rekaman saat mengerjakan Bagian Menyimak</div>
-              </div>
-            </div>
-
-            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-              <audio id="exam-audio-player" controls style="height: 38px; border-radius: 8px; outline: none;"></audio>
-              <button class="pill-btn" style="padding: 8px 14px; border-color: var(--gold-autumn); font-size: 12px;" onclick="downloadCurrentExamAudio()">⬇️ Unduh Audio (MP3)</button>
-            </div>
-          </div>
+        <!-- GERBANG / LOBBY SEBELUM MEMULAI UJIAN -->
+        <div id="placement-pre-exam-lobby" class="glass-card" style="text-align: center; padding: 40px 20px; max-width: 650px; margin: 0 auto 30px auto;">
+          <div style="font-size: 54px; margin-bottom: 12px;">🔒</div>
+          <h3 style="font-size: 22px; color: #fff; margin-bottom: 8px;" id="lobby-exam-title">Simulasi Ujian Resmi HSK</h3>
+          <p style="font-size: 13.5px; color: var(--text-muted); line-height: 1.6; margin-bottom: 24px;">
+            Ujian berdurasi <b>2 Jam (120 Menit)</b> dengan sistem penguncian layar penuh (*Focus Mode*). Waktu akan langsung berjalan otomatis begitu tombol ditekan.<br>
+            <span style="color: var(--gold-autumn); font-weight: 700;">⚠️ Perhatian: Dilarang berpindah tab atau keluar dari halaman selama ujian berlangsung!</span>
+          </p>
+          <button class="btn-autumn-primary" style="padding: 14px 36px; font-size: 15px; font-weight: 800;" onclick="startPlacementExamSession()">🚀 Mulai Ujian Sekarang</button>
         </div>
 
-        <!-- LAYOUT UTAMA: VIEWER PDF SCROLL BERCORETAN + LEMBAR JAWABAN DIGITAL (LJD) -->
-        <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start;">
+        <!-- AREA AKTIF UJIAN (MUNCUL SETELAH TEKAN TOMBOL MULAI) -->
+        <div id="placement-active-exam-area" style="display: none;">
           
-          <div class="glass-card" style="flex: 1; min-width: 320px; padding: 18px;" id="pdf-container-card">
-            
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; background: rgba(20, 11, 7, 0.6); padding: 10px 14px; border-radius: 10px; border: 1px solid var(--amber-border);">
-              
-              <div style="display: flex; align-items: center; gap: 6px;">
-                <button class="pill-btn" style="padding: 5px 10px; font-size: 11.5px;" onclick="changePdfPage(-1)">◀ Sebelumnya</button>
-                <span id="pdf-page-num" style="font-size: 12px; font-weight: 700; color: #fff; min-width: 70px; text-align: center;">Hal 1 / 1</span>
-                <button class="pill-btn" style="padding: 5px 10px; font-size: 11.5px;" onclick="changePdfPage(1)">Berikutnya ▶</button>
-                
-                <button class="pill-btn" style="padding: 5px 8px; font-size: 11px; margin-left: 6px;" onclick="adjustPdfZoom(-0.1)" title="Perkecil Lembar Soal">🔍 -</button>
-                <button class="pill-btn" style="padding: 5px 8px; font-size: 11px;" onclick="adjustPdfZoom(0.1)" title="Perbesar Lembar Soal">🔍 +</button>
+          <!-- PANEL KONTROL AUDIO MENYIMAK -->
+          <div class="glass-card" style="margin-bottom: 20px; padding: 16px 20px;" id="exam-audio-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 26px;">🎧</span>
+                <div>
+                  <div style="font-size: 15px; font-weight: 800; color: #fff;" id="exam-audio-title">Audio Menyimak (听力录音)</div>
+                  <div style="font-size: 11.5px; color: var(--gold-autumn);">Putar rekaman saat mengerjakan Bagian Menyimak</div>
+                </div>
               </div>
 
-              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <button class="pill-btn active" id="btn-tool-pen" style="padding: 5px 10px; font-size: 11.5px;" onclick="setAnnotationTool('pen')">✏️ Pensil</button>
-                <button class="pill-btn" id="btn-tool-eraser" style="padding: 5px 10px; font-size: 11.5px;" onclick="setAnnotationTool('eraser')">🧹 Penghapus</button>
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <audio id="exam-audio-player" controls style="height: 38px; border-radius: 8px; outline: none;"></audio>
+                <button class="pill-btn" style="padding: 8px 14px; border-color: var(--gold-autumn); font-size: 12px;" onclick="downloadCurrentExamAudio()">⬇️ Unduh Audio (MP3)</button>
+              </div>
+            </div>
+          </div>
 
-                <div style="display: flex; gap: 5px; align-items: center; margin: 0 4px;">
-                  <span class="color-swatch-btn active" style="background: #ef4444;" onclick="setAnnotationColor('#ef4444', this)" title="Merah"></span>
-                  <span class="color-swatch-btn" style="background: #3b82f6;" onclick="setAnnotationColor('#3b82f6', this)" title="Biru"></span>
-                  <span class="color-swatch-btn" style="background: #f59e0b;" onclick="setAnnotationColor('#f59e0b', this)" title="Oranye Gold"></span>
-                  <span class="color-swatch-btn" style="background: #1e293b;" onclick="setAnnotationColor('#1e293b', this)" title="Hitam"></span>
+          <!-- LAYOUT UTAMA: VIEWER PDF SCROLL BERCORETAN + LEMBAR JAWABAN DIGITAL (LJD) -->
+          <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start;">
+            
+            <div class="glass-card" style="flex: 1; min-width: 320px; padding: 18px;" id="pdf-container-card">
+              
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; background: rgba(20, 11, 7, 0.6); padding: 10px 14px; border-radius: 10px; border: 1px solid var(--amber-border);">
+                
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <button class="pill-btn" style="padding: 5px 10px; font-size: 11.5px;" onclick="changePdfPage(-1)">◀ Sebelumnya</button>
+                  <span id="pdf-page-num" style="font-size: 12px; font-weight: 700; color: #fff; min-width: 70px; text-align: center;">Hal 1 / 1</span>
+                  <button class="pill-btn" style="padding: 5px 10px; font-size: 11.5px;" onclick="changePdfPage(1)">Berikutnya ▶</button>
+                  
+                  <button class="pill-btn" style="padding: 5px 8px; font-size: 11px; margin-left: 6px;" onclick="adjustPdfZoom(-0.1)" title="Perkecil Lembar Soal">🔍 -</button>
+                  <button class="pill-btn" style="padding: 5px 8px; font-size: 11px;" onclick="adjustPdfZoom(0.1)" title="Perbesar Lembar Soal">🔍 +</button>
                 </div>
 
-                <button class="pill-btn" style="padding: 5px 10px; font-size: 11.5px; border-color: var(--maple-red);" onclick="clearCurrentPageDrawings()">🔄 Hapus Coretan Hal Ini</button>
-                <button class="btn-autumn-primary" style="padding: 6px 12px; font-size: 11.5px;" onclick="downloadFullExamPdf()">📥 Unduh PDF Soal Lengkap</button>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <button class="pill-btn active" id="btn-tool-pen" style="padding: 5px 10px; font-size: 11.5px;" onclick="setAnnotationTool('pen')">✏️ Pensil</button>
+                  <button class="pill-btn" id="btn-tool-eraser" style="padding: 5px 10px; font-size: 11.5px;" onclick="setAnnotationTool('eraser')">🧹 Penghapus</button>
+
+                  <div style="display: flex; gap: 5px; align-items: center; margin: 0 4px;">
+                    <span class="color-swatch-btn active" style="background: #ef4444;" onclick="setAnnotationColor('#ef4444', this)" title="Merah"></span>
+                    <span class="color-swatch-btn" style="background: #3b82f6;" onclick="setAnnotationColor('#3b82f6', this)" title="Biru"></span>
+                    <span class="color-swatch-btn" style="background: #f59e0b;" onclick="setAnnotationColor('#f59e0b', this)" title="Oranye Gold"></span>
+                    <span class="color-swatch-btn" style="background: #1e293b;" onclick="setAnnotationColor('#1e293b', this)" title="Hitam"></span>
+                  </div>
+
+                  <button class="pill-btn" style="padding: 5px 10px; font-size: 11.5px; border-color: var(--maple-red);" onclick="clearCurrentPageDrawings()">🔄 Hapus Coretan Hal Ini</button>
+                  <button class="btn-autumn-primary" style="padding: 6px 12px; font-size: 11.5px;" onclick="downloadFullExamPdf()">📥 Unduh PDF Soal Lengkap</button>
+                </div>
               </div>
-            </div>
 
-            <div class="pdf-scroll-viewport" id="pdf-scroll-box">
-              <div class="pdf-viewer-outer-wrap" id="pdf-viewer-wrapper">
-                <canvas id="pdf-render-canvas"></canvas>
-                <canvas id="pdf-draw-canvas"></canvas>
+              <div class="pdf-scroll-viewport" id="pdf-scroll-box">
+                <div class="pdf-viewer-outer-wrap" id="pdf-viewer-wrapper">
+                  <canvas id="pdf-render-canvas"></canvas>
+                  <canvas id="pdf-draw-canvas"></canvas>
+                </div>
               </div>
-            </div>
-            
-            <div style="margin-top: 10px; font-size: 11.5px; color: var(--text-muted); text-align: center;">
-              💡 <i>Gunakan mouse scroll atau drag untuk membaca lembar soal ke atas/bawah. Kunci jawaban lengkap & naskah audio resmi tersedia pada halaman terakhir di file PDF yang Anda unduh.</i>
-            </div>
-          </div>
-
-          <!-- SISI KANAN: LEMBAR JAWABAN DIGITAL INTERAKTIF -->
-          <div class="glass-card" style="width: 360px; max-height: 920px; display: flex; flex-direction: column; padding: 18px;">
-            <div style="border-bottom: 1px solid var(--amber-border); padding-bottom: 10px; margin-bottom: 12px;">
-              <div style="font-size: 15px; font-weight: 800; color: #fff;">📝 Lembar Jawaban Digital</div>
-              <div style="font-size: 11.5px; color: var(--gold-autumn);">Waktu ujian otomatis berjalan saat Anda memilih jawaban pertama</div>
-            </div>
-
-            <div style="display: flex; gap: 6px; margin-bottom: 12px;">
-              <button class="pill-btn active" id="btn-ljd-listening" style="flex: 1; padding: 6px; font-size: 11.5px;" onclick="switchLjdSection('listening')">🎧 Menyimak</button>
-              <button class="pill-btn" id="btn-ljd-reading" style="flex: 1; padding: 6px; font-size: 11.5px;" onclick="switchLjdSection('reading')">📖 Membaca</button>
-            </div>
-
-            <div id="ljd-items-container" style="flex: 1; overflow-y: auto; padding-right: 6px; display: flex; flex-direction: column; gap: 9px; margin-bottom: 14px;"></div>
-
-            <div style="border-top: 1px solid var(--amber-border); padding-top: 12px;">
-              <button class="btn-autumn-primary" style="width: 100%; padding: 12px;" onclick="submitPlacementExam()">📊 Kumpulkan & Hitung Skor</button>
-              <button class="pill-btn" style="width: 100%; margin-top: 8px; padding: 8px; font-size: 12px; border-color: var(--gold-autumn);" onclick="downloadUserAnswerSheet()">📥 Unduh Lembar Jawaban Saya (.txt)</button>
               
-              <div id="exam-score-result" style="display: none; margin-top: 12px; padding: 12px; border-radius: 8px; text-align: center; background: rgba(234, 88, 12, 0.15); border: 1px solid var(--gold-autumn);"></div>
+              <div style="margin-top: 10px; font-size: 11.5px; color: var(--text-muted); text-align: center;">
+                💡 <i>Gunakan mouse scroll atau drag untuk membaca lembar soal ke atas/bawah. Kunci jawaban lengkap & naskah audio resmi tersedia pada halaman terakhir di file PDF yang Anda unduh.</i>
+              </div>
             </div>
-          </div>
 
+            <!-- SISI KANAN: LEMBAR JAWABAN DIGITAL INTERAKTIF -->
+            <div class="glass-card" style="width: 360px; max-height: 920px; display: flex; flex-direction: column; padding: 18px;">
+              <div style="border-bottom: 1px solid var(--amber-border); padding-bottom: 10px; margin-bottom: 12px;">
+                <div style="font-size: 15px; font-weight: 800; color: #fff;">📝 Lembar Jawaban Digital</div>
+                <div style="font-size: 11.5px; color: var(--gold-autumn);">Pilih jawaban sesuai naskah soal di PDF</div>
+              </div>
+
+              <div style="display: flex; gap: 6px; margin-bottom: 12px;">
+                <button class="pill-btn active" id="btn-ljd-listening" style="flex: 1; padding: 6px; font-size: 11.5px;" onclick="switchLjdSection('listening')">🎧 Menyimak</button>
+                <button class="pill-btn" id="btn-ljd-reading" style="flex: 1; padding: 6px; font-size: 11.5px;" onclick="switchLjdSection('reading')">📖 Membaca</button>
+              </div>
+
+              <div id="ljd-items-container" style="flex: 1; overflow-y: auto; padding-right: 6px; display: flex; flex-direction: column; gap: 9px; margin-bottom: 14px;"></div>
+
+              <div style="border-top: 1px solid var(--amber-border); padding-top: 12px;">
+                <button class="btn-autumn-primary" style="width: 100%; padding: 12px;" onclick="submitPlacementExam()">📊 Kumpulkan & Hitung Skor</button>
+                <button class="pill-btn" style="width: 100%; margin-top: 8px; padding: 8px; font-size: 12px; border-color: var(--gold-autumn);" onclick="downloadUserAnswerSheet()">📥 Unduh Lembar Jawaban Saya (.txt)</button>
+                
+                <div id="exam-score-result" style="display: none; margin-top: 12px; padding: 12px; border-radius: 8px; text-align: center; background: rgba(234, 88, 12, 0.15); border: 1px solid var(--gold-autumn);"></div>
+              </div>
+            </div>
+
+          </div>
         </div>
       </section>
 
@@ -1489,7 +1500,7 @@
     </div>
   </div>
 
-  <!-- PERBAIKAN BOTTOM NAV LENGKAP SEMUA TAB (TERMASUK SERTIFIKAT & GRAMMAR) -->
+  <!-- BOTTOM NAV LENGKAP SEMUA TAB -->
   <nav class="bottom-nav">
     <button class="bottom-nav-btn active" onclick="switchTab('dashboard')"><span class="icon">🍂</span>Beranda</button>
     <button class="bottom-nav-btn" onclick="switchTab('dictionary')"><span class="icon">📖</span>Kamus</button>
@@ -1556,9 +1567,10 @@
     var isDrawingOnPdf = false;
     var lastPdfX = 0, lastPdfY = 0;
 
-    // SISTEM TIMER UJIAN 2 JAM
+    // SISTEM PENGUNCIAN UJIAN & TIMER 2 JAM INSTAN
+    var isExamActive = false;
     var examTimerInterval = null;
-    var examTimeRemaining = 7200;
+    var examTimeRemaining = 7200; // 2 Jam = 7200 Detik
     var isExamTimerRunning = false;
 
     const DEFAULT_HSK1_ANSWER_KEY = {
@@ -1638,6 +1650,23 @@
     window.addEventListener('resize', function() {
       if (document.getElementById('view-stroke') && document.getElementById('view-stroke').classList.contains('active')) {
         renderMultiTianZiGe(currentPracticeWord);
+      }
+    });
+
+    // SISTEM DETEKSI NYONTEK (ANTI-CHEAT DETECTOR)
+    document.addEventListener("visibilitychange", function() {
+      if (document.hidden && isExamActive) {
+        alert("Hahaha kamu nyontek yaa? 😜\nTetap fokus pada lembar ujian Anda!");
+      }
+    });
+
+    window.addEventListener("blur", function() {
+      if (isExamActive) {
+        setTimeout(function() {
+          if (isExamActive) {
+            alert("Hahaha kamu nyontek yaa? 😜\nTetap fokus pada lembar ujian Anda!");
+          }
+        }, 150);
       }
     });
 
@@ -1810,6 +1839,23 @@
     }
 
     window.switchTab = function(viewId) {
+      // Jika sedang dalam sesi ujian aktif dan mencoba pindah tab
+      if (isExamActive && viewId !== 'placement') {
+        var leave = confirm("Hahaha kamu nyontek yaa? 😜\nSesi ujian Anda masih aktif! Apakah Anda yakin ingin membatalkan dan keluar dari ujian?");
+        if (!leave) return;
+        
+        isExamActive = false;
+        clearInterval(examTimerInterval);
+        isExamTimerRunning = false;
+        try { if (document.exitFullscreen) document.exitFullscreen().catch(()=>{}); } catch(e){}
+        
+        document.getElementById('placement-pre-exam-lobby').style.display = 'block';
+        document.getElementById('placement-active-exam-area').style.display = 'none';
+        document.getElementById('exam-timer-badge').style.display = 'none';
+        var pkgSelector = document.getElementById('exam-pkg-selector-wrap');
+        if (pkgSelector) pkgSelector.style.pointerEvents = 'auto';
+      }
+
       var views = document.querySelectorAll('.view-section');
       for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
       var target = document.getElementById('view-' + viewId);
@@ -1835,11 +1881,6 @@
       if (viewId === 'workbook') loadWorkbookQuestionsFast(sessionUser.currentHsk);
       if (viewId === 'stroke') setTimeout(() => { renderMultiTianZiGe(currentPracticeWord); }, 60);
       if (viewId === 'srs') setTimeout(() => { renderCurrentSrsCard(); }, 60);
-      if (viewId === 'placement') setTimeout(() => { 
-        if (currentPlacementPackage && currentPlacementPackage.pdfUrl) {
-          loadPdfFromUrlOrData(formatRelativeAssetPath(currentPlacementPackage.pdfUrl)); 
-        }
-      }, 80);
     };
 
     function initFallingLeaves() {
@@ -3231,6 +3272,9 @@
       if (statusEl) statusEl.innerText = '✅ Sertifikat berhasil diunduh!';
     };
 
+    // =========================================================================
+    // 8. PLACEMENT TEST ENGINE & LOBBY + FOCUS LOCK + TIMER 2 JAM INSTAN
+    // =========================================================================
     function getExamStructure(pkg) {
       const rawLvl = (pkg && pkg.hskLevel ? pkg.hskLevel : (sessionUser.currentHsk || 'HSK 1')).toString().toUpperCase();
       const numLvl = parseInt(rawLvl.replace(/[^0-9]/g, '')) || 1;
@@ -3277,10 +3321,46 @@
       if (bRead) bRead.innerText = `📖 Membaca (${structure.readingRange[0]}-${structure.readingRange[1]})`;
     }
 
-    function startExamTimerIfNeeded() {
-      if (isExamTimerRunning) return;
+    // FUNGSI MULAI UJIAN & KUNCI LAYAR PENUH
+    window.startPlacementExamSession = function() {
+      if (!currentPlacementPackage) {
+        alert("Paket ujian belum siap atau sedang dimuat.");
+        return;
+      }
+
+      // Kunci layar penuh (Fullscreen Focus Lock)
+      try {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else if (document.documentElement.webkitRequestFullscreen) {
+          document.documentElement.webkitRequestFullscreen();
+        }
+      } catch(e) {}
+
+      isExamActive = true;
+
+      // Sembunyikan lobby dan tampilkan area ujian + timer
+      document.getElementById('placement-pre-exam-lobby').style.display = 'none';
+      document.getElementById('placement-active-exam-area').style.display = 'block';
+      document.getElementById('exam-timer-badge').style.display = 'flex';
+      
+      var pkgSelector = document.getElementById('exam-pkg-selector-wrap');
+      if (pkgSelector) pkgSelector.style.pointerEvents = 'none';
+
+      // Jalankan timer 2 jam secara instan
+      resetExamTimer();
+      startExamTimerImmediately();
+
+      if (currentPlacementPackage && currentPlacementPackage.pdfUrl) {
+        loadPdfFromUrlOrData(formatRelativeAssetPath(currentPlacementPackage.pdfUrl));
+      }
+      renderLjdItems();
+    };
+
+    function startExamTimerImmediately() {
       isExamTimerRunning = true;
       clearInterval(examTimerInterval);
+      updateExamTimerUI();
 
       examTimerInterval = setInterval(function() {
         if (examTimeRemaining <= 0) {
@@ -3299,7 +3379,7 @@
     function resetExamTimer() {
       clearInterval(examTimerInterval);
       isExamTimerRunning = false;
-      examTimeRemaining = 7200;
+      examTimeRemaining = 7200; // 2 Jam = 120 Menit
       updateExamTimerUI();
     }
 
@@ -3380,7 +3460,21 @@
     function selectPlacementPackage(pkg) {
       if (!pkg) return;
       currentPlacementPackage = pkg; drawingsPerPage = {}; userExamAnswers = {};
+      
+      // Update judul di lobby gerbang sebelum mulai
+      var lobbyTitle = document.getElementById('lobby-exam-title');
+      if (lobbyTitle) {
+        lobbyTitle.innerText = (pkg.testTitle || 'Simulasi Ujian Resmi HSK') + ' (' + (pkg.hskLevel || 'HSK 1') + ')';
+      }
+
+      // Pastikan status kembali ke lobby sebelum tombol mulai ditekan
+      isExamActive = false;
       resetExamTimer();
+      document.getElementById('placement-pre-exam-lobby').style.display = 'block';
+      document.getElementById('placement-active-exam-area').style.display = 'none';
+      document.getElementById('exam-timer-badge').style.display = 'none';
+      var pkgSelector = document.getElementById('exam-pkg-selector-wrap');
+      if (pkgSelector) pkgSelector.style.pointerEvents = 'auto';
       
       var elTitle = document.getElementById('exam-audio-title');
       var audioPlayer = document.getElementById('exam-audio-player');
@@ -3402,10 +3496,6 @@
           audioPlayer.load();
         }
       }
-
-      var pdfSrc = formatRelativeAssetPath(pkg.pdfUrl) || "./placement_test/HSK1.pdf";
-      loadPdfFromUrlOrData(pdfSrc);
-      renderLjdItems();
     }
 
     window.downloadCurrentExamAudio = function() {
@@ -3751,7 +3841,6 @@
           btn.style.minWidth = '28px';
           btn.innerText = opt.label;
           btn.onclick = function() {
-            startExamTimerIfNeeded();
             userExamAnswers[q] = opt.val;
             const parentBtns = optionsDiv.querySelectorAll('.pill-btn');
             parentBtns.forEach(b => b.classList.remove('active'));
@@ -3777,8 +3866,13 @@
     };
 
     window.submitPlacementExam = function() {
+      isExamActive = false;
       clearInterval(examTimerInterval);
       isExamTimerRunning = false;
+
+      try { if (document.exitFullscreen) document.exitFullscreen().catch(()=>{}); } catch(e){}
+      var pkgSelector = document.getElementById('exam-pkg-selector-wrap');
+      if (pkgSelector) pkgSelector.style.pointerEvents = 'auto';
 
       const structure = getExamStructure(currentPlacementPackage);
       const answerKey = (currentPlacementPackage && currentPlacementPackage.answerKey) 
