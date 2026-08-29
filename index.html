@@ -343,7 +343,7 @@
     }
     .icon-action-btn:hover { background: var(--terracotta); color: #fff; border-color: var(--terracotta); }
 
-    /* PERBAIKAN TIAN ZI GE MOBILE & MULTI-CANVAS */
+    /* TIAN ZI GE MOBILE & MULTI-CANVAS */
     .canvas-multi-grid {
       display: flex;
       flex-wrap: wrap;
@@ -561,6 +561,9 @@
     .btn-pass { background: rgba(22, 163, 74, 0.25); border: 1px solid #16a34a; color: #86efac; }
     .btn-pass:hover { background: #16a34a; color: #fff; }
 
+    /* =========================================================================
+       PERBAIKAN BOTTOM NAV: HORIZONTAL SCROLL LENGKAP SEMUA TAB (TERMASUK SERTIFIKAT)
+       ========================================================================= */
     .bottom-nav {
       display: none;
       position: fixed;
@@ -571,11 +574,18 @@
       backdrop-filter: blur(16px);
       border-top: 1px solid var(--amber-border);
       z-index: 100;
-      padding: 8px 12px;
-      justify-content: space-around;
+      padding: 6px 10px;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      gap: 6px;
+      justify-content: flex-start;
     }
+    .bottom-nav::-webkit-scrollbar { display: none; }
+
     .bottom-nav-btn {
-      display: flex;
+      display: inline-flex;
       flex-direction: column;
       align-items: center;
       background: none;
@@ -583,11 +593,13 @@
       color: var(--text-muted);
       font-size: 10px;
       font-weight: 600;
-      gap: 4px;
+      gap: 3px;
       cursor: pointer;
+      min-width: 60px;
+      flex-shrink: 0;
     }
     .bottom-nav-btn.active { color: var(--gold-autumn); }
-    .bottom-nav-btn span.icon { font-size: 18px; }
+    .bottom-nav-btn span.icon { font-size: 17px; }
 
     /* PDF SCROLL VIEWPORT & CANVAS CONTAINER */
     .pdf-scroll-viewport {
@@ -1477,13 +1489,17 @@
     </div>
   </div>
 
+  <!-- PERBAIKAN BOTTOM NAV LENGKAP SEMUA TAB (TERMASUK SERTIFIKAT & GRAMMAR) -->
   <nav class="bottom-nav">
     <button class="bottom-nav-btn active" onclick="switchTab('dashboard')"><span class="icon">🍂</span>Beranda</button>
     <button class="bottom-nav-btn" onclick="switchTab('dictionary')"><span class="icon">📖</span>Kamus</button>
     <button class="bottom-nav-btn" onclick="switchTab('stroke')"><span class="icon">✍️</span>Menulis</button>
-    <button class="bottom-nav-btn" onclick="switchTab('speaking')"><span class="icon">🎙️</span>Roleplay</button>
     <button class="bottom-nav-btn" onclick="switchTab('workbook')"><span class="icon">📝</span>Workbook</button>
+    <button class="bottom-nav-btn" onclick="switchTab('speaking')"><span class="icon">🎙️</span>Roleplay</button>
+    <button class="bottom-nav-btn" onclick="switchTab('grammar')"><span class="icon">📚</span>Grammar</button>
+    <button class="bottom-nav-btn" onclick="switchTab('srs')"><span class="icon">🎴</span>SRS</button>
     <button class="bottom-nav-btn" onclick="switchTab('placement')"><span class="icon">🎯</span>Placement</button>
+    <button class="bottom-nav-btn" onclick="switchTab('certificate')"><span class="icon">📜</span>Sertifikat</button>
   </nav>
 
   <script>
@@ -1800,7 +1816,14 @@
       if (target) target.classList.add('active');
 
       var navButtons = document.querySelectorAll('.nav-item button, .bottom-nav-btn');
-      for (var j = 0; j < navButtons.length; j++) navButtons[j].classList.remove('active');
+      for (var j = 0; j < navButtons.length; j++) {
+        var onclickAttr = navButtons[j].getAttribute('onclick') || '';
+        if (onclickAttr.includes("'" + viewId + "'")) {
+          navButtons[j].classList.add('active');
+        } else {
+          navButtons[j].classList.remove('active');
+        }
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       sessionUser.lastTab = viewId;
@@ -1923,7 +1946,6 @@
       return "./placement_test/" + p;
     }
 
-    // CRUD TABLES
     function loadPlacementPackagesTable() {
       var tbody = document.getElementById('crud-plc-table-body');
       if (!tbody) return;
@@ -2355,9 +2377,6 @@
       }
     };
 
-    // =========================================================================
-    // OPTIMASI LOAD INSTAN (CACHE + BACKGROUND SYNC)
-    // =========================================================================
     function loadDatabaseVocabFast() {
       try {
         var cached = localStorage.getItem('cache_vocab');
@@ -2463,9 +2482,6 @@
 
     window.changeVocabPage = function(delta) { currentDictPage += delta; renderVocabUI(); };
 
-    // =========================================================================
-    // PERBAIKAN TIAN ZI GE MOBILE & RESPONSIVE GRID
-    // =========================================================================
     function renderMultiTianZiGe(wordObj) {
       var container = document.getElementById('tianzige-multi-container');
       if (!container) return; 
@@ -2893,13 +2909,9 @@
       }
     }
 
-    // =========================================================================
-    // PERBAIKAN 1: TOGGLE PLAY / STOP AI (BERUBAH ICON MENJADI KOTAK STOP)
-    // =========================================================================
     window.manualStartOrPlayAi = function() {
       var btn = document.getElementById('btn-trigger-ai');
       
-      // Jika AI sedang berbicara, stop pembicaraan dan kembalikan icon
       if ('speechSynthesis' in window && window.speechSynthesis.speaking) {
         window.speechSynthesis.cancel();
         if (btn) {
@@ -2931,9 +2943,9 @@
     }
 
     window.playCurrentAiTurn = function() { 
-      if (activeDialogueFlow && currentDialogueStep < activeDialogueFlow.length) {
+      if (activeDialogueFlow && currentDialogueStep < activeDialogueFlow.length) { 
         speakText(activeDialogueFlow[currentDialogueStep].hanzi); 
-      }
+      } 
     };
 
     window.skipUserTurn = function() { 
