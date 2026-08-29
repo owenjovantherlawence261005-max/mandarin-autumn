@@ -3,10 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <title>Mandarin HSK 1-6 Autumn Edition - PAKBUJAN ACADEMY</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <!-- PERBAIKAN 1: ZOOM IN / ZOOM OUT AKTIF DI HP -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Serif+SC:wght@600;900&display=swap" rel="stylesheet">
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <!-- PERBAIKAN 2: CEK SESI INSTAN SEBELUM RENDER (MENCEGAH KEDIPAN FORM LOGIN SAAT REFRESH) -->
+  <script>
+    (function() {
+      try {
+        var saved = localStorage.getItem('pakbujan_user_session');
+        if (saved && JSON.parse(saved).username) {
+          document.documentElement.classList.add('is-authenticated');
+        }
+      } catch (e) {}
+    })();
+  </script>
 
   <style>
     :root {
@@ -36,6 +49,14 @@
       position: relative;
     }
 
+    /* ATURAN ANTI-KEDIP LOGIN */
+    html.is-authenticated #login-overlay {
+      display: none !important;
+    }
+    html.is-authenticated .app-container {
+      visibility: visible !important;
+    }
+
     /* SISTEM OVERLAY LOGIN */
     #login-overlay {
       position: fixed;
@@ -48,7 +69,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: opacity 0.5s ease;
+      transition: opacity 0.3s ease;
     }
 
     #leaves-canvas {
@@ -585,6 +606,7 @@
       scrollbar-width: thin;
       scrollbar-color: var(--gold-autumn) #180d08;
       position: relative;
+      touch-action: pan-x pan-y pinch-zoom !important;
     }
 
     .pdf-viewer-outer-wrap {
@@ -1158,7 +1180,7 @@
               </div>
             </div>
 
-            <!-- CONTAINER SCROLL PENUH STABIL -->
+            <!-- CONTAINER SCROLL PENUH STABIL DENGAN DUKUNGAN GESTURE ZOOM MOBILE -->
             <div class="pdf-scroll-viewport" id="pdf-scroll-box">
               <div class="pdf-viewer-outer-wrap" id="pdf-viewer-wrapper">
                 <canvas id="pdf-render-canvas"></canvas>
@@ -1688,15 +1710,16 @@
         sessionUser.lastTab = res.lastTab || 'dashboard';
         sessionUser.currentHsk = res.currentHsk || 'HSK 1';
 
+        document.documentElement.classList.add('is-authenticated');
+
         try {
           localStorage.setItem('pakbujan_user_session', JSON.stringify(sessionUser));
         } catch(e) {}
 
-        document.getElementById('login-overlay').style.opacity = '0';
-        setTimeout(function() {
-          document.getElementById('login-overlay').style.display = 'none';
-          document.getElementById('main-app-container').style.visibility = 'visible';
-        }, 300);
+        var overlay = document.getElementById('login-overlay');
+        if (overlay) overlay.style.display = 'none';
+        var mainApp = document.getElementById('main-app-container');
+        if (mainApp) mainApp.style.visibility = 'visible';
 
         var displayNama = sessionUser.username.charAt(0).toUpperCase() + sessionUser.username.slice(1);
         document.getElementById('dashboard-welcome-text').innerText = 'Halo, ' + displayNama + '! 🍁';
@@ -1715,11 +1738,12 @@
           elTrackDesc.innerText = 'Selesaikan Placement Test untuk naik ke HSK ' + (numLvl < 6 ? numLvl + 1 : 6);
         }
 
-        loadDatabaseVocab();
+        // PERBAIKAN 3: LOAD DATA CEPAT BERBASIS CACHE + BACKGROUND FETCH
+        loadDatabaseVocabFast();
         renderMultiTianZiGe(currentPracticeWord);
-        loadGrammarGuidesView();
-        loadSpeakingDialoguesView();
-        loadPlacementPackagesView();
+        loadGrammarGuidesFast();
+        loadSpeakingDialoguesFast();
+        loadPlacementPackagesFast();
         initSrsEngine();
 
         switchTab(sessionUser.lastTab);
@@ -1739,6 +1763,7 @@
           localStorage.removeItem('pakbujan_user_session');
         } catch (e) {}
 
+        document.documentElement.classList.remove('is-authenticated');
         sessionUser = { username: '', role: 'user', lastTab: 'dashboard', currentHsk: 'HSK 1' };
         
         var uInput = document.getElementById('login-username');
@@ -1790,7 +1815,7 @@
       var elTrackTab = document.getElementById('track-last-tab-display');
       if (elTrackTab) elTrackTab.innerText = viewId.toUpperCase();
 
-      if (viewId === 'workbook') loadWorkbookQuestions(sessionUser.currentHsk);
+      if (viewId === 'workbook') loadWorkbookQuestionsFast(sessionUser.currentHsk);
       if (viewId === 'stroke') setTimeout(() => { renderMultiTianZiGe(currentPracticeWord); }, 60);
       if (viewId === 'srs') setTimeout(() => { renderCurrentSrsCard(); }, 60);
       if (viewId === 'placement') setTimeout(() => { 
@@ -1917,12 +1942,14 @@
           .then(res => res.json())
           .then(data => {
             allPlacementPackages = data || [];
+            try { localStorage.setItem('cache_placement', JSON.stringify(allPlacementPackages)); } catch(e){}
             renderPlacementTable(allPlacementPackages);
           })
           .catch(() => renderPlacementTable(allPlacementPackages));
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run.withSuccessHandler(function(data) {
           allPlacementPackages = data || [];
+          try { localStorage.setItem('cache_placement', JSON.stringify(allPlacementPackages)); } catch(e){}
           renderPlacementTable(allPlacementPackages);
         }).getPlacementTestPackage('ALL');
       } else {
@@ -1965,12 +1992,14 @@
           .then(res => res.json())
           .then(data => {
             allSpeakingDialogues = data || [];
+            try { localStorage.setItem('cache_dialogues', JSON.stringify(allSpeakingDialogues)); } catch(e){}
             renderSpeakingTable(allSpeakingDialogues);
           })
           .catch(() => renderSpeakingTable(allSpeakingDialogues));
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run.withSuccessHandler(function(data) {
           allSpeakingDialogues = data || [];
+          try { localStorage.setItem('cache_dialogues', JSON.stringify(allSpeakingDialogues)); } catch(e){}
           renderSpeakingTable(allSpeakingDialogues);
         }).getSpeakingDialogues('ALL');
       } else {
@@ -2012,12 +2041,14 @@
           .then(res => res.json())
           .then(data => {
             allWorkbookQuestions = data || [];
+            try { localStorage.setItem('cache_workbook_all', JSON.stringify(allWorkbookQuestions)); } catch(e){}
             renderWorkbookTable(allWorkbookQuestions);
           })
           .catch(() => renderWorkbookTable(allWorkbookQuestions));
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run.withSuccessHandler(function(data) {
           allWorkbookQuestions = data || [];
+          try { localStorage.setItem('cache_workbook_all', JSON.stringify(allWorkbookQuestions)); } catch(e){}
           renderWorkbookTable(allWorkbookQuestions);
         }).getWorkbookQuestions('ALL');
       } else {
@@ -2144,12 +2175,12 @@
           body: JSON.stringify({ action: "saveSpeakingDialogue", dialogueId: editId, hskLevel: hskLvl, scenarioTitle: title, roleA: roleA, roleB: roleB, scriptFlow: parsedLines })
         }).then(res => res.json()).then(res => {
           alert(editId ? "✅ Skenario berhasil diperbarui!" : "✅ Skenario berhasil disimpan!");
-          cancelEditSpeakingDialogue(); loadSpeakingDialoguesTable(); loadSpeakingDialoguesView();
+          cancelEditSpeakingDialogue(); loadSpeakingDialoguesTable(); loadSpeakingDialoguesFast();
         }).catch(err => alert("Gagal menyimpan: " + err.message));
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run.withSuccessHandler(function(res) {
           alert(editId ? "✅ Skenario berhasil diperbarui!" : "✅ Skenario berhasil disimpan!");
-          cancelEditSpeakingDialogue(); loadSpeakingDialoguesTable(); loadSpeakingDialoguesView();
+          cancelEditSpeakingDialogue(); loadSpeakingDialoguesTable(); loadSpeakingDialoguesFast();
         }).saveOrUpdateSpeakingDialogue(editId, hskLvl, title, roleA, roleB, parsedLines);
       }
     };
@@ -2184,9 +2215,9 @@
       if (!confirm("Hapus skenario " + dlgId + "?")) return;
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
         fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deleteSpeakingDialogue", dialogueId: dlgId }) })
-        .then(res => res.json()).then(res => { alert("✅ Berhasil dihapus!"); loadSpeakingDialoguesTable(); loadSpeakingDialoguesView(); }).catch(err => alert("Gagal: " + err.message));
+        .then(res => res.json()).then(res => { alert("✅ Berhasil dihapus!"); loadSpeakingDialoguesTable(); loadSpeakingDialoguesFast(); }).catch(err => alert("Gagal: " + err.message));
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run.withSuccessHandler(function() { alert("✅ Berhasil dihapus!"); loadSpeakingDialoguesTable(); loadSpeakingDialoguesView(); }).deleteSpeakingDialogue(dlgId);
+        google.script.run.withSuccessHandler(function() { alert("✅ Berhasil dihapus!"); loadSpeakingDialoguesTable(); loadSpeakingDialoguesFast(); }).deleteSpeakingDialogue(dlgId);
       }
     };
 
@@ -2209,12 +2240,12 @@
           body: JSON.stringify({ action: "saveWorkbookQuestion", questionId: editId, hskLevel: hskLvl, questionType: qType, questionPrompt: prompt, options: options, correctAnswer: correct, explanation: explain })
         }).then(res => res.json()).then(res => {
           alert(editId ? "✅ Soal berhasil diperbarui!" : "✅ Soal berhasil ditambahkan!");
-          cancelEditWorkbookQuestion(); loadWorkbookTable(); loadWorkbookQuestions(hskLvl);
+          cancelEditWorkbookQuestion(); loadWorkbookTable(); loadWorkbookQuestionsFast(hskLvl);
         }).catch(err => alert("Gagal menyimpan: " + err.message));
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run.withSuccessHandler(function() {
           alert(editId ? "✅ Soal berhasil diperbarui!" : "✅ Soal berhasil ditambahkan!");
-          cancelEditWorkbookQuestion(); loadWorkbookTable(); loadWorkbookQuestions(hskLvl);
+          cancelEditWorkbookQuestion(); loadWorkbookTable(); loadWorkbookQuestionsFast(hskLvl);
         }).saveOrUpdateWorkbookQuestion(editId, hskLvl, qType, prompt, options, correct, explain);
       }
     };
@@ -2248,9 +2279,9 @@
       if (!confirm("Hapus soal " + qId + "?")) return;
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
         fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deleteWorkbookQuestion", questionId: qId }) })
-        .then(res => res.json()).then(res => { alert("✅ Berhasil dihapus!"); loadWorkbookTable(); loadWorkbookQuestions('ALL'); }).catch(err => alert("Gagal: " + err.message));
+        .then(res => res.json()).then(res => { alert("✅ Berhasil dihapus!"); loadWorkbookTable(); loadWorkbookQuestionsFast('ALL'); }).catch(err => alert("Gagal: " + err.message));
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run.withSuccessHandler(function() { alert("✅ Berhasil dihapus!"); loadWorkbookTable(); loadWorkbookQuestions('ALL'); }).deleteWorkbookQuestion(qId);
+        google.script.run.withSuccessHandler(function() { alert("✅ Berhasil dihapus!"); loadWorkbookTable(); loadWorkbookQuestionsFast('ALL'); }).deleteWorkbookQuestion(qId);
       }
     };
 
@@ -2278,12 +2309,12 @@
           body: JSON.stringify({ action: "savePlacementPackage", testId: editId, hskLevel: hskLvl, testTitle: title, pdfUrl: pdfUrl, audioUrl: audioUrl, answerKeyJson: keysJson })
         }).then(res => res.json()).then(res => {
           alert(editId ? "✅ Paket ujian berhasil diperbarui!" : "✅ Paket ujian berhasil disimpan!");
-          cancelEditPlacementPackage(); loadPlacementPackagesTable(); loadPlacementPackagesView(res.testId);
+          cancelEditPlacementPackage(); loadPlacementPackagesTable(); loadPlacementPackagesFast(res.testId);
         }).catch(err => alert("Gagal menyimpan: " + err.message));
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run.withSuccessHandler(function(res) {
           alert(editId ? "✅ Paket ujian berhasil diperbarui!" : "✅ Paket ujian berhasil disimpan!");
-          cancelEditPlacementPackage(); loadPlacementPackagesTable(); loadPlacementPackagesView(res ? res.testId : null);
+          cancelEditPlacementPackage(); loadPlacementPackagesTable(); loadPlacementPackagesFast(res ? res.testId : null);
         }).saveOrUpdatePlacementPackage(editId, hskLvl, title, pdfUrl, audioUrl, keysJson);
       }
     };
@@ -2327,28 +2358,51 @@
       if (!confirm("Hapus paket ujian " + testId + "?")) return;
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
         fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deletePlacementPackage", testId: testId }) })
-        .then(res => res.json()).then(res => { alert("✅ Paket ujian berhasil dihapus!"); loadPlacementPackagesTable(); loadPlacementPackagesView(); })
+        .then(res => res.json()).then(res => { alert("✅ Paket ujian berhasil dihapus!"); loadPlacementPackagesTable(); loadPlacementPackagesFast(); })
         .catch(err => alert("Gagal menghapus: " + err.message));
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run.withSuccessHandler(function() { alert("✅ Paket ujian berhasil dihapus!"); loadPlacementPackagesTable(); loadPlacementPackagesView(); }).deletePlacementPackage(testId);
+        google.script.run.withSuccessHandler(function() { alert("✅ Paket ujian berhasil dihapus!"); loadPlacementPackagesTable(); loadPlacementPackagesFast(); }).deletePlacementPackage(testId);
       }
     };
 
-    // VOCABULARY ENGINE
-    function loadDatabaseVocab() {
-      var container = document.getElementById('vocab-cards-container');
-      if (container) container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--gold-autumn);">Memuat data dari Spreadsheet Database... 🍂</div>';
+    // =========================================================================
+    // OPTIMASI LOAD INSTAN (CACHE + BACKGROUND SYNC)
+    // =========================================================================
+    function loadDatabaseVocabFast() {
+      try {
+        var cached = localStorage.getItem('cache_vocab');
+        if (cached) {
+          allVocabularies = JSON.parse(cached);
+          renderVocabUI();
+          initPracticeCharacters(currentStrokeLevel);
+          initSrsEngine();
+        }
+      } catch(e) {}
 
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
         fetch(SCRIPT_URL + "?action=getVocab&level=ALL")
           .then(res => res.json())
-          .then(data => { allVocabularies = Array.isArray(data) ? data : (data.items || []); renderVocabUI(); initPracticeCharacters(currentStrokeLevel); initSrsEngine(); })
-          .catch(err => { console.error("Gagal load API:", err); useFallbackVocab(); });
+          .then(data => {
+            allVocabularies = Array.isArray(data) ? data : (data.items || []);
+            try { localStorage.setItem('cache_vocab', JSON.stringify(allVocabularies)); } catch(e){}
+            renderVocabUI();
+            initPracticeCharacters(currentStrokeLevel);
+            initSrsEngine();
+          })
+          .catch(err => {
+            if (!allVocabularies || allVocabularies.length === 0) useFallbackVocab();
+          });
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run.withSuccessHandler(function(data) {
-          allVocabularies = Array.isArray(data) ? data : (data.items || []); renderVocabUI(); initPracticeCharacters(currentStrokeLevel); initSrsEngine();
+          allVocabularies = Array.isArray(data) ? data : (data.items || []);
+          try { localStorage.setItem('cache_vocab', JSON.stringify(allVocabularies)); } catch(e){}
+          renderVocabUI();
+          initPracticeCharacters(currentStrokeLevel);
+          initSrsEngine();
         }).getVocabularyData('ALL');
-      } else { useFallbackVocab(); }
+      } else if (!allVocabularies || allVocabularies.length === 0) {
+        useFallbackVocab();
+      }
     }
 
     function useFallbackVocab() {
@@ -2554,17 +2608,27 @@
       switchTab('stroke'); setTimeout(function() { renderMultiTianZiGe(currentPracticeWord); }, 60);
     };
 
-    // GRAMMAR VIEW
-    function loadGrammarGuidesView() {
-      var container = document.getElementById('grammar-cards-container');
+    // GRAMMAR VIEW FAST
+    function loadGrammarGuidesFast() {
+      try {
+        var cached = localStorage.getItem('cache_grammar');
+        if (cached) renderGrammarGuides(JSON.parse(cached));
+      } catch(e){}
+
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
         fetch(SCRIPT_URL + "?action=getGrammar&level=ALL")
           .then(res => res.json())
-          .then(data => renderGrammarGuides(data))
-          .catch(() => renderGrammarGuides([]));
+          .then(data => {
+            try { localStorage.setItem('cache_grammar', JSON.stringify(data)); } catch(e){}
+            renderGrammarGuides(data);
+          })
+          .catch(() => {});
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run.withSuccessHandler(renderGrammarGuides).getGrammarGuides('ALL');
-      } else { renderGrammarGuides([]); }
+        google.script.run.withSuccessHandler(function(data) {
+          try { localStorage.setItem('cache_grammar', JSON.stringify(data)); } catch(e){}
+          renderGrammarGuides(data);
+        }).getGrammarGuides('ALL');
+      }
     }
 
     function renderGrammarGuides(guides) {
@@ -2578,8 +2642,8 @@
       });
     }
 
-    // SPEAKING AI ROLEPLAY VIEW (TANPA AUTOPLAY SAAT BUKA)
-    function loadSpeakingDialoguesView(preferredId) {
+    // SPEAKING AI ROLEPLAY VIEW FAST
+    function loadSpeakingDialoguesFast(preferredId) {
       var selectEl = document.getElementById('speaking-scenario-select');
       function applyDialogues(dialogues) {
         allSpeakingDialogues = dialogues || [];
@@ -2602,14 +2666,25 @@
         selectScenarioDialogue(targetDlg);
       }
 
+      try {
+        var cached = localStorage.getItem('cache_dialogues');
+        if (cached) applyDialogues(JSON.parse(cached));
+      } catch(e){}
+
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
         fetch(SCRIPT_URL + "?action=getDialogues&level=ALL")
           .then(res => res.json())
-          .then(data => applyDialogues(data))
-          .catch(() => applyDialogues([]));
+          .then(data => {
+            try { localStorage.setItem('cache_dialogues', JSON.stringify(data)); } catch(e){}
+            applyDialogues(data);
+          })
+          .catch(() => {});
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run.withSuccessHandler(applyDialogues).withFailureHandler(() => applyDialogues([])).getSpeakingDialogues('ALL');
-      } else { applyDialogues([]); }
+        google.script.run.withSuccessHandler(function(data) {
+          try { localStorage.setItem('cache_dialogues', JSON.stringify(data)); } catch(e){}
+          applyDialogues(data);
+        }).getSpeakingDialogues('ALL');
+      }
     }
 
     window.handleScenarioChange = function(dlgId) {
@@ -2621,7 +2696,7 @@
     function selectScenarioDialogue(dlg) {
       if (!dlg) return;
       currentDialogueId = dlg.dialogueId || ""; activeDialogueFlow = dlg.scriptFlow || []; characterAName = dlg.roleAName || "Pelayan Restoran"; characterBName = dlg.roleBName || "Pelanggan";
-      updateRoleSwitcherButtons(); initSpeakingDialogue(false); // Parameter false: TIDAK autoplay
+      updateRoleSwitcherButtons(); initSpeakingDialogue(false);
     }
 
     function useDefaultDialogue() {
@@ -2737,7 +2812,7 @@
           if (currentTarget && currentTarget.role === currentUserRole) { 
             setTimeout(function() { 
               currentDialogueStep++; 
-              checkTurnAndAct(true); // Otomatis respon giliran AI berikutnya setelah user bicara
+              checkTurnAndAct(true);
             }, 600); 
           }
         };
@@ -2747,24 +2822,34 @@
       } catch (err) { isListening = false; if (micBtn) micBtn.classList.remove('listening'); if (statusBox) statusBox.innerHTML = '⚠️ <i>Gagal menyalakan mic. Klik <b>Lanjut Giliran</b>.</i>'; }
     };
 
-    // WORKBOOK VIEW
-    function loadWorkbookQuestions(hskLevel, btn) {
+    // WORKBOOK VIEW FAST
+    function loadWorkbookQuestionsFast(hskLevel, btn) {
       if (btn && btn.parentElement) {
         var buttons = btn.parentElement.querySelectorAll('.pill-btn');
         for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove('active');
         btn.classList.add('active');
       }
-      var container = document.getElementById('workbook-cards-container');
-      if (container) container.innerHTML = '<div style="text-align:center; padding: 30px; color: var(--gold-autumn);">Memuat Soal dari Spreadsheet... 🍁</div>';
+
+      var cacheKey = 'cache_wb_' + (hskLevel || 'ALL');
+      try {
+        var cached = localStorage.getItem(cacheKey);
+        if (cached) renderWorkbookCards(JSON.parse(cached));
+      } catch(e){}
       
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
         fetch(SCRIPT_URL + "?action=getWorkbook&level=" + (hskLevel || "ALL"))
           .then(res => res.json())
-          .then(data => renderWorkbookCards(data))
-          .catch(() => renderWorkbookCards([]));
+          .then(data => {
+            try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch(e){}
+            renderWorkbookCards(data);
+          })
+          .catch(() => {});
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run.withSuccessHandler(renderWorkbookCards).getWorkbookQuestions(hskLevel, 'ALL');
-      } else { renderWorkbookCards([]); }
+        google.script.run.withSuccessHandler(function(data) {
+          try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch(e){}
+          renderWorkbookCards(data);
+        }).getWorkbookQuestions(hskLevel, 'ALL');
+      }
     }
 
     function renderWorkbookCards(questions) {
@@ -3022,14 +3107,14 @@
                       (secs < 10 ? '0' + secs : secs);
       display.innerText = formatted;
 
-      if (examTimeRemaining < 600) { // Kurang dari 10 menit
+      if (examTimeRemaining < 600) {
         display.style.color = '#ef4444';
       } else {
         display.style.color = '#fff';
       }
     }
 
-    function loadPlacementPackagesView(preferredId) {
+    function loadPlacementPackagesFast(preferredId) {
       var selectEl = document.getElementById('placement-package-select');
 
       function applyPackages(packages) {
@@ -3057,14 +3142,25 @@
         selectPlacementPackage(targetPkg);
       }
 
+      try {
+        var cached = localStorage.getItem('cache_placement');
+        if (cached) applyPackages(JSON.parse(cached));
+      } catch(e){}
+
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
         fetch(SCRIPT_URL + "?action=getPlacement&level=ALL")
           .then(res => res.json())
-          .then(data => applyPackages(data))
-          .catch(() => applyPackages([]));
+          .then(data => {
+            try { localStorage.setItem('cache_placement', JSON.stringify(data)); } catch(e){}
+            applyPackages(data);
+          })
+          .catch(() => {});
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run.withSuccessHandler(applyPackages).withFailureHandler(() => applyPackages([])).getPlacementTestPackage('ALL');
-      } else { applyPackages([]); }
+        google.script.run.withSuccessHandler(function(data) {
+          try { localStorage.setItem('cache_placement', JSON.stringify(data)); } catch(e){}
+          applyPackages(data);
+        }).getPlacementTestPackage('ALL');
+      }
     }
 
     window.handlePlacementPackageChange = function(testId) {
@@ -3451,7 +3547,7 @@
           btn.style.minWidth = '28px';
           btn.innerText = opt.label;
           btn.onclick = function() {
-            startExamTimerIfNeeded(); // TIMER OTOMATIS BERJALAN SAAT KLIK JAWABAN
+            startExamTimerIfNeeded();
             userExamAnswers[q] = opt.val;
             const parentBtns = optionsDiv.querySelectorAll('.pill-btn');
             parentBtns.forEach(b => b.classList.remove('active'));
