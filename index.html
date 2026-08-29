@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Mandarin HSK 1-6 Autumn Edition - PAKBUJAN ACADEMY</title>
+  <title>Mandarin HSK 1-6 & 7-9 Autumn Edition - PAKBUJAN ACADEMY</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Serif+SC:wght@600;900&display=swap" rel="stylesheet">
   
@@ -842,12 +842,12 @@
         <div class="brand-icon" id="autumn-logo-btn" onclick="handleLogoTripleClick()" title="Klik 3x Cepat untuk Buka Panel CRUD (Admin Only)">秋</div>
         <div class="brand-text">
           <h1>PAKBUJAN ACADEMY</h1>
-          <p>Autumn Edition 1-6</p>
+          <p>Autumn Edition 1-6 & 7-9</p>
         </div>
       </div>
       <ul class="nav-list">
         <li class="nav-item"><button class="active" onclick="switchTab('dashboard')"><span class="nav-icon">🍂</span> Beranda</button></li>
-        <li class="nav-item"><button onclick="switchTab('dictionary')"><span class="nav-icon">📖</span> Kamus HSK 1-6</button></li>
+        <li class="nav-item"><button onclick="switchTab('dictionary')"><span class="nav-icon">📖</span> Kamus HSK 1-9</button></li>
         <li class="nav-item"><button onclick="switchTab('stroke')"><span class="nav-icon">✍️</span> Menulis Hanzi</button></li>
         <li class="nav-item"><button onclick="switchTab('workbook')"><span class="nav-icon">📝</span> Workbook Interaktif</button></li>
         <li class="nav-item"><button onclick="switchTab('speaking')"><span class="nav-icon">🎙️</span> Speaking AI Roleplay</button></li>
@@ -871,7 +871,7 @@
         <div class="header-group">
           <span class="badge">Selamat Datang di Musim Belajar</span>
           <h2 id="dashboard-welcome-text">Halo, Pelajar Tangguh! 🍁</h2>
-          <p>Kuasai kurikulum Mandarin HSK 1 sampai HSK 6 dengan metode terstruktur, simulasi percakapan AI, dan SRS Leitner.</p>
+          <p>Kuasai kurikulum Mandarin HSK 1 sampai HSK 7-9 dengan metode terstruktur, simulasi percakapan AI, dan SRS Leitner.</p>
         </div>
 
         <div class="glass-card" style="margin-bottom: 20px; background: linear-gradient(135deg, rgba(59, 29, 17, 0.9), rgba(40, 24, 16, 0.8)); border-left: 4px solid var(--gold-autumn);">
@@ -883,7 +883,7 @@
               <div style="font-size: 13px; color: var(--text-muted);">Tingkat HSK Aktif:</div>
               <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                 <span id="track-hsk-badge" class="badge" style="font-size: 14px; padding: 6px 14px; background: var(--terracotta); color: #fff; margin: 0;">HSK 1</span>
-                <span style="font-size: 12.5px; color: #fed7aa;" id="track-hsk-desc">Selesaikan Placement Test untuk naik ke HSK 2</span>
+                <span style="font-size: 12.5px; color: #fed7aa;" id="track-hsk-desc">Selesaikan Placement Test untuk naik ke level berikutnya</span>
               </div>
             </div>
             <div>
@@ -904,11 +904,11 @@
         </div>
       </section>
 
-      <!-- 2. KAMUS HSK 1-6 -->
+      <!-- 2. KAMUS HSK 1-6 & 7-9 (FILTER TERINTEGRASI) -->
       <section id="view-dictionary" class="view-section">
         <div class="header-group">
-          <span class="badge">HSK Standard Dictionary</span>
-          <h2>Kamus Kosakata HSK 1 - 6</h2>
+          <span class="badge">HSK Standard 3.0 Dictionary</span>
+          <h2>Kamus Kosakata HSK 1 - 9</h2>
           <p>Cari kata berdasarkan Hanzi, Pinyin, atau Arti Bahasa Indonesia langsung dari database Spreadsheet.</p>
         </div>
 
@@ -925,6 +925,7 @@
             <button class="pill-btn" onclick="filterDictLevel('4', this)">HSK 4</button>
             <button class="pill-btn" onclick="filterDictLevel('5', this)">HSK 5</button>
             <button class="pill-btn" onclick="filterDictLevel('6', this)">HSK 6</button>
+            <button class="pill-btn" onclick="filterDictLevel('7-9', this)">HSK 7-9</button>
           </div>
         </div>
 
@@ -937,7 +938,7 @@
         </div>
       </section>
 
-      <!-- 3. MENULIS HANZI (TIAN ZI GE - FULL RESPONSIVE) -->
+      <!-- 3. MENULIS HANZI (TIAN ZI GE - FILTER HSK 7-9 TERINTEGRASI) -->
       <section id="view-stroke" class="view-section">
         <div class="header-group">
           <span class="badge">Stroke Order & Calligraphy</span>
@@ -985,6 +986,7 @@
               <button class="pill-btn" onclick="filterStrokeLevel('4', this)">HSK 4</button>
               <button class="pill-btn" onclick="filterStrokeLevel('5', this)">HSK 5</button>
               <button class="pill-btn" onclick="filterStrokeLevel('6', this)">HSK 6</button>
+              <button class="pill-btn" onclick="filterStrokeLevel('7-9', this)">HSK 7-9</button>
               <button class="pill-btn" onclick="filterStrokeLevel('ALL', this)">Semua HSK</button>
             </div>
           </div>
@@ -1211,7 +1213,7 @@
             <div class="glass-card" style="width: 360px; max-height: 920px; display: flex; flex-direction: column; padding: 18px;">
               <div style="border-bottom: 1px solid var(--amber-border); padding-bottom: 10px; margin-bottom: 12px;">
                 <div style="font-size: 15px; font-weight: 800; color: #fff;">📝 Lembar Jawaban Digital</div>
-                <div style="font-size: 11.5px; color: var(--gold-autumn);">Pilih jawaban sesuai naskah soal di PDF</div>
+                <div style="font-size: 11.5px; color: var(--gold-autumn);">Waktu ujian otomatis berjalan saat Anda memilih jawaban pertama</div>
               </div>
 
               <div style="display: flex; gap: 6px; margin-bottom: 12px;">
@@ -1305,6 +1307,7 @@
                   <option value="HSK 4">HSK 4</option>
                   <option value="HSK 5">HSK 5</option>
                   <option value="HSK 6">HSK 6</option>
+                  <option value="HSK 7-9">HSK 7-9</option>
                 </select>
               </div>
               <div class="crud-form-group" style="flex: 1; margin-bottom: 0;">
@@ -1372,6 +1375,7 @@
               <option value="HSK 4">HSK 4</option>
               <option value="HSK 5">HSK 5</option>
               <option value="HSK 6">HSK 6</option>
+              <option value="HSK 7-9">HSK 7-9</option>
             </select>
           </div>
           <div class="crud-form-group" style="flex: 1;">
@@ -1445,11 +1449,12 @@
               <option value="HSK 4">HSK 4</option>
               <option value="HSK 5">HSK 5</option>
               <option value="HSK 6">HSK 6</option>
+              <option value="HSK 7-9">HSK 7-9</option>
             </select>
           </div>
           <div class="crud-form-group" style="flex: 1;">
             <label>Judul Paket Ujian (test_title):</label>
-            <input type="text" id="crud-plc-title" placeholder="Contoh: HSK 1 (Set 1) atau HSK 1 (Set 2)">
+            <input type="text" id="crud-plc-title" placeholder="Contoh: HSK 1 (Set 1) atau HSK 7-9 (Set 1)">
           </div>
         </div>
 
@@ -1570,7 +1575,7 @@
     // SISTEM PENGUNCIAN UJIAN & TIMER 2 JAM INSTAN
     var isExamActive = false;
     var examTimerInterval = null;
-    var examTimeRemaining = 7200; // 2 Jam = 7200 Detik
+    var examTimeRemaining = 7200;
     var isExamTimerRunning = false;
 
     const DEFAULT_HSK1_ANSWER_KEY = {
@@ -1653,7 +1658,6 @@
       }
     });
 
-    // SISTEM DETEKSI NYONTEK (ANTI-CHEAT DETECTOR)
     document.addEventListener("visibilitychange", function() {
       if (document.hidden && isExamActive) {
         alert("Hahaha kamu nyontek yaa? 😜\nTetap fokus pada lembar ujian Anda!");
@@ -1776,7 +1780,7 @@
         if (elTrackTab) elTrackTab.innerText = sessionUser.lastTab.toUpperCase();
         if (elTrackDesc) {
           var numLvl = parseInt(sessionUser.currentHsk.replace(/[^0-9]/g, '')) || 1;
-          elTrackDesc.innerText = 'Selesaikan Placement Test untuk naik ke HSK ' + (numLvl < 6 ? numLvl + 1 : 6);
+          elTrackDesc.innerText = 'Selesaikan Placement Test untuk naik ke level berikutnya';
         }
 
         loadDatabaseVocabFast();
@@ -1839,7 +1843,6 @@
     }
 
     window.switchTab = function(viewId) {
-      // Jika sedang dalam sesi ujian aktif dan mencoba pindah tab
       if (isExamActive && viewId !== 'placement') {
         var leave = confirm("Hahaha kamu nyontek yaa? 😜\nSesi ujian Anda masih aktif! Apakah Anda yakin ingin membatalkan dan keluar dari ujian?");
         if (!leave) return;
@@ -2387,8 +2390,12 @@
       if (inEditId) inEditId.value = found.testId;
       if (inHsk) { 
         var raw = (found.hskLevel || 'HSK 1').toString().toUpperCase().replace(/\s+/g, ''); 
-        var num = raw.replace(/[^0-9]/g, '') || '1'; 
-        inHsk.value = 'HSK ' + num; 
+        if (raw.includes('7') || raw.includes('8') || raw.includes('9')) {
+          inHsk.value = 'HSK 7-9';
+        } else {
+          var num = raw.replace(/[^0-9]/g, '') || '1'; 
+          inHsk.value = 'HSK ' + num; 
+        }
       }
       if (inTitle) inTitle.value = found.testTitle || ''; 
       if (inPdfUrl) inPdfUrl.value = found.pdfUrl || ''; 
@@ -2418,6 +2425,9 @@
       }
     };
 
+    // =========================================================================
+    // OPTIMASI LOAD INSTAN (CACHE + BACKGROUND SYNC DENGAN SUPPORT HSK 7-9)
+    // =========================================================================
     function loadDatabaseVocabFast() {
       try {
         var cached = localStorage.getItem('cache_vocab');
@@ -2463,14 +2473,29 @@
       renderVocabUI(); initPracticeCharacters('1'); initSrsEngine();
     }
 
+    // LOGIKA FILTER KAMUS TERINTEGRASI HSK 7-9
     function renderVocabUI() {
       var container = document.getElementById('vocab-cards-container');
       if (!container) return;
       container.innerHTML = '';
-      var targetNum = currentDictLevel.toString().replace(/[^0-9]/g, '').trim();
+      
+      var targetLvl = currentDictLevel.toString().trim().toUpperCase();
+      var isHsk79Filter = (targetLvl === '7-9' || targetLvl === 'HSK 7-9' || targetLvl === '79');
+
       var filtered = allVocabularies.filter(function(v) {
-        var vLvl = (v.level || v.hskLevel || '').toString().replace(/[^0-9]/g, '').trim();
-        var matchLvl = (currentDictLevel === 'ALL' || targetNum === '' || vLvl === targetNum);
+        var rawV = (v.level || v.hskLevel || '').toString().trim().toUpperCase();
+        var vNum = rawV.replace(/[^0-9]/g, '');
+        var matchLvl = false;
+
+        if (targetLvl === 'ALL' || targetLvl === '') {
+          matchLvl = true;
+        } else if (isHsk79Filter) {
+          matchLvl = (rawV.includes('7-9') || rawV.includes('7') || rawV.includes('8') || rawV.includes('9') || vNum === '7' || vNum === '8' || vNum === '9' || vNum === '79' || vNum === '789');
+        } else {
+          var targetNum = targetLvl.replace(/[^0-9]/g, '');
+          matchLvl = (vNum === targetNum || rawV === targetLvl);
+        }
+
         var sTerm = currentDictSearch.toLowerCase().trim();
         var matchSearch = (!sTerm || (v.hanzi && v.hanzi.toLowerCase().includes(sTerm)) || (v.pinyin && v.pinyin.toLowerCase().includes(sTerm)) || (v.indonesian && v.indonesian.toLowerCase().includes(sTerm)));
         return matchLvl && matchSearch;
@@ -2485,8 +2510,15 @@
         container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: var(--text-muted);">Tidak ada kosakata yang cocok.</div>';
       } else {
         pagedItems.forEach(function(item) {
-          var rawLvl = (item.hskLevel || item.level || '1').toString();
-          var displayTag = rawLvl.toUpperCase().includes('HSK') ? rawLvl : ('HSK ' + rawLvl);
+          var rawLvl = (item.hskLevel || item.level || '1').toString().toUpperCase().trim();
+          var displayTag = 'HSK 1';
+          if (rawLvl.includes('7-9') || rawLvl.includes('7') || rawLvl.includes('8') || rawLvl.includes('9')) {
+            displayTag = 'HSK 7-9';
+          } else {
+            var numOnly = rawLvl.replace(/[^0-9]/g, '') || '1';
+            displayTag = 'HSK ' + numOnly;
+          }
+
           var card = document.createElement('div');
           card.className = 'vocab-card';
           card.innerHTML = '<div class="vocab-head"><div class="vocab-hanzi">' + (item.hanzi || '') + '</div><div class="vocab-level-tag">' + displayTag + '</div></div><div class="vocab-pinyin">' + (item.pinyin || '') + '</div><div class="vocab-indo">' + (item.indonesian || '') + '</div><div style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px;">[' + (item.partOfSpeech || 'Umum') + ']</div><div class="vocab-actions"><button class="icon-action-btn" onclick="speakText(\'' + (item.hanzi || '') + '\')">🔊 Dengar</button><button class="icon-action-btn" onclick="selectWordForWriting({hanzi:\'' + (item.hanzi || '') + '\', pinyin:\'' + (item.pinyin || '') + '\', indonesian:\'' + (item.indonesian || '') + '\', level:\'' + (item.level || '1') + '\'})">✍️ Tulis</button></div>';
@@ -2523,6 +2555,7 @@
 
     window.changeVocabPage = function(delta) { currentDictPage += delta; renderVocabUI(); };
 
+    // TIAN ZI GE
     function renderMultiTianZiGe(wordObj) {
       var container = document.getElementById('tianzige-multi-container');
       if (!container) return; 
@@ -2742,17 +2775,30 @@
       }, 200);
     };
 
+    // LOGIKA FILTER TIAN ZI GE TERINTEGRASI HSK 7-9
     function initPracticeCharacters(lvl) {
       var container = document.getElementById('char-selector-box');
       if (!container) return; 
       container.innerHTML = '';
-      var selectedLvl = (lvl || currentStrokeLevel || '1').toString().toUpperCase().replace(/\s+/g, '');
-      var numLvl = selectedLvl.replace(/[^0-9]/g, '');
+      
+      var selectedLvl = (lvl || currentStrokeLevel || '1').toString().toUpperCase().trim();
+      var isHsk79Filter = (selectedLvl === '7-9' || selectedLvl === 'HSK 7-9' || selectedLvl === '79');
       var sTerm = currentStrokeSearch.toLowerCase().trim();
 
       var filtered = allVocabularies.filter(function(v) {
-        var vLvl = (v.level || v.hskLevel || '').toString().replace(/[^0-9]/g, '').trim();
-        var matchLvl = (selectedLvl === 'ALL' || selectedLvl === '' || vLvl === numLvl);
+        var rawV = (v.level || v.hskLevel || '').toString().trim().toUpperCase();
+        var vNum = rawV.replace(/[^0-9]/g, '');
+        var matchLvl = false;
+
+        if (selectedLvl === 'ALL' || selectedLvl === '') {
+          matchLvl = true;
+        } else if (isHsk79Filter) {
+          matchLvl = (rawV.includes('7-9') || rawV.includes('7') || rawV.includes('8') || rawV.includes('9') || vNum === '7' || vNum === '8' || vNum === '9' || vNum === '79' || vNum === '789');
+        } else {
+          var numLvl = selectedLvl.replace(/[^0-9]/g, '');
+          matchLvl = (vNum === numLvl || rawV === selectedLvl);
+        }
+
         var matchSearch = (!sTerm || (v.hanzi && v.hanzi.toLowerCase().includes(sTerm)) || (v.pinyin && v.pinyin.toLowerCase().includes(sTerm)) || (v.indonesian && v.indonesian.toLowerCase().includes(sTerm)));
         return matchLvl && matchSearch && v.hanzi;
       });
@@ -2782,14 +2828,27 @@
 
     window.selectWordForWriting = function(wordObj) {
       if (!wordObj || !wordObj.hanzi) return;
-      currentPracticeWord = { hanzi: wordObj.hanzi, pinyin: wordObj.pinyin || '', indo: wordObj.indonesian || wordObj.indo || '', level: wordObj.level || wordObj.hskLevel || '1' };
-      var rawLvl = currentPracticeWord.level.toString().replace(/[^0-9]/g, '') || '1';
+      var rawLevel = (wordObj.level || wordObj.hskLevel || '1').toString().toUpperCase().trim();
+      var displayBadgeLevel = 'HSK 1';
+      if (rawLevel.includes('7-9') || rawLevel.includes('7') || rawLevel.includes('8') || rawLevel.includes('9')) {
+        displayBadgeLevel = 'HSK 7-9';
+      } else {
+        displayBadgeLevel = 'HSK ' + (rawLevel.replace(/[^0-9]/g, '') || '1');
+      }
+
+      currentPracticeWord = { 
+        hanzi: wordObj.hanzi, 
+        pinyin: wordObj.pinyin || '', 
+        indo: wordObj.indonesian || wordObj.indo || '', 
+        level: displayBadgeLevel 
+      };
+
       var elDisplay = document.getElementById('active-char-display');
       var elInfo = document.getElementById('active-char-info');
       var elBadge = document.getElementById('active-char-badge');
       if (elDisplay) elDisplay.innerText = currentPracticeWord.hanzi;
       if (elInfo) elInfo.innerText = '(' + currentPracticeWord.pinyin + (currentPracticeWord.indo ? ' - ' + currentPracticeWord.indo : '') + ')';
-      if (elBadge) elBadge.innerText = 'HSK ' + rawLvl;
+      if (elBadge) elBadge.innerText = displayBadgeLevel;
       switchTab('stroke'); 
       setTimeout(function() { renderMultiTianZiGe(currentPracticeWord); }, 60);
     };
@@ -3168,7 +3227,13 @@
       if (elPy) elPy.innerText = card.pinyin || '';
       if (elIn) elIn.innerText = card.indonesian || card.indo || '';
       if (elPos) elPos.innerText = '[' + (card.partOfSpeech || 'Kosakata') + ']';
-      if (elLvl) elLvl.innerText = card.hskLevel || ('HSK ' + (card.level || '1'));
+      
+      var rawLevel = (card.hskLevel || card.level || '1').toString().toUpperCase().trim();
+      if (rawLevel.includes('7-9') || rawLevel.includes('7') || rawLevel.includes('8') || rawLevel.includes('9')) {
+        if (elLvl) elLvl.innerText = 'HSK 7-9';
+      } else {
+        if (elLvl) elLvl.innerText = card.hskLevel || ('HSK ' + (card.level || '1'));
+      }
 
       if (elBar) {
         var pct = Math.round(((currentSrsIndex + 1) / srsCardsQueue.length) * 100);
@@ -3321,14 +3386,12 @@
       if (bRead) bRead.innerText = `📖 Membaca (${structure.readingRange[0]}-${structure.readingRange[1]})`;
     }
 
-    // FUNGSI MULAI UJIAN & KUNCI LAYAR PENUH
     window.startPlacementExamSession = function() {
       if (!currentPlacementPackage) {
         alert("Paket ujian belum siap atau sedang dimuat.");
         return;
       }
 
-      // Kunci layar penuh (Fullscreen Focus Lock)
       try {
         if (document.documentElement.requestFullscreen) {
           document.documentElement.requestFullscreen().catch(() => {});
@@ -3339,7 +3402,6 @@
 
       isExamActive = true;
 
-      // Sembunyikan lobby dan tampilkan area ujian + timer
       document.getElementById('placement-pre-exam-lobby').style.display = 'none';
       document.getElementById('placement-active-exam-area').style.display = 'block';
       document.getElementById('exam-timer-badge').style.display = 'flex';
@@ -3347,7 +3409,6 @@
       var pkgSelector = document.getElementById('exam-pkg-selector-wrap');
       if (pkgSelector) pkgSelector.style.pointerEvents = 'none';
 
-      // Jalankan timer 2 jam secara instan
       resetExamTimer();
       startExamTimerImmediately();
 
@@ -3379,7 +3440,7 @@
     function resetExamTimer() {
       clearInterval(examTimerInterval);
       isExamTimerRunning = false;
-      examTimeRemaining = 7200; // 2 Jam = 120 Menit
+      examTimeRemaining = 7200;
       updateExamTimerUI();
     }
 
@@ -3461,13 +3522,11 @@
       if (!pkg) return;
       currentPlacementPackage = pkg; drawingsPerPage = {}; userExamAnswers = {};
       
-      // Update judul di lobby gerbang sebelum mulai
       var lobbyTitle = document.getElementById('lobby-exam-title');
       if (lobbyTitle) {
         lobbyTitle.innerText = (pkg.testTitle || 'Simulasi Ujian Resmi HSK') + ' (' + (pkg.hskLevel || 'HSK 1') + ')';
       }
 
-      // Pastikan status kembali ke lobby sebelum tombol mulai ditekan
       isExamActive = false;
       resetExamTimer();
       document.getElementById('placement-pre-exam-lobby').style.display = 'block';
