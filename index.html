@@ -149,6 +149,35 @@
 
     .nav-icon { font-size: 18px; }
 
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 14px;
+      border-top: 1px solid var(--amber-border);
+    }
+
+    .btn-logout {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 14px;
+      border: 1px solid rgba(220, 38, 38, 0.35);
+      background: rgba(220, 38, 38, 0.12);
+      color: #fca5a5;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+    .btn-logout:hover {
+      background: #dc2626;
+      color: #fff;
+      border-color: #dc2626;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+    }
+
     .main-viewport {
       flex-grow: 1;
       padding: 32px 40px 100px 40px;
@@ -798,6 +827,13 @@
         <li class="nav-item"><button onclick="switchTab('placement')"><span class="nav-icon">🎯</span> Placement Test</button></li>
         <li class="nav-item"><button onclick="switchTab('certificate')"><span class="nav-icon">📜</span> Rapor & Sertifikat</button></li>
       </ul>
+
+      <!-- TOMBOL LOG OUT DI SEBELAH KIRI BAWAH -->
+      <div class="sidebar-footer">
+        <button type="button" class="btn-logout" onclick="handleLogout()">
+          <span style="font-size: 16px;">🚪</span> Keluar (Log Out)
+        </button>
+      </div>
     </aside>
 
     <main class="main-viewport">
@@ -1522,11 +1558,32 @@
       }
     }
 
-    // 1. INIT & LOGIN ENGINE
+    // 1. INIT, AUTO-LOGIN (LOCALSTORAGE) & LOGOUT ENGINE
     window.addEventListener('DOMContentLoaded', function() {
       initFallingLeaves();
-      document.getElementById('login-overlay').style.display = 'flex';
-      document.getElementById('main-app-container').style.visibility = 'hidden';
+
+      // Cek apakah session login sebelumnya tersimpan di localStorage browser
+      var savedSession = null;
+      try {
+        var rawSaved = localStorage.getItem('pakbujan_user_session');
+        if (rawSaved) savedSession = JSON.parse(rawSaved);
+      } catch (e) {
+        savedSession = null;
+      }
+
+      if (savedSession && savedSession.username) {
+        // Otomatis langsung masuk tanpa perlu memasukkan password lagi saat refresh
+        handleLoginResponse({
+          success: true,
+          username: savedSession.username,
+          role: savedSession.role || 'user',
+          lastTab: savedSession.lastTab || 'dashboard',
+          currentHsk: savedSession.currentHsk || 'HSK 1'
+        }, savedSession.username, '', null, null);
+      } else {
+        document.getElementById('login-overlay').style.display = 'flex';
+        document.getElementById('main-app-container').style.visibility = 'hidden';
+      }
     });
 
     window.togglePasswordVisibility = function() {
@@ -1595,9 +1652,11 @@
       if (validLocal[target] && validLocal[target].pass === passIn) {
         handleLoginResponse({ success: true, username: userIn, role: validLocal[target].role, lastTab: 'dashboard', currentHsk: 'HSK 1' }, userIn, passIn, btn, errBox);
       } else {
-        btn.innerText = 'Masuk Akses';
-        errBox.style.display = 'block';
-        errBox.innerText = "Akses Ditolak. Username atau password salah.";
+        if (btn) btn.innerText = 'Masuk Akses';
+        if (errBox) {
+          errBox.style.display = 'block';
+          errBox.innerText = "Akses Ditolak. Username atau password salah.";
+        }
       }
     }
 
@@ -1608,11 +1667,16 @@
         sessionUser.lastTab = res.lastTab || 'dashboard';
         sessionUser.currentHsk = res.currentHsk || 'HSK 1';
 
+        // Simpan ke localStorage agar tidak perlu login ulang saat refresh halaman
+        try {
+          localStorage.setItem('pakbujan_user_session', JSON.stringify(sessionUser));
+        } catch(e) {}
+
         document.getElementById('login-overlay').style.opacity = '0';
         setTimeout(function() {
           document.getElementById('login-overlay').style.display = 'none';
           document.getElementById('main-app-container').style.visibility = 'visible';
-        }, 500);
+        }, 300);
 
         var displayNama = sessionUser.username.charAt(0).toUpperCase() + sessionUser.username.slice(1);
         document.getElementById('dashboard-welcome-text').innerText = 'Halo, ' + displayNama + '! 🍁';
@@ -1640,21 +1704,54 @@
 
         switchTab(sessionUser.lastTab);
       } else {
-        btn.innerText = 'Masuk Akses';
-        errBox.style.display = 'block';
-        errBox.innerText = "Akses Ditolak. Username atau password salah.";
+        if (btn) btn.innerText = 'Masuk Akses';
+        if (errBox) {
+          errBox.style.display = 'block';
+          errBox.innerText = "Akses Ditolak. Username atau password salah.";
+        }
       }
     }
 
+    // FUNGSI LOG OUT (HAPUS SESI DARI LOCALSTORAGE)
+    window.handleLogout = function() {
+      if (confirm("Apakah Anda yakin ingin keluar dari akun?")) {
+        try {
+          localStorage.removeItem('pakbujan_user_session');
+        } catch (e) {}
+
+        sessionUser = { username: '', role: 'user', lastTab: 'dashboard', currentHsk: 'HSK 1' };
+        
+        var uInput = document.getElementById('login-username');
+        var pInput = document.getElementById('login-password');
+        if (uInput) uInput.value = '';
+        if (pInput) pInput.value = '';
+
+        document.getElementById('main-app-container').style.visibility = 'hidden';
+        var overlay = document.getElementById('login-overlay');
+        overlay.style.display = 'flex';
+        overlay.style.opacity = '1';
+
+        var btn = document.getElementById('btn-submit-login');
+        if (btn) btn.innerText = 'Masuk Akses';
+      }
+    };
+
     function pingTrackLevel(tabId) {
-      if (sessionUser && sessionUser.username && typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run.updateUserTracking(sessionUser.username, tabId, sessionUser.currentHsk);
-      } else if (SCRIPT_URL && sessionUser.username) {
-        fetch(SCRIPT_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ action: "updateTrack", username: sessionUser.username, tab: tabId, hskLvl: sessionUser.currentHsk })
-        }).catch(() => {});
+      if (sessionUser && sessionUser.username) {
+        // Perbarui localStorage setiap kali ada perpindahan tab atau kenaikan level
+        try {
+          localStorage.setItem('pakbujan_user_session', JSON.stringify(sessionUser));
+        } catch(e) {}
+
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run.updateUserTracking(sessionUser.username, tabId, sessionUser.currentHsk);
+        } else if (SCRIPT_URL) {
+          fetch(SCRIPT_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({ action: "updateTrack", username: sessionUser.username, tab: tabId, hskLvl: sessionUser.currentHsk })
+          }).catch(() => {});
+        }
       }
     }
 
@@ -1668,6 +1765,7 @@
       for (var j = 0; j < navButtons.length; j++) navButtons[j].classList.remove('active');
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
+      sessionUser.lastTab = viewId;
       pingTrackLevel(viewId);
 
       var elTrackTab = document.getElementById('track-last-tab-display');
