@@ -1492,6 +1492,38 @@
     var logoClickCount = 0;
     var logoClickTimer = null;
 
+    function showPdfLoadingNotice(show, customText) {
+      var overlay = document.getElementById('pdf-loading-notice-pop');
+      var scrollBox = document.getElementById('pdf-scroll-box');
+      if (!overlay && scrollBox) {
+        overlay = document.createElement('div');
+        overlay.id = 'pdf-loading-notice-pop';
+        overlay.style.position = 'absolute';
+        overlay.style.top = '50%';
+        overlay.style.left = '50%';
+        overlay.style.transform = 'translate(-50%, -50%)';
+        overlay.style.background = 'rgba(26, 15, 10, 0.95)';
+        overlay.style.border = '2px solid var(--gold-autumn)';
+        overlay.style.color = '#fff';
+        overlay.style.padding = '18px 28px';
+        overlay.style.borderRadius = '14px';
+        overlay.style.boxShadow = '0 8px 30px rgba(0,0,0,0.85)';
+        overlay.style.zIndex = '100';
+        overlay.style.fontSize = '15px';
+        overlay.style.fontWeight = '700';
+        overlay.style.textAlign = 'center';
+        overlay.style.display = 'none';
+        overlay.style.pointerEvents = 'none';
+        overlay.style.backdropFilter = 'blur(10px)';
+        scrollBox.style.position = 'relative';
+        scrollBox.appendChild(overlay);
+      }
+      if (overlay) {
+        overlay.innerHTML = customText || '⏳ Memuat Lembar Soal...';
+        overlay.style.display = show ? 'block' : 'none';
+      }
+    }
+
     // 1. INIT & LOGIN ENGINE
     window.addEventListener('DOMContentLoaded', function() {
       initFallingLeaves();
@@ -1499,7 +1531,6 @@
       document.getElementById('main-app-container').style.visibility = 'hidden';
     });
 
-    // Toggle Password Visibility
     window.togglePasswordVisibility = function() {
       var passInput = document.getElementById('login-password');
       var eyeBtn = document.getElementById('btn-toggle-eye');
@@ -2670,7 +2701,7 @@
       renderCurrentSrsCard();
     };
 
-    // SERTIFIKAT ENGINE (PDF/IMAGE CANVAS GENERATOR)
+    // SERTIFIKAT ENGINE
     window.requestCertificatePdf = function() {
       var name = (document.getElementById('cert-user-name') ? document.getElementById('cert-user-name').value.trim() : '') || sessionUser.username || 'Siswa PakBujan';
       var statusEl = document.getElementById('cert-status-msg');
@@ -2681,11 +2712,9 @@
       canvas.height = 850;
       var ctx = canvas.getContext('2d');
 
-      // Background
       ctx.fillStyle = '#180d08';
       ctx.fillRect(0, 0, 1200, 850);
 
-      // Border double
       ctx.strokeStyle = '#f59e0b';
       ctx.lineWidth = 10;
       ctx.strokeRect(30, 30, 1140, 790);
@@ -2694,7 +2723,6 @@
       ctx.lineWidth = 2;
       ctx.strokeRect(45, 45, 1110, 760);
 
-      // Header
       ctx.fillStyle = '#f59e0b';
       ctx.font = 'bold 36px "Plus Jakarta Sans", sans-serif';
       ctx.textAlign = 'center';
@@ -2704,11 +2732,9 @@
       ctx.font = '22px "Plus Jakarta Sans", sans-serif';
       ctx.fillText('CERTIFICATE OF ACHIEVEMENT', 600, 180);
 
-      // Maple emblem
       ctx.font = '60px serif';
       ctx.fillText('🍁', 600, 260);
 
-      // Recipient Text
       ctx.fillStyle = '#fed7aa';
       ctx.font = '20px "Plus Jakarta Sans", sans-serif';
       ctx.fillText('Diberikan secara resmi kepada:', 600, 340);
@@ -2717,7 +2743,6 @@
       ctx.font = 'bold 44px "Plus Jakarta Sans", sans-serif';
       ctx.fillText(name.toUpperCase(), 600, 410);
 
-      // Achievement desc
       ctx.fillStyle = '#fff7ed';
       ctx.font = '22px "Plus Jakarta Sans", sans-serif';
       ctx.fillText('Telah berhasil menyelesaikan dan lulus evaluasi kompetensi resmi:', 600, 480);
@@ -2726,14 +2751,12 @@
       ctx.font = 'bold 32px "Noto Serif SC", serif';
       ctx.fillText(sessionUser.currentHsk + ' STANDARD MANDARIN PROFICIENCY', 600, 540);
 
-      // Date & Code
       var today = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
       ctx.fillStyle = '#fed7aa';
       ctx.font = '16px "Plus Jakarta Sans", sans-serif';
       ctx.fillText('Diterbitkan pada: ' + today, 600, 630);
       ctx.fillText('Kode Sertifikat: PB-' + Math.random().toString(36).substr(2, 8).toUpperCase(), 600, 660);
 
-      // Signature line
       ctx.strokeStyle = '#f59e0b';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
@@ -2838,19 +2861,68 @@
 
     async function loadPdfFromUrlOrData(urlOrData) {
       try {
+        showPdfLoadingNotice(true, "⏳ Memindai lembar soal & mengamankan kunci...");
         examPdfDoc = await pdfjsLib.getDocument(urlOrData).promise;
-        totalPdfPages = (examPdfDoc.numPages > 1) ? (examPdfDoc.numPages - 1) : examPdfDoc.numPages;
+        totalPdfPages = await detectMaxQuestionPage(examPdfDoc);
         currentPdfPageNum = 1; 
+        showPdfLoadingNotice(false);
         renderPdfAndDrawPage(currentPdfPageNum);
       } catch (err) {
         console.warn("Gagal membuka PDF dari path URL, mencoba fallback lokal:", err);
         try {
           examPdfDoc = await pdfjsLib.getDocument('./placement_test/HSK1.pdf').promise;
-          totalPdfPages = (examPdfDoc.numPages > 1) ? (examPdfDoc.numPages - 1) : examPdfDoc.numPages;
+          totalPdfPages = await detectMaxQuestionPage(examPdfDoc);
           currentPdfPageNum = 1; 
+          showPdfLoadingNotice(false);
           renderPdfAndDrawPage(currentPdfPageNum);
-        } catch(e) { console.error("PDF tidak dapat dimuat otomatis:", e); }
+        } catch(e) { 
+          showPdfLoadingNotice(false);
+          console.error("PDF tidak dapat dimuat otomatis:", e); 
+        }
       }
+    }
+
+    // FUNGSI DETEKSI OTOMATIS PEMBLOKIRAN HALAMAN KUNCI JAWABAN
+    async function detectMaxQuestionPage(pdf) {
+      const totalRawPages = pdf.numPages;
+      if (totalRawPages <= 1) return 1;
+
+      const blockKeywords = [
+        "卷答案",
+        "样卷答案",
+        "试卷答案",
+        "参考答案",
+        "答案",
+        "样卷听力材料",
+        "听力材料",
+        "听力文本",
+        "ANSWERKEY",
+        "ANSWERS"
+      ];
+
+      for (let pageNum = 1; pageNum <= totalRawPages; pageNum++) {
+        try {
+          const page = await pdf.getPage(pageNum);
+          const textContent = await page.getTextContent();
+          
+          const pageCleanText = textContent.items
+            .map(item => item.str)
+            .join("")
+            .replace(/\s+/g, "")
+            .toUpperCase();
+
+          const isForbiddenPage = blockKeywords.some(keyword => pageCleanText.includes(keyword));
+
+          if (isForbiddenPage) {
+            console.log(`[Security] Kunci jawaban '${pageCleanText.slice(0, 30)}...' terdeteksi di hal ${pageNum}. Membatasi akses hingga hal ${pageNum - 1}.`);
+            return Math.max(1, pageNum - 1);
+          }
+        } catch (err) {
+          console.warn(`Gagal membaca teks hal ${pageNum}:`, err);
+        }
+      }
+
+      return totalRawPages > 1 ? (totalRawPages - 1) : totalRawPages;
     }
 
     window.adjustPdfZoom = function(delta) {
