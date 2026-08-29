@@ -3211,71 +3211,99 @@
       }
     };
 
-    function initSrsEngine() {
-      if (allVocabularies && allVocabularies.length > 0) {
-        srsCardsQueue = [...allVocabularies];
-      } else {
-        srsCardsQueue = [
-          { hanzi: "我", pinyin: "wǒ", indonesian: "Saya / Aku", partOfSpeech: "Kata Ganti", level: "1", hskLevel: "HSK 1" },
-          { hanzi: "你", pinyin: "nǐ", indonesian: "Kamu / Anda", partOfSpeech: "Kata Ganti", level: "1", hskLevel: "HSK 1" },
-          { hanzi: "好", pinyin: "hǎo", indonesian: "Baik / Bagus", partOfSpeech: "Kata Sifat", level: "1", hskLevel: "HSK 1" }
-        ];
-      }
+   function initSrsEngine() {
+  if (allVocabularies && allVocabularies.length > 0) {
+    srsCardsQueue = [...allVocabularies];
+  } else {
+    srsCardsQueue = [
+      { hanzi: "我", pinyin: "wǒ", indonesian: "Saya / Aku", partOfSpeech: "Kata Ganti", level: "1", hskLevel: "HSK 1" },
+      { hanzi: "你", pinyin: "nǐ", indonesian: "Kamu / Anda", partOfSpeech: "Kata Ganti", level: "1", hskLevel: "HSK 1" },
+      { hanzi: "好", pinyin: "hǎo", indonesian: "Baik / Bagus", partOfSpeech: "Kata Sifat", level: "1", hskLevel: "HSK 1" }
+    ];
+  }
+
+  // Muat indeks terakhir yang tersimpan berdasarkan username pengguna
+  var userKey = 'pakbujan_srs_idx_' + (sessionUser.username || 'default');
+  var savedIdx = 0;
+  try {
+    var rawIdx = localStorage.getItem(userKey);
+    if (rawIdx !== null) {
+      savedIdx = parseInt(rawIdx, 10);
+    }
+  } catch (e) {
+    savedIdx = 0;
+  }
+
+  if (!isNaN(savedIdx) && savedIdx >= 0 && savedIdx < srsCardsQueue.length) {
+    currentSrsIndex = savedIdx;
+  } else {
+    currentSrsIndex = 0;
+  }
+
+  renderCurrentSrsCard();
+}
+    function saveSrsProgress() {
+  var userKey = 'pakbujan_srs_idx_' + (sessionUser.username || 'default');
+  try {
+    localStorage.setItem(userKey, currentSrsIndex.toString());
+  } catch (e) {}
+}
+
+function renderCurrentSrsCard() {
+  if (!srsCardsQueue || srsCardsQueue.length === 0) return;
+  if (currentSrsIndex >= srsCardsQueue.length) currentSrsIndex = 0;
+  
+  var card = srsCardsQueue[currentSrsIndex];
+  var elCard = document.getElementById('srs-card-element');
+  if (elCard) elCard.classList.remove('flipped');
+
+  var elHz = document.getElementById('srs-card-hz');
+  var elPy = document.getElementById('srs-card-py');
+  var elIn = document.getElementById('srs-card-in');
+  var elPos = document.getElementById('srs-card-pos');
+  var elLvl = document.getElementById('srs-card-level');
+  var elBar = document.getElementById('srs-progress-bar');
+
+  if (elHz) elHz.innerText = card.hanzi || '我';
+  if (elPy) elPy.innerText = card.pinyin || '';
+  if (elIn) elIn.innerText = card.indonesian || card.indo || '';
+  if (elPos) elPos.innerText = '[' + (card.partOfSpeech || 'Kosakata') + ']';
+  
+  var rawLevel = (card.hskLevel || card.level || '1').toString().toUpperCase().trim();
+  if (rawLevel.includes('7-9') || rawLevel.includes('7') || rawLevel.includes('8') || rawLevel.includes('9')) {
+    if (elLvl) elLvl.innerText = 'HSK 7-9';
+  } else {
+    if (elLvl) elLvl.innerText = card.hskLevel || ('HSK ' + (card.level || '1'));
+  }
+
+  if (elBar) {
+    var pct = Math.round(((currentSrsIndex + 1) / srsCardsQueue.length) * 100);
+    elBar.style.width = Math.min(100, Math.max(0, pct)) + '%';
+  }
+}
+
+window.flipFlashcard = function() {
+  var elCard = document.getElementById('srs-card-element');
+  if (elCard) elCard.classList.toggle('flipped');
+};
+
+window.answerSrs = function(isKnown) {
+  if (!srsCardsQueue || srsCardsQueue.length === 0) return;
+  if (isKnown) {
+    currentSrsIndex++;
+    if (currentSrsIndex >= srsCardsQueue.length) {
+      alert("🎉 Selamat! Anda telah menyelesaikan semua sesi pengulangan flashcards!");
       currentSrsIndex = 0;
-      renderCurrentSrsCard();
     }
-
-    function renderCurrentSrsCard() {
-      if (!srsCardsQueue || srsCardsQueue.length === 0) return;
-      if (currentSrsIndex >= srsCardsQueue.length) currentSrsIndex = 0;
-      var card = srsCardsQueue[currentSrsIndex];
-      var elCard = document.getElementById('srs-card-element');
-      if (elCard) elCard.classList.remove('flipped');
-
-      var elHz = document.getElementById('srs-card-hz');
-      var elPy = document.getElementById('srs-card-py');
-      var elIn = document.getElementById('srs-card-in');
-      var elPos = document.getElementById('srs-card-pos');
-      var elLvl = document.getElementById('srs-card-level');
-      var elBar = document.getElementById('srs-progress-bar');
-
-      if (elHz) elHz.innerText = card.hanzi || '我';
-      if (elPy) elPy.innerText = card.pinyin || '';
-      if (elIn) elIn.innerText = card.indonesian || card.indo || '';
-      if (elPos) elPos.innerText = '[' + (card.partOfSpeech || 'Kosakata') + ']';
-      
-      var rawLevel = (card.hskLevel || card.level || '1').toString().toUpperCase().trim();
-      if (rawLevel.includes('7-9') || rawLevel.includes('7') || rawLevel.includes('8') || rawLevel.includes('9')) {
-        if (elLvl) elLvl.innerText = 'HSK 7-9';
-      } else {
-        if (elLvl) elLvl.innerText = card.hskLevel || ('HSK ' + (card.level || '1'));
-      }
-
-      if (elBar) {
-        var pct = Math.round(((currentSrsIndex + 1) / srsCardsQueue.length) * 100);
-        elBar.style.width = pct + '%';
-      }
-    }
-
-    window.flipFlashcard = function() {
-      var elCard = document.getElementById('srs-card-element');
-      if (elCard) elCard.classList.toggle('flipped');
-    };
-
-    window.answerSrs = function(isKnown) {
-      if (!srsCardsQueue || srsCardsQueue.length === 0) return;
-      if (isKnown) {
-        currentSrsIndex++;
-        if (currentSrsIndex >= srsCardsQueue.length) {
-          alert("🎉 Selamat! Anda telah menyelesaikan semua sesi pengulangan flashcards!");
-          currentSrsIndex = 0;
-        }
-      } else {
-        var item = srsCardsQueue.splice(currentSrsIndex, 1)[0];
-        srsCardsQueue.push(item);
-      }
-      renderCurrentSrsCard();
-    };
+  } else {
+    var item = srsCardsQueue.splice(currentSrsIndex, 1)[0];
+    srsCardsQueue.push(item);
+  }
+  
+  // Simpan progres ke storage lokal setiap kali tombol ditekan
+  saveSrsProgress();
+  renderCurrentSrsCard();
+};
 
     window.requestCertificatePdf = function() {
       var name = (document.getElementById('cert-user-name') ? document.getElementById('cert-user-name').value.trim() : '') || sessionUser.username || 'Siswa PakBujan';
