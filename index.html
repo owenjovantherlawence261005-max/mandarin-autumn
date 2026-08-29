@@ -509,7 +509,7 @@
     }
     .btn-fail { background: rgba(220, 38, 38, 0.25); border: 1px solid #dc2626; color: #fca5a5; }
     .btn-fail:hover { background: #dc2626; color: #fff; }
-    .btn-pass { background: rgba(220, 38, 38, 0.25); border: 1px solid #16a34a; color: #86efac; }
+    .btn-pass { background: rgba(22, 163, 74, 0.25); border: 1px solid #16a34a; color: #86efac; }
     .btn-pass:hover { background: #16a34a; color: #fff; }
 
     .bottom-nav {
@@ -1492,42 +1492,6 @@
     var logoClickCount = 0;
     var logoClickTimer = null;
 
-    // KONTROL RENDER & POP OUT LOADING
-    var currentRenderTask = null;
-    var pdfLoadingTimeout = null;
-
-    function showPdfLoadingNotice(show, customText) {
-      var overlay = document.getElementById('pdf-loading-notice-pop');
-      var scrollBox = document.getElementById('pdf-scroll-box');
-      if (!overlay && scrollBox) {
-        overlay = document.createElement('div');
-        overlay.id = 'pdf-loading-notice-pop';
-        overlay.style.position = 'absolute';
-        overlay.style.top = '50%';
-        overlay.style.left = '50%';
-        overlay.style.transform = 'translate(-50%, -50%)';
-        overlay.style.background = 'rgba(26, 15, 10, 0.95)';
-        overlay.style.border = '2px solid var(--gold-autumn)';
-        overlay.style.color = '#fff';
-        overlay.style.padding = '18px 28px';
-        overlay.style.borderRadius = '14px';
-        overlay.style.boxShadow = '0 8px 30px rgba(0,0,0,0.85)';
-        overlay.style.zIndex = '100';
-        overlay.style.fontSize = '15px';
-        overlay.style.fontWeight = '700';
-        overlay.style.textAlign = 'center';
-        overlay.style.display = 'none';
-        overlay.style.pointerEvents = 'none';
-        overlay.style.backdropFilter = 'blur(10px)';
-        scrollBox.style.position = 'relative';
-        scrollBox.appendChild(overlay);
-      }
-      if (overlay) {
-        overlay.innerHTML = customText || '⏳ Memuat Lembar Soal...';
-        overlay.style.display = show ? 'block' : 'none';
-      }
-    }
-
     // 1. INIT & LOGIN ENGINE
     window.addEventListener('DOMContentLoaded', function() {
       initFallingLeaves();
@@ -1535,7 +1499,7 @@
       document.getElementById('main-app-container').style.visibility = 'hidden';
     });
 
-    // Toggle Password Visibility (Mata)
+    // Toggle Password Visibility
     window.togglePasswordVisibility = function() {
       var passInput = document.getElementById('login-password');
       var eyeBtn = document.getElementById('btn-toggle-eye');
@@ -1682,6 +1646,7 @@
 
       if (viewId === 'workbook') loadWorkbookQuestions(sessionUser.currentHsk);
       if (viewId === 'stroke') setTimeout(() => { renderMultiTianZiGe(currentPracticeWord); }, 60);
+      if (viewId === 'srs') setTimeout(() => { renderCurrentSrsCard(); }, 60);
       if (viewId === 'placement') setTimeout(() => { 
         if (currentPlacementPackage && currentPlacementPackage.pdfUrl) {
           loadPdfFromUrlOrData(formatRelativeAssetPath(currentPlacementPackage.pdfUrl)); 
@@ -1689,7 +1654,7 @@
       }, 80);
     };
 
-    // 1. ENGINE EFEK DAUN GUGUR AUTUMN
+    // ENGINE EFEK DAUN GUGUR AUTUMN
     function initFallingLeaves() {
       var canvas = document.getElementById('leaves-canvas');
       if (!canvas) return;
@@ -1784,7 +1749,6 @@
       }
     };
 
-    // FUNGSI NORMALISASI PATH ASSET
     function formatRelativeAssetPath(rawPath) {
       if (!rawPath || rawPath.toString().trim() === "") return "";
       let p = rawPath.toString().trim();
@@ -1796,7 +1760,7 @@
       return "./placement_test/" + p;
     }
 
-    // 1. PLACEMENT PACKAGES TABLE
+    // CRUD TABLES
     function loadPlacementPackagesTable() {
       var tbody = document.getElementById('crud-plc-table-body');
       if (!tbody) return;
@@ -1845,7 +1809,6 @@
       });
     }
 
-    // 2. SPEAKING DIALOGUES TABLE
     function loadSpeakingDialoguesTable() {
       var tbody = document.getElementById('crud-spk-table-body');
       if (!tbody) return;
@@ -1893,7 +1856,6 @@
       });
     }
 
-    // 3. WORKBOOK QUESTIONS TABLE
     function loadWorkbookTable() {
       var tbody = document.getElementById('crud-wb-table-body');
       if (!tbody) return;
@@ -2011,7 +1973,7 @@
       return dialogue;
     }
 
-    // CRUD SPEAKING ACTIONS
+    // CRUD ACTIONS
     window.submitCrudSpeakingDialogue = function() {
       if (sessionUser.role !== 'admin') { alert("Akses ditolak."); return; }
       const editId = (document.getElementById('crud-spk-edit-id') ? document.getElementById('crud-spk-edit-id').value.trim() : '');
@@ -2082,7 +2044,6 @@
       }
     };
 
-    // CRUD WORKBOOK ACTIONS
     window.submitCrudWorkbookQuestion = function() {
       if (sessionUser.role !== 'admin') { alert("Akses ditolak."); return; }
       const editId = (document.getElementById('crud-wb-edit-id') ? document.getElementById('crud-wb-edit-id').value.trim() : '');
@@ -2147,7 +2108,6 @@
       }
     };
 
-    // CRUD PLACEMENT ACTIONS
     window.submitCrudPlacementPackage = function() {
       if (sessionUser.role !== 'admin') { alert("Akses ditolak."); return; }
 
@@ -2236,11 +2196,11 @@
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
         fetch(SCRIPT_URL + "?action=getVocab&level=ALL")
           .then(res => res.json())
-          .then(data => { allVocabularies = Array.isArray(data) ? data : (data.items || []); renderVocabUI(); initPracticeCharacters(currentStrokeLevel); renderCurrentSrsCard(); })
+          .then(data => { allVocabularies = Array.isArray(data) ? data : (data.items || []); renderVocabUI(); initPracticeCharacters(currentStrokeLevel); initSrsEngine(); })
           .catch(err => { console.error("Gagal load API:", err); useFallbackVocab(); });
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run.withSuccessHandler(function(data) {
-          allVocabularies = Array.isArray(data) ? data : (data.items || []); renderVocabUI(); initPracticeCharacters(currentStrokeLevel); renderCurrentSrsCard();
+          allVocabularies = Array.isArray(data) ? data : (data.items || []); renderVocabUI(); initPracticeCharacters(currentStrokeLevel); initSrsEngine();
         }).getVocabularyData('ALL');
       } else { useFallbackVocab(); }
     }
@@ -2250,7 +2210,7 @@
         {hanzi:"米饭", pinyin:"mǐfàn", indonesian:"nasi", partOfSpeech:"Kata Benda", level:"1", hskLevel:"HSK 1"},
         {hanzi:"谢谢", pinyin:"xièxie", indonesian:"terima kasih", partOfSpeech:"Kata Sapaan", level:"1", hskLevel:"HSK 1"}
       ];
-      renderVocabUI(); initPracticeCharacters('1'); renderCurrentSrsCard();
+      renderVocabUI(); initPracticeCharacters('1'); initSrsEngine();
     }
 
     function renderVocabUI() {
@@ -2642,16 +2602,160 @@
 
       if (selectedOpt === correctOpt) {
         if (btnElement) { btnElement.style.background = '#16a34a'; btnElement.style.color = '#fff'; }
-        feedbackBox.style.background = 'rgba(220, 38, 38, 0.2)'; feedbackBox.style.border = '1px solid #16a34a'; feedbackBox.style.color = '#86efac'; feedbackBox.innerHTML = '🎉 <b>Benar Sekali!</b> Jawaban Anda tepat.';
+        feedbackBox.style.background = 'rgba(22, 163, 74, 0.2)'; feedbackBox.style.border = '1px solid #16a34a'; feedbackBox.style.color = '#86efac'; feedbackBox.innerHTML = '🎉 <b>Benar Sekali!</b> Jawaban Anda tepat.';
       } else {
         if (btnElement) { btnElement.style.background = '#dc2626'; btnElement.style.color = '#fff'; }
         feedbackBox.style.background = 'rgba(220, 38, 38, 0.2)'; feedbackBox.style.border = '1px solid #dc2626'; feedbackBox.style.color = '#fca5a5'; feedbackBox.innerHTML = '❌ <b>Kurang Tepat.</b> Kunci jawaban: <b>' + correctOpt + '</b>';
       }
     };
 
-    // =========================================================================
-    // 8. ENGINE PLACEMENT TEST (DENGAN DUKUNGAN PAKET TANPA AUDIO)
-    // =========================================================================
+    // SRS FLASHCARD ENGINE
+    function initSrsEngine() {
+      if (allVocabularies && allVocabularies.length > 0) {
+        srsCardsQueue = [...allVocabularies];
+      } else {
+        srsCardsQueue = [
+          { hanzi: "我", pinyin: "wǒ", indonesian: "Saya / Aku", partOfSpeech: "Kata Ganti", level: "1", hskLevel: "HSK 1" },
+          { hanzi: "你", pinyin: "nǐ", indonesian: "Kamu / Anda", partOfSpeech: "Kata Ganti", level: "1", hskLevel: "HSK 1" },
+          { hanzi: "好", pinyin: "hǎo", indonesian: "Baik / Bagus", partOfSpeech: "Kata Sifat", level: "1", hskLevel: "HSK 1" }
+        ];
+      }
+      currentSrsIndex = 0;
+      renderCurrentSrsCard();
+    }
+
+    function renderCurrentSrsCard() {
+      if (!srsCardsQueue || srsCardsQueue.length === 0) return;
+      if (currentSrsIndex >= srsCardsQueue.length) currentSrsIndex = 0;
+      var card = srsCardsQueue[currentSrsIndex];
+      var elCard = document.getElementById('srs-card-element');
+      if (elCard) elCard.classList.remove('flipped');
+
+      var elHz = document.getElementById('srs-card-hz');
+      var elPy = document.getElementById('srs-card-py');
+      var elIn = document.getElementById('srs-card-in');
+      var elPos = document.getElementById('srs-card-pos');
+      var elLvl = document.getElementById('srs-card-level');
+      var elBar = document.getElementById('srs-progress-bar');
+
+      if (elHz) elHz.innerText = card.hanzi || '我';
+      if (elPy) elPy.innerText = card.pinyin || '';
+      if (elIn) elIn.innerText = card.indonesian || card.indo || '';
+      if (elPos) elPos.innerText = '[' + (card.partOfSpeech || 'Kosakata') + ']';
+      if (elLvl) elLvl.innerText = card.hskLevel || ('HSK ' + (card.level || '1'));
+
+      if (elBar) {
+        var pct = Math.round(((currentSrsIndex + 1) / srsCardsQueue.length) * 100);
+        elBar.style.width = pct + '%';
+      }
+    }
+
+    window.flipFlashcard = function() {
+      var elCard = document.getElementById('srs-card-element');
+      if (elCard) elCard.classList.toggle('flipped');
+    };
+
+    window.answerSrs = function(isKnown) {
+      if (!srsCardsQueue || srsCardsQueue.length === 0) return;
+      if (isKnown) {
+        currentSrsIndex++;
+        if (currentSrsIndex >= srsCardsQueue.length) {
+          alert("🎉 Selamat! Anda telah menyelesaikan semua sesi pengulangan flashcards!");
+          currentSrsIndex = 0;
+        }
+      } else {
+        var item = srsCardsQueue.splice(currentSrsIndex, 1)[0];
+        srsCardsQueue.push(item);
+      }
+      renderCurrentSrsCard();
+    };
+
+    // SERTIFIKAT ENGINE (PDF/IMAGE CANVAS GENERATOR)
+    window.requestCertificatePdf = function() {
+      var name = (document.getElementById('cert-user-name') ? document.getElementById('cert-user-name').value.trim() : '') || sessionUser.username || 'Siswa PakBujan';
+      var statusEl = document.getElementById('cert-status-msg');
+      if (statusEl) statusEl.innerText = 'Membuat sertifikat pencapaian resmi...';
+
+      var canvas = document.createElement('canvas');
+      canvas.width = 1200;
+      canvas.height = 850;
+      var ctx = canvas.getContext('2d');
+
+      // Background
+      ctx.fillStyle = '#180d08';
+      ctx.fillRect(0, 0, 1200, 850);
+
+      // Border double
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 10;
+      ctx.strokeRect(30, 30, 1140, 790);
+
+      ctx.strokeStyle = '#ea580c';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(45, 45, 1110, 760);
+
+      // Header
+      ctx.fillStyle = '#f59e0b';
+      ctx.font = 'bold 36px "Plus Jakarta Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('PAKBUJAN ACADEMY MANDARIN', 600, 130);
+
+      ctx.fillStyle = '#fff7ed';
+      ctx.font = '22px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('CERTIFICATE OF ACHIEVEMENT', 600, 180);
+
+      // Maple emblem
+      ctx.font = '60px serif';
+      ctx.fillText('🍁', 600, 260);
+
+      // Recipient Text
+      ctx.fillStyle = '#fed7aa';
+      ctx.font = '20px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('Diberikan secara resmi kepada:', 600, 340);
+
+      ctx.fillStyle = '#f59e0b';
+      ctx.font = 'bold 44px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText(name.toUpperCase(), 600, 410);
+
+      // Achievement desc
+      ctx.fillStyle = '#fff7ed';
+      ctx.font = '22px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('Telah berhasil menyelesaikan dan lulus evaluasi kompetensi resmi:', 600, 480);
+
+      ctx.fillStyle = '#ea580c';
+      ctx.font = 'bold 32px "Noto Serif SC", serif';
+      ctx.fillText(sessionUser.currentHsk + ' STANDARD MANDARIN PROFICIENCY', 600, 540);
+
+      // Date & Code
+      var today = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+      ctx.fillStyle = '#fed7aa';
+      ctx.font = '16px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('Diterbitkan pada: ' + today, 600, 630);
+      ctx.fillText('Kode Sertifikat: PB-' + Math.random().toString(36).substr(2, 8).toUpperCase(), 600, 660);
+
+      // Signature line
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(250, 720); ctx.lineTo(450, 720);
+      ctx.moveTo(750, 720); ctx.lineTo(950, 720);
+      ctx.stroke();
+
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 16px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('Instruktur Utama', 350, 745);
+      ctx.fillText('Head of Academic', 850, 745);
+
+      var dataUrl = canvas.toDataURL('image/png');
+      var link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = 'Sertifikat_Mandarin_' + name.replace(/\s+/g, '_') + '.png';
+      link.click();
+
+      if (statusEl) statusEl.innerText = '✅ Sertifikat berhasil diunduh!';
+    };
+
+    // PLACEMENT TEST ENGINE
     function loadPlacementPackagesView(preferredId) {
       var selectEl = document.getElementById('placement-package-select');
 
@@ -2990,7 +3094,6 @@
       renderLjdItems();
     };
 
-    // EVALUASI UJIAN OTOMATIS NAIK KELAS
     window.submitPlacementExam = function() {
       let listeningCorrect = 0;
       let readingCorrect = 0;
