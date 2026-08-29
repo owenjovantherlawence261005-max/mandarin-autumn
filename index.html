@@ -2144,15 +2144,32 @@
       }
     };
 
-    window.editPlacementPackage = function(testId) {
+   window.editPlacementPackage = function(testId) {
       if (sessionUser.role !== 'admin') return;
-      var found = allPlacementPackages.find(function(p) { return p.testId === testId; }); if (!found) return;
-      var inEditId = document.getElementById('crud-plc-edit-id'); var inHsk = document.getElementById('crud-plc-hsk'); var inTitle = document.getElementById('crud-plc-title'); var inPdfUrl = document.getElementById('crud-plc-pdf-url'); var inAudioUrl = document.getElementById('crud-plc-audio-url'); var inKeys = document.getElementById('crud-plc-keys'); var btnSave = document.getElementById('btn-save-crud-plc'); var btnCancel = document.getElementById('btn-cancel-edit-plc');
+      var found = allPlacementPackages.find(function(p) { return p.testId === testId; }); 
+      if (!found) return;    
+      var inEditId = document.getElementById('crud-plc-edit-id'); 
+      var inHsk = document.getElementById('crud-plc-hsk'); 
+      var inTitle = document.getElementById('crud-plc-title'); 
+      var inPdfUrl = document.getElementById('crud-plc-pdf-url'); 
+      var inAudioUrl = document.getElementById('crud-plc-audio-url'); 
+      var inKeys = document.getElementById('crud-plc-keys'); 
+      var btnSave = document.getElementById('btn-save-crud-plc'); 
+      var btnCancel = document.getElementById('btn-cancel-edit-plc');
       if (inEditId) inEditId.value = found.testId;
-      if (inHsk) { var raw = (found.hskLevel || 'HSK 1').toString().toUpperCase().replace(/\s+/g, ''); var num = raw.replace(/[^0-9]/g, '') || '1'; inHsk.value = 'HSK ' + num; }
-      if (inTitle) inTitle.value = found.testTitle || ''; if (inPdfUrl) inPdfUrl.value = found.pdfUrl || ''; if (inAudioUrl) inAudioUrl.value = found.audioUrl || ''; if (inKeys) inKeys.value = found.answerKeyJson || '';
-      if (btnSave) btnSave.innerText = '💾 Simpan Perubahan Paket (' + found.testId + ')'; if (btnCancel) btnCancel.style.display = 'block';
-      var modal = document.getElementById('admin-crud-modal'); if (modal) modal.scrollTo({ top: 0, behavior: 'smooth' });
+      if (inHsk) { 
+        var raw = (found.hskLevel || 'HSK 1').toString().toUpperCase().replace(/\s+/g, ''); 
+        var num = raw.replace(/[^0-9]/g, '') || '1'; 
+        inHsk.value = 'HSK ' + num; 
+      }
+      if (inTitle) inTitle.value = found.testTitle || ''; 
+      if (inPdfUrl) inPdfUrl.value = found.pdfUrl || ''; 
+      if (inAudioUrl) inAudioUrl.value = found.audioUrl || ''; 
+      if (inKeys) inKeys.value = found.answerKeyJson || ''; 
+      if (btnSave) btnSave.innerText = '💾 Simpan Perubahan Paket (' + found.testId + ')'; 
+      if (btnCancel) btnCancel.style.display = 'block';
+      var modal = document.getElementById('admin-crud-modal'); 
+      if (modal) modal.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     window.cancelEditPlacementPackage = function() {
