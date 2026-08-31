@@ -561,7 +561,7 @@
     .btn-pass { background: rgba(22, 163, 74, 0.25); border: 1px solid #16a34a; color: #86efac; }
     .btn-pass:hover { background: #16a34a; color: #fff; }
 
-    /* BOTTOM NAV HORIZONTAL SCROLL LENGKAP SEMUA TAB */
+    /* BOTTOM NAV HORIZONTAL SCROLL */
     .bottom-nav {
       display: none;
       position: fixed;
@@ -655,7 +655,7 @@
       box-shadow: 0 0 6px rgba(255,255,255,0.8);
     }
 
-    /* MODAL PANEL CRUD RAHASIA (KLIK 3X LOGO AUTUMN) */
+    /* MODAL PANEL CRUD */
     #admin-crud-modal {
       display: none;
       position: fixed;
@@ -813,7 +813,7 @@
 </head>
 <body>
 
-  <!-- LOGIN OVERLAY DENGAN FORM SIMETRIS DAN SEJAJAR -->
+  <!-- LOGIN OVERLAY -->
   <div id="login-overlay">
     <div class="glass-card" style="width: 380px; text-align: center; padding: 40px 30px;">
       <div style="font-size: 50px; margin-bottom: 10px;">🍁</div>
@@ -938,7 +938,7 @@
         </div>
       </section>
 
-      <!-- 3. MENULIS HANZI (TIAN ZI GE - FULL RESPONSIVE) -->
+      <!-- 3. MENULIS HANZI (TIAN ZI GE) -->
       <section id="view-stroke" class="view-section">
         <div class="header-group">
           <span class="badge">Stroke Order & Calligraphy</span>
@@ -1103,7 +1103,7 @@
         </div>
       </section>
 
-      <!-- 8. HSK DIAGNOSTIC & MOCK PLACEMENT TEST -->
+      <!-- 8. HSK DIAGNOSTIC & MOCK PLACEMENT TEST (LOBBY + FULL FOCUS LOCK) -->
       <section id="view-placement" class="view-section">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
           <div class="header-group" style="margin-bottom: 0;">
@@ -1202,7 +1202,7 @@
               </div>
               
               <div style="margin-top: 10px; font-size: 11.5px; color: var(--text-muted); text-align: center;">
-                💡 <i>Gunakan mouse scroll atau drag untuk membaca lembar soal ke atas/bawah. Kunci jawaban lengkap & naskah audio resmi tersedia pada halaman terakhir di file PDF yang Anda unduh.</i>
+                💡 <i>Gunakan mouse scroll atau drag untuk membaca lembar soal ke atas/bawah. Kunci jawaban lengkap & naskah audio resmi tersedia pada halaman terakhir di file PDF yang Anda unduh[cite: 1].</i>
               </div>
             </div>
 
@@ -1258,7 +1258,7 @@
     </main>
   </div>
 
-  <!-- MODAL PANEL CRUD RAHASIA (HANYA OWEN) -->
+  <!-- MODAL PANEL CRUD RAHASIA -->
   <div id="admin-crud-modal">
     <div class="crud-modal-content">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
@@ -1503,7 +1503,7 @@
     </div>
   </div>
 
-  <!-- BOTTOM NAV LENGKAP SEMUA TAB -->
+  <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
     <button class="bottom-nav-btn active" onclick="switchTab('dashboard')"><span class="icon">🍂</span>Beranda</button>
     <button class="bottom-nav-btn" onclick="switchTab('dictionary')"><span class="icon">📖</span>Kamus</button>
@@ -2431,7 +2431,7 @@
     };
 
     // =========================================================================
-    // OPTIMASI LOAD INSTAN (CACHE + BACKGROUND SYNC)
+    // OPTIMASI LOAD DATA KOSAKATA
     // =========================================================================
     function loadDatabaseVocabFast() {
       try {
@@ -3386,7 +3386,7 @@
     };
 
     // =========================================================================
-    // 8. PLACEMENT TEST ENGINE & LOBBY + FOCUS LOCK + TIMER 2 JAM INSTAN
+    // 8. PLACEMENT TEST ENGINE
     // =========================================================================
     function getExamStructure(pkg) {
       const rawLvl = (pkg && pkg.hskLevel ? pkg.hskLevel : (sessionUser.currentHsk || 'HSK 1')).toString().toUpperCase();
@@ -3702,7 +3702,7 @@
       }
 
       text += `-----------------------------------------------------\n`;
-      text += `Catatan: Kunci jawaban resmi tersedia pada halaman terakhir di file PDF soal yang Anda unduh.\n`;
+      text += `Catatan: Kunci jawaban resmi tersedia pada halaman terakhir di file PDF soal yang Anda unduh[cite: 1].\n`;
       text += `=====================================================\n`;
 
       const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
@@ -3714,9 +3714,29 @@
       document.body.removeChild(link);
     };
 
+    // FUNGSI ANTI-CONTEK: MEMOTONG HALAMAN KUNCI JAWABAN & NASKAH AUDIO DARI TAMPILAN
     async function detectMaxQuestionPage(pdfDoc) {
       if (!pdfDoc) return 1;
-      return pdfDoc.numPages;
+      const totalPages = pdfDoc.numPages;
+      for (let p = 1; p <= totalPages; p++) {
+        try {
+          const page = await pdfDoc.getPage(p);
+          const textContent = await page.getTextContent();
+          const str = textContent.items.map(item => item.str).join("").replace(/\s+/g, "");
+          
+          if (
+            str.includes("听力材料") || 
+            str.includes("卷听力材料") || 
+            str.includes("卷答案") || 
+            str.includes("参考答案") || 
+            str.includes("听力录音文本") ||
+            str.includes("听力文本")
+          ) {
+            return Math.max(1, p - 1);
+          }
+        } catch (e) {}
+      }
+      return totalPages;
     }
 
     async function extractAnswerKeyFromPdf(pdfDoc) {
@@ -3725,7 +3745,7 @@
       const extractedKey = {};
       let fullKeyText = "";
 
-      for (let p = Math.max(1, totalPages - 4); p <= totalPages; p++) {
+      for (let p = Math.max(1, totalPages - 5); p <= totalPages; p++) {
         try {
           const page = await pdfDoc.getPage(p);
           const content = await page.getTextContent();
@@ -3805,13 +3825,15 @@
       try {
         showPdfLoadingNotice(true, "⏳ Memuat lembar soal & mendeteksi kunci...");
         examPdfDoc = await pdfjsLib.getDocument(urlOrData).promise;
-        totalPdfPages = await detectMaxQuestionPage(examPdfDoc);
         
-        // Otomatis ekstrak kunci dari PDF
+        // Ekstrak kunci jawaban otomatis dari halaman naskah & kunci
         const autoKey = await extractAnswerKeyFromPdf(examPdfDoc);
         if (currentPlacementPackage) {
           currentPlacementPackage.autoExtractedKey = autoKey;
         }
+
+        // Batasi tampilan hanya pada halaman soal saja (anti-contek)
+        totalPdfPages = await detectMaxQuestionPage(examPdfDoc);
 
         currentPdfPageNum = 1; 
         showPdfLoadingNotice(false);
