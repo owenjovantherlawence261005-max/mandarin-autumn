@@ -144,29 +144,29 @@
       to { opacity: 1; transform: scale(1) translateY(0); }
     }
 
-    .guide-tab-bar {
+ .guide-tab-bar {
       display: flex;
+      flex-wrap: wrap;
       gap: 8px;
-      overflow-x: auto;
-      white-space: nowrap;
-      padding-bottom: 10px;
+      padding-bottom: 12px;
       margin-bottom: 18px;
       border-bottom: 1px solid var(--amber-border);
-      scrollbar-width: none;
     }
-    .guide-tab-bar::-webkit-scrollbar { display: none; }
 
     .guide-tab-btn {
-      padding: 8px 14px;
+      flex: 1;
+      min-width: 120px;
+      padding: 9px 10px;
       border-radius: 8px;
       background: rgba(40, 24, 16, 0.6);
       border: 1px solid var(--amber-border);
       color: var(--text-muted);
-      font-size: 12.5px;
+      font-size: 12px;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.2s;
-      flex-shrink: 0;
+      text-align: center;
+      white-space: nowrap;
     }
     .guide-tab-btn.active {
       background: var(--terracotta);
@@ -174,6 +174,7 @@
       color: #fff;
       box-shadow: 0 4px 12px var(--terracotta-glow);
     }
+    
 
     .guide-step-grid {
       display: grid;
@@ -1010,12 +1011,9 @@
       <section id="view-dashboard" class="view-section active">
         
         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-            <button class="btn-autumn-primary" onclick="switchTab('speaking')">Simulasi Speaking AI</button>
-            <button class="pill-btn" onclick="switchTab('dictionary')">Buka Kamus Kosakata</button>
-            <button class="pill-btn" onclick="switchTab('workbook')">Kerjakan Tugas</button>
-            <button class="pill-btn" style="border-color: var(--gold-autumn); color: var(--gold-autumn);" onclick="openGuideModal()">📖 Panduan Penggunaan</button>
-          </div>
-        
+           <button class="pill-btn" style="border-color: var(--gold-autumn); color: var(--gold-autumn); padding: 10px 16px; font-weight: 700;" onclick="openGuideModal()">
+            📖 Panduan Penggunaan
+          </button>
         <div class="header-group">
           <span class="badge">Selamat Datang di Musim Belajar</span>
           <h2 id="dashboard-welcome-text">Halo, Pelajar Tangguh! 🍁</h2>
@@ -1708,7 +1706,7 @@
   </div>
 
   <!-- POP-OUT MODAL PANDUAN PENGGUNAAN LENGKAP -->
-  <div id="guide-modal-overlay" onclick="handleGuideOverlayClick(event)">
+<div id="guide-modal-overlay" onclick="handleGuideOverlayClick(event)">
     <div class="guide-modal-card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
         <div style="display: flex; align-items: center; gap: 10px;">
@@ -1722,11 +1720,11 @@
       </div>
 
       <div class="guide-tab-bar">
-        <button class="guide-tab-btn active" id="gtab-nav" onclick="switchGuideTab('nav')">📱 Navigasi Menu</button>
-        <button class="guide-tab-btn" id="gtab-stroke" onclick="switchGuideTab('stroke')">✍️ Menulis Hanzi</button>
-        <button class="guide-tab-btn" id="gtab-speak" onclick="switchGuideTab('speak')">🎙️ Percakapan AI</button>
-        <button class="guide-tab-btn" id="gtab-exam" onclick="switchGuideTab('exam')">🎯 Tes HSK & Coret PDF</button>
-        <button class="guide-tab-btn" id="gtab-srs" onclick="switchGuideTab('srs')">🎴 Kartu Hapalan & Rapor</button>
+        <button class="guide-tab-btn active" id="gtab-nav" onclick="switchGuideTab('nav')">📱 Navigasi</button>
+        <button class="guide-tab-btn" id="gtab-stroke" onclick="switchGuideTab('stroke')">✍️ Menulis</button>
+        <button class="guide-tab-btn" id="gtab-speak" onclick="switchGuideTab('speak')">🎙️ Percakapan</button>
+        <button class="guide-tab-btn" id="gtab-exam" onclick="switchGuideTab('exam')">🎯 Tes HSK</button>
+        <button class="guide-tab-btn" id="gtab-srs" onclick="switchGuideTab('srs')">🎴 Kartu & Rapor</button>
       </div>
 
       <!-- TAB 1: NAVIGASI MENU -->
@@ -1734,7 +1732,7 @@
         <div class="guide-step-grid">
           <div class="guide-item-card">
             <h4><span>👉</span> Geser Menu di Layar Ponsel</h4>
-            <p>Menu di bagian bawah layar ponsel dapat <b>digeser secara horizontal ke kanan/kiri</b> untuk mengakses seluruh 9 modul pembelajaran.</p>
+            <p>Bilah menu di bagian bawah layar ponsel dapat <b>digeser horizontal ke kanan/kiri</b> untuk mengakses seluruh modul pembelajaran.</p>
           </div>
         </div>
       </div>
@@ -1744,11 +1742,11 @@
         <div class="guide-step-grid">
           <div class="guide-item-card">
             <h4><span>✍️</span> Kanvas Tian Zi Ge</h4>
-            <p>Pilih kosakata dari daftar, lalu goreskan karakter di atas kanvas kotak panduan menggunakan mouse atau sentuhan jari[cite: 11].</p>
+            <p>Pilih kosakata dari daftar, lalu goreskan karakter di atas kanvas kotak panduan menggunakan mouse atau sentuhan jari.</p>
           </div>
           <div class="guide-item-card">
             <h4><span>🔊</span> Audio Pelafalan & Reset</h4>
-            <p>Klik tombol <b>Pelafalan Kata</b> untuk mendengarkan pelafalan Mandarin baku dan <b>Hapus Goresan</b> untuk mengulang latihan[cite: 11].</p>
+            <p>Klik tombol <b>Pelafalan Kata</b> untuk mendengarkan audio Mandarin baku dan <b>Hapus Goresan</b> untuk mengulang latihan.</p>
           </div>
         </div>
       </div>
@@ -1758,11 +1756,11 @@
         <div class="guide-step-grid">
           <div class="guide-item-card">
             <h4><span>🎭</span> Pemilihan Peran Dialog</h4>
-            <p>Tentukan skenario dari menu dropdown, lalu pilih ingin memerankan <b>Karakter A</b> atau <b>Karakter B</b>[cite: 11].</p>
+            <p>Tentukan skenario dari menu pilihan, lalu tentukan ingin memerankan <b>Karakter A</b> atau <b>Karakter B</b>.</p>
           </div>
           <div class="guide-item-card">
             <h4><span>🎙️</span> Simulasi Dua Arah</h4>
-            <p>Dengarkan giliran AI berbicara, lalu klik ikon <b>Mikrofon</b> saat giliran Anda untuk melatih pengucapan[cite: 11].</p>
+            <p>Dengarkan giliran AI berbicara, lalu klik ikon <b>Mikrofon</b> saat giliran Anda untuk melatih pelafalan.</p>
           </div>
         </div>
       </div>
@@ -1772,11 +1770,11 @@
         <div class="guide-step-grid">
           <div class="guide-item-card">
             <h4><span>✏️</span> Coretan Langsung pada PDF</h4>
-            <p>Gunakan alat <b>Pensil</b>, <b>Penghapus</b>, dan pilihan warna tinta untuk menandai lembar soal PDF selama ujian berlangsung[cite: 11].</p>
+            <p>Gunakan alat <b>Pensil</b>, <b>Penghapus</b>, dan pilihan warna tinta untuk menandai lembar soal PDF selama ujian berlangsung.</p>
           </div>
           <div class="guide-item-card">
             <h4><span>📝</span> Lembar Jawaban Digital (LJD)</h4>
-            <p>Isi lembar jawaban di kolom kanan[cite: 11]. Skor Menyimak, Membaca, dan Menulis (termasuk esai) akan dihitung otomatis saat dikumpulkan[cite: 11].</p>
+            <p>Isi lembar jawaban di kolom kanan. Skor Menyimak, Membaca, dan Menulis akan dihitung otomatis saat dikumpulkan.</p>
           </div>
         </div>
       </div>
@@ -1786,11 +1784,11 @@
         <div class="guide-step-grid">
           <div class="guide-item-card">
             <h4><span>🎴</span> Kartu Hapalan SRS (Leitner)</h4>
-            <p>Klik kartu untuk membalik dan melihat pinyin/arti kata[cite: 11]. Kartu yang belum hapal akan diulang kembali di akhir antrean[cite: 11].</p>
+            <p>Klik kartu untuk membalik dan melihat pinyin serta artinya. Kartu yang belum hapal akan diulang kembali di akhir antrean.</p>
           </div>
           <div class="guide-item-card">
             <h4><span>📜</span> Cetak Sertifikat Kelulusan</h4>
-            <p>Setelah dinyatakan lulus pada Tes HSK, Anda dapat mengunduh sertifikat pencapaian resmi dalam format gambar HD PNG[cite: 11].</p>
+            <p>Setelah dinyatakan lulus pada Tes HSK, Anda dapat mengunduh sertifikat pencapaian resmi dalam format gambar HD PNG.</p>
           </div>
         </div>
       </div>
