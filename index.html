@@ -4298,62 +4298,62 @@
         });
       }
 
-      isExamActive = false;[cite: 1]
-      clearInterval(examTimerInterval);[cite: 1]
-      isExamTimerRunning = false;[cite: 1]
+      isExamActive = false;
+      clearInterval(examTimerInterval);
+      isExamTimerRunning = false;
 
-      try { if (document.exitFullscreen) document.exitFullscreen().catch(()=>{}); } catch(e){}[cite: 1]
-      var pkgSelector = document.getElementById('exam-pkg-selector-wrap');[cite: 1]
-      if (pkgSelector) pkgSelector.style.pointerEvents = 'auto';[cite: 1]
+      try { if (document.exitFullscreen) document.exitFullscreen().catch(()=>{}); } catch(e){}
+      var pkgSelector = document.getElementById('exam-pkg-selector-wrap');
+      if (pkgSelector) pkgSelector.style.pointerEvents = 'auto';
 
-      const structure = getExamStructure(currentPlacementPackage);[cite: 1]
-      const answerKey = getExamAnswerKey(currentPlacementPackage);[cite: 1]
+      const structure = getExamStructure(currentPlacementPackage);
+      const answerKey = getExamAnswerKey(currentPlacementPackage);
 
-      let listeningCorrect = 0;[cite: 1]
-      let readingCorrect = 0;[cite: 1]
-      let writingScore = 0;[cite: 1]
+      let listeningCorrect = 0;
+      let readingCorrect = 0;
+      let writingScore = 0;
 
-      const listStart = structure.listeningRange[0], listEnd = structure.listeningRange[1];[cite: 1]
-      const readStart = structure.readingRange[0], readEnd = structure.readingRange[1];[cite: 1]
-      const listTotal = (listEnd - listStart + 1);[cite: 1]
-      const readTotal = (readEnd - readStart + 1);[cite: 1]
+      const listStart = structure.listeningRange[0], listEnd = structure.listeningRange[1];
+      const readStart = structure.readingRange[0], readEnd = structure.readingRange[1];
+      const listTotal = (listEnd - listStart + 1);
+      const readTotal = (readEnd - readStart + 1);
 
-      for (let i = listStart; i <= listEnd; i++) {[cite: 1]
-        const userAns = userExamAnswers[i] || "";[cite: 1]
-        const correctAns = answerKey[i] || answerKey[i.toString()] || "";[cite: 1]
-        if (checkAnswerMatch(userAns, correctAns)) listeningCorrect++;[cite: 1]
-      }[cite: 1]
+      for (let i = listStart; i <= listEnd; i++) {
+        const userAns = userExamAnswers[i] || "";
+        const correctAns = answerKey[i] || answerKey[i.toString()] || "";
+        if (checkAnswerMatch(userAns, correctAns)) listeningCorrect++;
+      }
 
-      for (let i = readStart; i <= readEnd; i++) {[cite: 1]
-        const userAns = userExamAnswers[i] || "";[cite: 1]
-        const correctAns = answerKey[i] || answerKey[i.toString()] || "";[cite: 1]
-        if (checkAnswerMatch(userAns, correctAns)) readingCorrect++;[cite: 1]
-      }[cite: 1]
+      for (let i = readStart; i <= readEnd; i++) {
+        const userAns = userExamAnswers[i] || "";
+        const correctAns = answerKey[i] || answerKey[i.toString()] || "";
+        if (checkAnswerMatch(userAns, correctAns)) readingCorrect++;
+      }
 
-      const listeningScore = Math.round((listeningCorrect / listTotal) * 100);[cite: 1]
-      const readingScore = Math.round((readingCorrect / readTotal) * 100);[cite: 1]
+      const listeningScore = Math.round((listeningCorrect / listTotal) * 100);
+      const readingScore = Math.round((readingCorrect / readTotal) * 100);
       
-      let totalScore = listeningScore + readingScore;[cite: 1]
-      if (structure.hasWriting && structure.writingRange) {[cite: 1]
-        let writeStart = structure.writingRange[0], writeEnd = structure.writingRange[1];[cite: 1]
-        let writeTotal = (writeEnd - writeStart + 1);[cite: 1]
-        let writeCorrect = 0;[cite: 1]
-        for (let w = writeStart; w <= writeEnd; w++) {[cite: 1]
-          const userAns = userExamAnswers[w] || "";[cite: 1]
-          const correctAns = answerKey[w] || answerKey[w.toString()] || "";[cite: 1]
-          if (checkAnswerMatch(userAns, correctAns)) {[cite: 1]
-            writeCorrect++;[cite: 1]
-          }[cite: 1]
-        }[cite: 1]
-        writingScore = Math.round((writeCorrect / writeTotal) * 100);[cite: 1]
-        totalScore += writingScore;[cite: 1]
-      }[cite: 1]
+      let totalScore = listeningScore + readingScore;
+      if (structure.hasWriting && structure.writingRange) {
+        let writeStart = structure.writingRange[0], writeEnd = structure.writingRange[1];
+        let writeTotal = (writeEnd - writeStart + 1);
+        let writeCorrect = 0;
+        for (let w = writeStart; w <= writeEnd; w++) {
+          const userAns = userExamAnswers[w] || "";
+          const correctAns = answerKey[w] || answerKey[w.toString()] || "";
+          if (checkAnswerMatch(userAns, correctAns)) {
+            writeCorrect++;
+          }
+        }
+        writingScore = Math.round((writeCorrect / writeTotal) * 100);
+        totalScore += writingScore;
+      }
 
-      const isPassed = totalScore >= structure.passScore;[cite: 1]
+      const isPassed = totalScore >= structure.passScore;
 
-      const resBox = document.getElementById('exam-score-result');[cite: 1]
-      if (resBox) {[cite: 1]
-        resBox.style.display = 'block';[cite: 1]
+      const resBox = document.getElementById('exam-score-result');
+      if (resBox) {
+        resBox.style.display = 'block';
         resBox.innerHTML = `
           <div style="font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 6px;">
             ${isPassed ? '🎉 LULUS EVALUASI (合格)' : '⚠️ BELUM LULUS (不合格)'}
@@ -4366,24 +4366,24 @@
           <div style="font-size: 15px; color: var(--gold-autumn); font-weight: 800;">
             Total Skor: ${totalScore} / ${structure.maxScore}
           </div>
-        `;[cite: 1]
+        `;
 
-        if (isPassed && currentPlacementPackage) {[cite: 1]
-          const passedLvl = currentPlacementPackage.hskLevel || 'HSK 1';[cite: 1]
-          resBox.innerHTML += `<div style="font-size: 11.5px; color: #86efac; background: rgba(22, 163, 74, 0.2); padding: 8px; border-radius: 6px; margin-top: 8px;">Selamat! Anda telah menyelesaikan level <b>${passedLvl}</b>. Track level Anda berhasil diperbarui ke tingkat selanjutnya! Silakan unduh sertifikat resmi Anda.</div>`;[cite: 1]
+        if (isPassed && currentPlacementPackage) {
+          const passedLvl = currentPlacementPackage.hskLevel || 'HSK 1';
+          resBox.innerHTML += `<div style="font-size: 11.5px; color: #86efac; background: rgba(22, 163, 74, 0.2); padding: 8px; border-radius: 6px; margin-top: 8px;">Selamat! Anda telah menyelesaikan level <b>${passedLvl}</b>. Track level Anda berhasil diperbarui ke tingkat selanjutnya! Silakan unduh sertifikat resmi Anda.</div>`;
           
-          const numLvl = parseInt(passedLvl.replace(/[^0-9]/g, ''));[cite: 1]
-          if (!isNaN(numLvl) && numLvl < 6) {[cite: 1]
-            sessionUser.currentHsk = 'HSK ' + (numLvl + 1);[cite: 1]
-            pingTrackLevel('placement');[cite: 1]
+          const numLvl = parseInt(passedLvl.replace(/[^0-9]/g, ''));
+          if (!isNaN(numLvl) && numLvl < 6) {
+            sessionUser.currentHsk = 'HSK ' + (numLvl + 1);
+            pingTrackLevel('placement');
 
-            const elTrackHsk = document.getElementById('track-hsk-badge');[cite: 1]
-            const elTrackDesc = document.getElementById('track-hsk-desc');[cite: 1]
-            if (elTrackHsk) elTrackHsk.innerText = sessionUser.currentHsk;[cite: 1]
-            if (elTrackDesc) elTrackDesc.innerText = 'Selesaikan Placement Test untuk naik ke level berikutnya';[cite: 1]
-          }[cite: 1]
+            const elTrackHsk = document.getElementById('track-hsk-badge');
+            const elTrackDesc = document.getElementById('track-hsk-desc');
+            if (elTrackHsk) elTrackHsk.innerText = sessionUser.currentHsk;
+            if (elTrackDesc) elTrackDesc.innerText = 'Selesaikan Placement Test untuk naik ke level berikutnya';
+          }
         } else {
-          resBox.innerHTML += `<div style="font-size: 11px; color: #fed7aa; margin-top: 6px;">Batas kelulusan resmi: ${structure.passScore} poin. Silakan unduh PDF soal lengkap untuk mencocokkan jawaban dengan kunci di halaman terakhir, pelajari lagi materi yang belum dipahami dan coba kembali.</div>`;[cite: 1]
+          resBox.innerHTML += `<div style="font-size: 11px; color: #fed7aa; margin-top: 6px;">Batas kelulusan resmi: ${structure.passScore} poin. Silakan unduh PDF soal lengkap untuk mencocokkan jawaban dengan kunci di halaman terakhir, pelajari lagi materi yang belum dipahami dan coba kembali.</div>`;
         }
       }
     };
