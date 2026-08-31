@@ -4285,7 +4285,7 @@
       renderLjdItems();
     };
 
-    window.submitPlacementExam = function() {
+   window.submitPlacementExam = function() {
       // 1. PAKSA BACA SELURUH INPUT TEKS DARI DOM KE userExamAnswers
       const container = document.getElementById('ljd-items-container');
       if (container) {
@@ -4311,7 +4311,9 @@
 
       let listeningCorrect = 0;
       let readingCorrect = 0;
+      let writingCorrect = 0;
       let writingScore = 0;
+      let writeTotal = 0;
 
       const listStart = structure.listeningRange[0], listEnd = structure.listeningRange[1];
       const readStart = structure.readingRange[0], readEnd = structure.readingRange[1];
@@ -4336,16 +4338,15 @@
       let totalScore = listeningScore + readingScore;
       if (structure.hasWriting && structure.writingRange) {
         let writeStart = structure.writingRange[0], writeEnd = structure.writingRange[1];
-        let writeTotal = (writeEnd - writeStart + 1);
-        let writeCorrect = 0;
+        writeTotal = (writeEnd - writeStart + 1);
         for (let w = writeStart; w <= writeEnd; w++) {
           const userAns = userExamAnswers[w] || "";
           const correctAns = answerKey[w] || answerKey[w.toString()] || "";
           if (checkAnswerMatch(userAns, correctAns)) {
-            writeCorrect++;
+            writingCorrect++;
           }
         }
-        writingScore = Math.round((writeCorrect / writeTotal) * 100);
+        writingScore = Math.round((writingCorrect / writeTotal) * 100);
         totalScore += writingScore;
       }
 
@@ -4358,10 +4359,10 @@
           <div style="font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 6px;">
             ${isPassed ? '🎉 LULUS EVALUASI (合格)' : '⚠️ BELUM LULUS (不合格)'}
           </div>
-          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.6;">
             Menyimak (听力): <b>${listeningScore}/100</b> (${listeningCorrect}/${listTotal} soal)<br>
             Membaca (阅读): <b>${readingScore}/100</b> (${readingCorrect}/${readTotal} soal)<br>
-            ${structure.hasWriting ? `Menulis (书写): <b>${writingScore}/100</b> (${Math.round((writingScore/100)*writeTotal)}/${writeTotal} soal)<br>` : ''}
+            ${structure.hasWriting ? `Menulis (书写): <b>${writingScore}/100</b> (${writingCorrect}/${writeTotal} soal)<br>` : ''}
           </div>
           <div style="font-size: 15px; color: var(--gold-autumn); font-weight: 800;">
             Total Skor: ${totalScore} / ${structure.maxScore}
@@ -4385,6 +4386,8 @@
         } else {
           resBox.innerHTML += `<div style="font-size: 11px; color: #fed7aa; margin-top: 6px;">Batas kelulusan resmi: ${structure.passScore} poin. Silakan unduh PDF soal lengkap untuk mencocokkan jawaban dengan kunci di halaman terakhir, pelajari lagi materi yang belum dipahami dan coba kembali.</div>`;
         }
+
+        resBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     };
   </script>
