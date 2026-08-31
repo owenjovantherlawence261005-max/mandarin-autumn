@@ -1433,6 +1433,12 @@
       <div id="crud-section-plc" style="display: none;">
         <input type="hidden" id="crud-plc-edit-id" value="">
 
+        <div class="crud-form-group" style="background: rgba(234, 88, 12, 0.15); padding: 12px; border-radius: 8px; border: 1px dashed var(--gold-autumn); margin-bottom: 14px;">
+          <label style="font-size: 11.5px; color: var(--gold-autumn); font-weight: 700;">📄 Unggah PDF Kunci Jawaban (Ekstrak Otomatis ke JSON):</label>
+          <input type="file" id="pdf-crud-plc-key-input" accept="application/pdf" onchange="handleCrudPlacementKeyPdfUpload(event)" style="padding: 6px; font-size: 12px; width: 100%; background: #180d08; border: 1px solid var(--amber-border); border-radius: 6px; color: #fff;">
+          <div id="crud-plc-pdf-status" style="font-size: 11px; color: var(--gold-autumn); margin-top: 6px;">Pilih file PDF kunci jawaban untuk mengekstrak Menyimak, Membaca, dan karakter Hanzi Menulis secara instan.</div>
+        </div>
+
         <div style="display: flex; gap: 12px;">
           <div class="crud-form-group" style="width: 140px;">
             <label>Jenjang HSK:</label>
@@ -1514,6 +1520,37 @@
   </nav>
 
   <script>
+    window.handleCrudPlacementKeyPdfUpload = async function(event) {
+      const file = event.target.files[0];
+      const statusEl = document.getElementById('crud-plc-pdf-status');
+      const inKeys = document.getElementById('crud-plc-keys');
+      if (!file) return;
+
+      if (statusEl) statusEl.innerText = "⏳ Membaca dan mengekstrak kunci dari PDF...";
+
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const extractedKey = await extractAnswerKeyFromPdf(pdf);
+
+        const keyCount = Object.keys(extractedKey).length;
+        if (keyCount === 0) {
+          if (statusEl) statusEl.innerText = "⚠️ Format kunci tidak terdeteksi otomatis. Silakan isi JSON manual atau cek format PDF.";
+          return;
+        }
+
+        if (inKeys) {
+          inKeys.value = JSON.stringify(extractedKey, null, 2);
+        }
+
+        if (statusEl) {
+          statusEl.innerText = `✅ Berhasil mengekstrak ${keyCount} butir kunci jawaban (termasuk isian Hanzi)!`;
+        }
+      } catch (err) {
+        if (statusEl) statusEl.innerText = "❌ Gagal memproses PDF: " + err.message;
+      }
+    };
+    
     if (typeof pdfjsLib !== 'undefined') {
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
@@ -1605,7 +1642,7 @@
         scrollBox.appendChild(overlay);
       }
       if (overlay) {
-        overlay.innerHTML = customText || '⏳ Memuat lembar soal...';
+        overlay.innerHTML = customText || '⏳ Bon ha soal sen emo anlon nyame...';
         overlay.style.display = show ? 'block' : 'none';
       }
     }
@@ -3865,12 +3902,14 @@
     function normalizeTextAnswer(str) {
       if (!str) return "";
       return str.toString().trim()
+        // Hapus keterangan pinyin dalam kurung latin maupun fullwidth (contoh: 米(mǐ) -> 米)
+        .replace(/[\(（][a-zA-Z0-9\sāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜüÜ]+[\)）]/g, '')
+        // Bersihkan seluruh tanda baca, spasi, simbol
         .replace(/[\s\u3000\.\,\。\，\！\!\？\?\、\“\”\"\'\(\)\（\）\—\-\_]/g, '')
-        .replace(/\([a-zA-Z0-9\sāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]+\)/g, '')
         .toUpperCase();
     }
-
-    function checkAnswerMatch(userVal, correctVal) {
+    
+   function checkAnswerMatch(userVal, correctVal) {
       if (!userVal || !correctVal) return false;
       const u = userVal.toString().trim().toUpperCase();
       const c = correctVal.toString().trim().toUpperCase();
@@ -3880,7 +3919,8 @@
       const cNorm = normalizeTextAnswer(correctVal);
       if (uNorm && uNorm === cNorm) return true;
 
-      const options = correctVal.toString().split(/[\/,|]/);
+      // Mendukung opsi kunci alternatif yang dipisahkan garis miring atau koma (contoh: "米 / 米饭")
+      const options = correctVal.toString().split(/[\/,|、]/);
       for (let opt of options) {
         if (normalizeTextAnswer(opt) === uNorm) return true;
       }
