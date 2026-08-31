@@ -1016,7 +1016,7 @@
         <div id="workbook-cards-container"></div>
       </section>
 
-      <!-- 5. SPEAKING AI ROLEPLAY (DENGAN KONTROL TOMBOL CERDAS BERBASIS GILIRAN) -->
+      <!-- 5. SPEAKING AI ROLEPLAY -->
       <section id="view-speaking" class="view-section">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
           <div class="header-group" style="margin-bottom: 0;">
@@ -1068,7 +1068,7 @@
         <div id="grammar-cards-container"></div>
       </section>
 
-      <!-- 7. SPACED REPETITION FLASHCARDS (SRS - DENGAN PENYIMPANAN PROGRES PERSISTEN) -->
+      <!-- 7. SPACED REPETITION FLASHCARDS (SRS) -->
       <section id="view-srs" class="view-section">
         <div class="header-group">
           <span class="badge">Leitner Memory Engine</span>
@@ -1103,7 +1103,7 @@
         </div>
       </section>
 
-      <!-- 8. HSK DIAGNOSTIC & MOCK PLACEMENT TEST (LOBBY + FULL FOCUS LOCK + ANTI-CONTEK) -->
+      <!-- 8. HSK DIAGNOSTIC & MOCK PLACEMENT TEST -->
       <section id="view-placement" class="view-section">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
           <div class="header-group" style="margin-bottom: 0;">
@@ -1113,7 +1113,6 @@
           </div>
 
           <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-            <!-- BADGE TIMER UJIAN 2 JAM -->
             <div id="exam-timer-badge" style="display: none; background: rgba(40, 24, 16, 0.9); border: 1.5px solid var(--gold-autumn); padding: 8px 14px; border-radius: 10px; align-items: center; gap: 8px; box-shadow: 0 4px 14px var(--terracotta-glow);">
               <span style="font-size: 18px;">⏳</span>
               <div>
@@ -1133,7 +1132,7 @@
           </div>
         </div>
 
-        <!-- GERBANG / LOBBY SEBELUM MEMULAI UJIAN -->
+        <!-- LOBBY SEBELUM MEMULAI UJIAN -->
         <div id="placement-pre-exam-lobby" class="glass-card" style="text-align: center; padding: 40px 20px; max-width: 650px; margin: 0 auto 30px auto;">
           <div style="font-size: 54px; margin-bottom: 12px;">🔒</div>
           <h3 style="font-size: 22px; color: #fff; margin-bottom: 8px;" id="lobby-exam-title">Simulasi Ujian Resmi HSK</h3>
@@ -1144,10 +1143,9 @@
           <button class="btn-autumn-primary" style="padding: 14px 36px; font-size: 15px; font-weight: 800;" onclick="startPlacementExamSession()">🚀 Mulai Ujian Sekarang</button>
         </div>
 
-        <!-- AREA AKTIF UJIAN (MUNCUL SETELAH TEKAN TOMBOL MULAI) -->
+        <!-- AREA AKTIF UJIAN -->
         <div id="placement-active-exam-area" style="display: none;">
           
-          <!-- PANEL KONTROL AUDIO MENYIMAK -->
           <div class="glass-card" style="margin-bottom: 20px; padding: 16px 20px;" id="exam-audio-card">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
               <div style="display: flex; align-items: center; gap: 12px;">
@@ -1165,7 +1163,6 @@
             </div>
           </div>
 
-          <!-- LAYOUT UTAMA: VIEWER PDF SCROLL BERCORETAN + LEMBAR JAWABAN DIGITAL (LJD) -->
           <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start;">
             
             <div class="glass-card" style="flex: 1; min-width: 320px; padding: 18px;" id="pdf-container-card">
@@ -1197,7 +1194,6 @@
                 </div>
               </div>
 
-              <!-- VIEWPORT SCROLL TERKALIBRASI RESPONSIF -->
               <div class="pdf-scroll-viewport" id="pdf-scroll-box">
                 <div class="pdf-viewer-outer-wrap" id="pdf-viewer-wrapper">
                   <canvas id="pdf-render-canvas"></canvas>
@@ -1210,7 +1206,7 @@
               </div>
             </div>
 
-            <!-- SISI KANAN: LEMBAR JAWABAN DIGITAL INTERAKTIF (MENDUKUNG HSK 1 HINGGA 7-9) -->
+            <!-- LEMBAR JAWABAN DIGITAL INTERAKTIF -->
             <div class="glass-card" style="width: 360px; max-height: 920px; display: flex; flex-direction: column; padding: 18px;">
               <div style="border-bottom: 1px solid var(--amber-border); padding-bottom: 10px; margin-bottom: 12px;">
                 <div style="font-size: 15px; font-weight: 800; color: #fff;">📝 Lembar Jawaban Digital</div>
@@ -1437,7 +1433,7 @@
         </div>
       </div>
 
-      <!-- TAB 3: CRUD PLACEMENT TEST (7 KOLOM BAKU) -->
+      <!-- TAB 3: CRUD PLACEMENT TEST -->
       <div id="crud-section-plc" style="display: none;">
         <input type="hidden" id="crud-plc-edit-id" value="">
 
@@ -1785,12 +1781,10 @@
         if (elTrackHsk) elTrackHsk.innerText = sessionUser.currentHsk;
         if (elTrackTab) elTrackTab.innerText = sessionUser.lastTab.toUpperCase();
         if (elTrackDesc) {
-          var numLvl = parseInt(sessionUser.currentHsk.replace(/[^0-9]/g, '')) || 1;
           elTrackDesc.innerText = 'Selesaikan Placement Test untuk naik ke level berikutnya';
         }
 
         loadDatabaseVocabFast();
-        renderMultiTianZiGe(currentPracticeWord);
         loadGrammarGuidesFast();
         loadSpeakingDialoguesFast();
         loadPlacementPackagesFast();
@@ -1888,8 +1882,14 @@
       if (elTrackTab) elTrackTab.innerText = viewId.toUpperCase();
 
       if (viewId === 'workbook') loadWorkbookQuestionsFast(sessionUser.currentHsk);
-      if (viewId === 'stroke') setTimeout(() => { renderMultiTianZiGe(currentPracticeWord); }, 60);
-      if (viewId === 'srs') setTimeout(() => { renderCurrentSrsCard(); }, 60);
+      if (viewId === 'stroke') {
+        requestAnimationFrame(function() {
+          setTimeout(function() {
+            renderMultiTianZiGe(currentPracticeWord);
+          }, 60);
+        });
+      }
+      if (viewId === 'srs') setTimeout(function() { renderCurrentSrsCard(); }, 60);
     };
 
     function initFallingLeaves() {
@@ -2183,7 +2183,6 @@
 
     function parseDialogueFromLines(lines) {
       const dialogue = [];
-      let currentSpeaker = "Pelayan Restoran";
       let currentRole = "A";
 
       lines.forEach((line) => {
@@ -2432,7 +2431,7 @@
     };
 
     // =========================================================================
-    // OPTIMASI LOAD INSTAN (CACHE + BACKGROUND SYNC DENGAN SUPPORT HSK 7-9)
+    // OPTIMASI LOAD INSTAN (CACHE + BACKGROUND SYNC)
     // =========================================================================
     function loadDatabaseVocabFast() {
       try {
@@ -2479,7 +2478,6 @@
       renderVocabUI(); initPracticeCharacters('1'); initSrsEngine();
     }
 
-    // LOGIKA FILTER KAMUS TERINTEGRASI HSK 7-9
     function renderVocabUI() {
       var container = document.getElementById('vocab-cards-container');
       if (!container) return;
@@ -2561,116 +2559,122 @@
 
     window.changeVocabPage = function(delta) { currentDictPage += delta; renderVocabUI(); };
 
-    // TIAN ZI GE
-  function renderMultiTianZiGe(wordObj) {
-  var container = document.getElementById('tianzige-multi-container');
-  if (!container) return; 
-  container.innerHTML = ''; 
-  strokeCanvases = [];
-  
-  var hanziStr = (wordObj && wordObj.hanzi) ? wordObj.hanzi.trim() : '你';
-  var chars = [];
-  for (var i = 0; i < hanziStr.length; i++) {
-    var ch = hanziStr.charAt(i);
-    if (ch >= '\u4e00' && ch <= '\u9fa5') chars.push(ch);
-  }
-  if (chars.length === 0) chars = [hanziStr.charAt(0) || '你'];
+    // TIAN ZI GE RENDERING ENGINE
+    function renderMultiTianZiGe(wordObj) {
+      var container = document.getElementById('tianzige-multi-container');
+      if (!container) return; 
+      container.innerHTML = ''; 
+      strokeCanvases = [];
+      
+      var hanziStr = (wordObj && wordObj.hanzi) ? wordObj.hanzi.trim() : '你';
+      var chars = [];
+      for (var i = 0; i < hanziStr.length; i++) {
+        var ch = hanziStr.charAt(i);
+        if (ch >= '\u4e00' && ch <= '\u9fa5') chars.push(ch);
+      }
+      if (chars.length === 0) chars = [hanziStr.charAt(0) || '你'];
 
-  var count = chars.length;
-  var parentWidth = container.clientWidth || (window.innerWidth - 60) || 300;
-  var maxCanvasWidth = Math.min(parentWidth - 24, 720);
+      var count = chars.length;
+      var parentWidth = container.clientWidth;
+      if (!parentWidth || parentWidth <= 0) {
+        var mainVp = document.querySelector('.main-viewport');
+        var vpWidth = mainVp && mainVp.clientWidth > 0 ? (mainVp.clientWidth - 48) : (window.innerWidth - 48);
+        parentWidth = Math.max(280, Math.min(vpWidth, 720));
+      }
+      var maxCanvasWidth = Math.min(parentWidth - 24, 720);
 
-  var canvasDim = 240;
-  if (parentWidth <= 520) {
-    if (count === 1) {
-      canvasDim = Math.min(240, maxCanvasWidth);
-    } else if (count === 2) {
-      canvasDim = Math.min(135, Math.floor((maxCanvasWidth - 16) / 2));
-    } else {
-      canvasDim = Math.min(115, Math.floor((maxCanvasWidth - 24) / 2));
+      var canvasDim = 240;
+      if (parentWidth <= 520) {
+        if (count === 1) {
+          canvasDim = Math.min(240, maxCanvasWidth);
+        } else if (count === 2) {
+          canvasDim = Math.min(135, Math.floor((maxCanvasWidth - 16) / 2));
+        } else {
+          canvasDim = Math.min(115, Math.floor((maxCanvasWidth - 24) / 2));
+        }
+      } else {
+        if (count === 1) canvasDim = 280;
+        else if (count === 2) canvasDim = 210;
+        else if (count === 3) canvasDim = 170;
+        else canvasDim = 140;
+      }
+
+      var mainPanel = document.createElement('div');
+      mainPanel.className = 'canvas-panel';
+      mainPanel.style.width = '100%';
+      mainPanel.style.maxWidth = (count === 1 ? '360px' : (count === 2 ? '540px' : '780px'));
+      mainPanel.style.margin = '0 auto';
+      
+      var canvasRow = document.createElement('div');
+      canvasRow.style.display = 'flex';
+      canvasRow.style.flexWrap = 'wrap';
+      canvasRow.style.gap = '12px';
+      canvasRow.style.justifyContent = 'center';
+      canvasRow.style.alignItems = 'center';
+      canvasRow.style.width = '100%';
+      canvasRow.style.padding = '4px 0';
+
+      chars.forEach(function(ch, idx) {
+        var charCol = document.createElement('div');
+        charCol.style.display = 'flex';
+        charCol.style.flexDirection = 'column';
+        charCol.style.alignItems = 'center';
+        charCol.style.flexShrink = '0';
+
+        var title = document.createElement('div');
+        title.style.color = 'var(--gold-autumn)';
+        title.style.fontSize = '12px';
+        title.style.fontWeight = '700';
+        title.style.marginBottom = '6px';
+        title.innerText = '#' + (idx + 1) + ': ' + ch;
+        charCol.appendChild(title);
+
+        var cvs = document.createElement('canvas');
+        cvs.width = canvasDim * 2;
+        cvs.height = canvasDim * 2;
+        cvs.style.width = canvasDim + 'px';
+        cvs.style.height = canvasDim + 'px';
+        cvs.style.maxWidth = '100%';
+        cvs.style.aspectRatio = '1 / 1';
+        cvs.style.background = '#fff8f0';
+        cvs.style.borderRadius = '8px';
+        cvs.style.cursor = 'crosshair';
+        cvs.style.touchAction = 'none';
+        cvs.style.boxShadow = '0 4px 14px rgba(0,0,0,0.3)';
+
+        charCol.appendChild(cvs);
+        canvasRow.appendChild(charCol);
+        drawSingleTianZiGe(cvs, ch);
+        attachPointerDrawing(cvs);
+        strokeCanvases.push({ canvas: cvs, char: ch });
+      });
+
+      mainPanel.appendChild(canvasRow);
+
+      var ctrl = document.createElement('div');
+      ctrl.className = 'canvas-controls';
+      ctrl.style.marginTop = '16px';
+      ctrl.style.maxWidth = '380px';
+      ctrl.style.width = '100%';
+      ctrl.style.display = 'flex';
+      ctrl.style.gap = '10px';
+
+      var btnClr = document.createElement('button');
+      btnClr.className = 'canvas-btn btn-clear';
+      btnClr.innerText = '🔄 Hapus Goresan';
+      btnClr.onclick = function() { clearAllStrokeCanvases(); };
+      ctrl.appendChild(btnClr);
+
+      var btnSpk = document.createElement('button');
+      btnSpk.className = 'canvas-btn btn-anim';
+      btnSpk.innerText = '🔊 Pelafalan Kata';
+      btnSpk.onclick = function() { speakCurrentWord(); };
+      ctrl.appendChild(btnSpk);
+
+      mainPanel.appendChild(ctrl);
+      container.appendChild(mainPanel);
     }
-  } else {
-    if (count === 1) canvasDim = 280;
-    else if (count === 2) canvasDim = 210;
-    else if (count === 3) canvasDim = 170;
-    else canvasDim = 140;
-  }
 
-  var mainPanel = document.createElement('div');
-  mainPanel.className = 'canvas-panel';
-  mainPanel.style.width = '100%';
-  mainPanel.style.maxWidth = (count === 1 ? '360px' : (count === 2 ? '540px' : '780px'));
-  mainPanel.style.margin = '0 auto';
-  
-  var canvasRow = document.createElement('div');
-  canvasRow.style.display = 'flex';
-  canvasRow.style.flexWrap = 'wrap';
-  canvasRow.style.gap = '12px';
-  canvasRow.style.justifyContent = 'center';
-  canvasRow.style.alignItems = 'center';
-  canvasRow.style.width = '100%';
-  canvasRow.style.padding = '4px 0';
-
-  chars.forEach(function(ch, idx) {
-    var charCol = document.createElement('div');
-    charCol.style.display = 'flex';
-    charCol.style.flexDirection = 'column';
-    charCol.style.alignItems = 'center';
-    charCol.style.flexShrink = '0';
-
-    var title = document.createElement('div');
-    title.style.color = 'var(--gold-autumn)';
-    title.style.fontSize = '12px';
-    title.style.fontWeight = '700';
-    title.style.marginBottom = '6px';
-    title.innerText = '#' + (idx + 1) + ': ' + ch;
-    charCol.appendChild(title);
-
-    var cvs = document.createElement('canvas');
-    cvs.width = canvasDim * 2;
-    cvs.height = canvasDim * 2;
-    cvs.style.width = canvasDim + 'px';
-    cvs.style.height = canvasDim + 'px';
-    cvs.style.maxWidth = '100%';
-    cvs.style.aspectRatio = '1 / 1';
-    cvs.style.background = '#fff8f0';
-    cvs.style.borderRadius = '8px';
-    cvs.style.cursor = 'crosshair';
-    cvs.style.touchAction = 'none';
-    cvs.style.boxShadow = '0 4px 14px rgba(0,0,0,0.3)';
-
-    charCol.appendChild(cvs);
-    canvasRow.appendChild(charCol);
-    drawSingleTianZiGe(cvs, ch);
-    attachPointerDrawing(cvs);
-    strokeCanvases.push({ canvas: cvs, char: ch });
-  });
-
-  mainPanel.appendChild(canvasRow);
-
-  var ctrl = document.createElement('div');
-  ctrl.className = 'canvas-controls';
-  ctrl.style.marginTop = '16px';
-  ctrl.style.maxWidth = '380px';
-  ctrl.style.width = '100%';
-  ctrl.style.display = 'flex';
-  ctrl.style.gap = '10px';
-
-  var btnClr = document.createElement('button');
-  btnClr.className = 'canvas-btn btn-clear';
-  btnClr.innerText = '🔄 Hapus Goresan';
-  btnClr.onclick = function() { clearAllStrokeCanvases(); };
-  ctrl.appendChild(btnClr);
-
-  var btnSpk = document.createElement('button');
-  btnSpk.className = 'canvas-btn btn-anim';
-  btnSpk.innerText = '🔊 Pelafalan Kata';
-  btnSpk.onclick = function() { speakCurrentWord(); };
-  ctrl.appendChild(btnSpk);
-
-  mainPanel.appendChild(ctrl);
-  container.appendChild(mainPanel);
-}
     function drawSingleTianZiGe(canvas, charToGuide) {
       if (!canvas) return;
       var ctx = canvas.getContext('2d'); 
@@ -3709,193 +3713,115 @@
       link.click();
       document.body.removeChild(link);
     };
-async function extractAnswerKeyFromPdf(pdfDoc) {
-  if (!pdfDoc) return {};
-  const totalPages = pdfDoc.numPages;
-  const extractedKey = {};
-  let fullKeyText = "";
 
-  for (let p = Math.max(1, totalPages - 4); p <= totalPages; p++) {
-    try {
-      const page = await pdfDoc.getPage(p);
-      const content = await page.getTextContent();
-      const pageStr = content.items.map(item => item.str).join(" ");
-      fullKeyText += " " + pageStr;
-    } catch (e) {}
-  }
-
-  // 1. Ekstrak Pilihan Ganda (A-F) & Benar/Salah (TRUE/FALSE)
-  const mcqRegex = /(?:^|\s|第|No\.?|★)?\s*([0-9]{1,3})\s*[\.、\s\-\:]*\s*([A-F]|TRUE|FALSE|√|✕|对|错|正确|错误|X|V)(?=\s|[0-9]{1,3}[\.、\s\:]|$)/gi;
-  let match;
-  while ((match = mcqRegex.exec(fullKeyText)) !== null) {
-    const qNum = parseInt(match[1], 10);
-    let ans = match[2].toUpperCase().trim();
-    if (ans === "对" || ans === "正确" || ans === "V") ans = "TRUE";
-    if (ans === "错" || ans === "错误" || ans === "X") ans = "FALSE";
-    if (qNum > 0 && qNum <= 120 && !extractedKey[qNum]) {
-      extractedKey[qNum] = ans;
-    }
-  }
-
-  // 2. Ekstrak Soal Isian Hanzi / Susun Kalimat (Bagian Menulis)
-  const textAnsRegex = /(?:^|\s|第|No\.?)\s*([0-9]{1,3})\s*[\.、\s\-\:]+\s*([\u4e00-\u9fa5A-Za-z0-9，。！？\s\/]+?)(?=\s+(?:[0-9]{1,3}[\.、\s\-\:]|第二部分|三、|听力材料|H[0-9]|$))/gi;
-  while ((match = textAnsRegex.exec(fullKeyText)) !== null) {
-    const qNum = parseInt(match[1], 10);
-    const ans = match[2].trim();
-    if (qNum > 0 && qNum <= 120 && ans.length > 0 && !extractedKey[qNum]) {
-      extractedKey[qNum] = ans;
-    }
-  }
-
-  return extractedKey;
-}
-
-function getExamAnswerKey(pkg) {
-  if (!pkg) return {};
-  let raw = pkg.answerKey || pkg.answerKeyJson || pkg.correct_answer || pkg.answer_key;
-  if (typeof raw === 'string' && raw.trim().startsWith('{')) {
-    try { return JSON.parse(raw); } catch(e) {}
-  } else if (typeof raw === 'object' && raw !== null && Object.keys(raw).length > 0) {
-    return raw;
-  }
-  return pkg.autoExtractedKey || {};
-}
-
-function normalizeTextAnswer(str) {
-  if (!str) return "";
-  return str.toString().trim()
-    .replace(/[\s\u3000\.\,\。\，\！\!\？\?\、\“\”\"\'\(\)\（\）]/g, '')
-    .toUpperCase();
-}
-
-function checkAnswerMatch(userVal, correctVal) {
-  if (!userVal || !correctVal) return false;
-  const u = userVal.toString().trim().toUpperCase();
-  const c = correctVal.toString().trim().toUpperCase();
-  if (u === c) return true;
-
-  const uNorm = normalizeTextAnswer(userVal);
-  if (!uNorm) return false;
-
-  const options = correctVal.toString().split(/[\/,|]/);
-  for (let opt of options) {
-    if (normalizeTextAnswer(opt) === uNorm) return true;
-  }
-  return false;
-}
-
-   async function loadPdfFromUrlOrData(urlOrData) {
-  try {
-    showPdfLoadingNotice(true, "⏳ Memuat lembar soal & mendeteksi kunci...");
-    examPdfDoc = await pdfjsLib.getDocument(urlOrData).promise;
-    totalPdfPages = await detectMaxQuestionPage(examPdfDoc);
-    
-    // Otomatis ekstrak kunci dari halaman belakang
-    const autoKey = await extractAnswerKeyFromPdf(examPdfDoc);
-    if (currentPlacementPackage) {
-      currentPlacementPackage.autoExtractedKey = autoKey;
+    async function detectMaxQuestionPage(pdfDoc) {
+      if (!pdfDoc) return 1;
+      return pdfDoc.numPages;
     }
 
-    currentPdfPageNum = 1; 
-    showPdfLoadingNotice(false);
-    renderPdfAndDrawPage(currentPdfPageNum);
-    renderLjdItems();
-  } catch (err) {
-    showPdfLoadingNotice(false);
-    console.error("Gagal membuka PDF:", err);
-  }
-}
+    async function extractAnswerKeyFromPdf(pdfDoc) {
+      if (!pdfDoc) return {};
+      const totalPages = pdfDoc.numPages;
+      const extractedKey = {};
+      let fullKeyText = "";
 
-window.submitPlacementExam = function() {
-  isExamActive = false;
-  clearInterval(examTimerInterval);
-  isExamTimerRunning = false;
-
-  try { if (document.exitFullscreen) document.exitFullscreen().catch(()=>{}); } catch(e){}
-  var pkgSelector = document.getElementById('exam-pkg-selector-wrap');
-  if (pkgSelector) pkgSelector.style.pointerEvents = 'auto';
-
-  const structure = getExamStructure(currentPlacementPackage);
-  const answerKey = getExamAnswerKey(currentPlacementPackage);
-
-  let listeningCorrect = 0;
-  let readingCorrect = 0;
-  let writingScore = 0;
-
-  const listStart = structure.listeningRange[0], listEnd = structure.listeningRange[1];
-  const readStart = structure.readingRange[0], readEnd = structure.readingRange[1];
-  const listTotal = (listEnd - listStart + 1);
-  const readTotal = (readEnd - readStart + 1);
-
-  for (let i = listStart; i <= listEnd; i++) {
-    const userAns = userExamAnswers[i] || "";
-    const correctAns = answerKey[i] || answerKey[i.toString()] || "";
-    if (checkAnswerMatch(userAns, correctAns)) listeningCorrect++;
-  }
-
-  for (let i = readStart; i <= readEnd; i++) {
-    const userAns = userExamAnswers[i] || "";
-    const correctAns = answerKey[i] || answerKey[i.toString()] || "";
-    if (checkAnswerMatch(userAns, correctAns)) readingCorrect++;
-  }
-
-  const listeningScore = Math.round((listeningCorrect / listTotal) * 100);
-  const readingScore = Math.round((readingCorrect / readTotal) * 100);
-  
-  let totalScore = listeningScore + readingScore;
-  if (structure.hasWriting && structure.writingRange) {
-    let writeStart = structure.writingRange[0], writeEnd = structure.writingRange[1];
-    let writeTotal = (writeEnd - writeStart + 1);
-    let writeCorrect = 0;
-    for (let w = writeStart; w <= writeEnd; w++) {
-      const userAns = userExamAnswers[w] || "";
-      const correctAns = answerKey[w] || answerKey[w.toString()] || "";
-      if (checkAnswerMatch(userAns, correctAns)) {
-        writeCorrect++;
+      for (let p = Math.max(1, totalPages - 4); p <= totalPages; p++) {
+        try {
+          const page = await pdfDoc.getPage(p);
+          const content = await page.getTextContent();
+          const pageStr = content.items.map(item => item.str).join(" ");
+          fullKeyText += " " + pageStr;
+        } catch (e) {}
       }
+
+      // 1. Ekstrak Pilihan Ganda (A-F) & Benar/Salah (TRUE/FALSE)
+      const mcqRegex = /(?:^|\s|第|No\.?|★)?\s*([0-9]{1,3})\s*[\.、\s\-\:]*\s*([A-F]|TRUE|FALSE|√|✕|对|错|正确|错误|X|V)(?=\s|[0-9]{1,3}[\.、\s\:]|$)/gi;
+      let match;
+      while ((match = mcqRegex.exec(fullKeyText)) !== null) {
+        const qNum = parseInt(match[1], 10);
+        let ans = match[2].toUpperCase().trim();
+        if (ans === "对" || ans === "正确" || ans === "V") ans = "TRUE";
+        if (ans === "错" || ans === "错误" || ans === "X") ans = "FALSE";
+        if (qNum > 0 && qNum <= 120 && !extractedKey[qNum]) {
+          extractedKey[qNum] = ans;
+        }
+      }
+
+      // 2. Ekstrak Soal Isian Hanzi / Susun Kalimat (Bagian Menulis)
+      const textAnsRegex = /(?:^|\s|第|No\.?)\s*([0-9]{1,3})\s*[\.、\s\-\:]+\s*([\u4e00-\u9fa5A-Za-z0-9，。！？\s\/]+?)(?=\s+(?:[0-9]{1,3}[\.、\s\-\:]|第二部分|三、|听力材料|H[0-9]|$))/gi;
+      while ((match = textAnsRegex.exec(fullKeyText)) !== null) {
+        const qNum = parseInt(match[1], 10);
+        const ans = match[2].trim();
+        if (qNum > 0 && qNum <= 120 && ans.length > 0 && !extractedKey[qNum]) {
+          extractedKey[qNum] = ans;
+        }
+      }
+
+      return extractedKey;
     }
-    writingScore = Math.round((writeCorrect / writeTotal) * 100);
-    totalScore += writingScore;
-  }
 
-  const isPassed = totalScore >= structure.passScore;
-
-  const resBox = document.getElementById('exam-score-result');
-  if (resBox) {
-    resBox.style.display = 'block';
-    resBox.innerHTML = `
-      <div style="font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 6px;">
-        ${isPassed ? '🎉 LULUS EVALUASI (合格)' : '⚠️ BELUM LULUS (不合格)'}
-      </div>
-      <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
-        Menyimak (听力): <b>${listeningScore}/100</b> (${listeningCorrect}/${listTotal} soal)<br>
-        Membaca (阅读): <b>${readingScore}/100</b> (${readingCorrect}/${readTotal} soal)<br>
-        ${structure.hasWriting ? `Menulis (书写): <b>${writingScore}/100</b><br>` : ''}
-      </div>
-      <div style="font-size: 15px; color: var(--gold-autumn); font-weight: 800;">
-        Total Skor: ${totalScore} / ${structure.maxScore}
-      </div>
-    `;
-
-    if (isPassed && currentPlacementPackage) {
-      const passedLvl = currentPlacementPackage.hskLevel || 'HSK 1';
-      resBox.innerHTML += `<div style="font-size: 11.5px; color: #86efac; background: rgba(22, 163, 74, 0.2); padding: 8px; border-radius: 6px; margin-top: 8px;">Selamat! Anda telah menyelesaikan level <b>${passedLvl}</b>. Track level Anda berhasil diperbarui ke tingkat selanjutnya!</div>`;
+    function getExamAnswerKey(pkg) {
+      if (!pkg) return DEFAULT_HSK1_ANSWER_KEY;
+      let raw = pkg.answerKey || pkg.answerKeyJson || pkg.correct_answer || pkg.answer_key;
+      if (typeof raw === 'string' && raw.trim().startsWith('{')) {
+        try { 
+          const parsed = JSON.parse(raw);
+          if (Object.keys(parsed).length > 0) return parsed;
+        } catch(e) {}
+      } else if (typeof raw === 'object' && raw !== null && Object.keys(raw).length > 0) {
+        return raw;
+      }
       
-      const numLvl = parseInt(passedLvl.replace(/[^0-9]/g, ''));
-      if (!isNaN(numLvl) && numLvl < 6) {
-        sessionUser.currentHsk = 'HSK ' + (numLvl + 1);
-        pingTrackLevel('placement');
-
-        const elTrackHsk = document.getElementById('track-hsk-badge');
-        const elTrackDesc = document.getElementById('track-hsk-desc');
-        if (elTrackHsk) elTrackHsk.innerText = sessionUser.currentHsk;
-        if (elTrackDesc) elTrackDesc.innerText = 'Selesaikan Placement Test untuk naik ke level berikutnya';
+      if (pkg.autoExtractedKey && Object.keys(pkg.autoExtractedKey).length > 0) {
+        return pkg.autoExtractedKey;
       }
-    } else {
-      resBox.innerHTML += `<div style="font-size: 11px; color: #fed7aa; margin-top: 6px;">Batas kelulusan resmi: ${structure.passScore} poin. Silakan pelajari materi yang belum dipahami dan coba kembali.</div>`;
+      return DEFAULT_HSK1_ANSWER_KEY;
     }
-  }
-};
+
+    function normalizeTextAnswer(str) {
+      if (!str) return "";
+      return str.toString().trim()
+        .replace(/[\s\u3000\.\,\。\，\！\!\？\?\、\“\”\"\'\(\)\（\）]/g, '')
+        .toUpperCase();
+    }
+
+    function checkAnswerMatch(userVal, correctVal) {
+      if (!userVal || !correctVal) return false;
+      const u = userVal.toString().trim().toUpperCase();
+      const c = correctVal.toString().trim().toUpperCase();
+      if (u === c) return true;
+
+      const uNorm = normalizeTextAnswer(userVal);
+      if (!uNorm) return false;
+
+      const options = correctVal.toString().split(/[\/,|]/);
+      for (let opt of options) {
+        if (normalizeTextAnswer(opt) === uNorm) return true;
+      }
+      return false;
+    }
+
+    async function loadPdfFromUrlOrData(urlOrData) {
+      try {
+        showPdfLoadingNotice(true, "⏳ Memuat lembar soal & mendeteksi kunci...");
+        examPdfDoc = await pdfjsLib.getDocument(urlOrData).promise;
+        totalPdfPages = await detectMaxQuestionPage(examPdfDoc);
+        
+        // Otomatis ekstrak kunci dari PDF
+        const autoKey = await extractAnswerKeyFromPdf(examPdfDoc);
+        if (currentPlacementPackage) {
+          currentPlacementPackage.autoExtractedKey = autoKey;
+        }
+
+        currentPdfPageNum = 1; 
+        showPdfLoadingNotice(false);
+        renderPdfAndDrawPage(currentPdfPageNum);
+        renderLjdItems();
+      } catch (err) {
+        showPdfLoadingNotice(false);
+        console.error("Gagal membuka PDF:", err);
+      }
+    }
 
     async function renderPdfAndDrawPage(pageNum) {
       if (!examPdfDoc) return;
@@ -4024,6 +3950,11 @@ window.submitPlacementExam = function() {
       }
     };
 
+    window.adjustPdfZoom = function(delta) {
+      currentPdfScale = Math.max(0.5, Math.min(currentPdfScale + delta, 2.5));
+      renderPdfAndDrawPage(currentPdfPageNum);
+    };
+
     window.setAnnotationTool = function(tool) {
       currentDrawTool = tool;
       const btnPen = document.getElementById('btn-tool-pen');
@@ -4076,10 +4007,7 @@ window.submitPlacementExam = function() {
         endQ = structure.writingRange[1];
       }
 
-      const answerKey = (currentPlacementPackage && currentPlacementPackage.answerKey) 
-        ? currentPlacementPackage.answerKey 
-        : DEFAULT_HSK1_ANSWER_KEY;
-
+      const answerKey = getExamAnswerKey(currentPlacementPackage);
       const numLvl = parseInt((currentPlacementPackage && currentPlacementPackage.hskLevel ? currentPlacementPackage.hskLevel : '1').replace(/[^0-9]/g, '')) || 1;
 
       for (let q = startQ; q <= endQ; q++) {
@@ -4134,7 +4062,7 @@ window.submitPlacementExam = function() {
           } else if (numLvl === 4) {
             if (q >= 1 && q <= 10) optionsList = [{ label: "√", val: "TRUE" }, { label: "✕", val: "FALSE" }];
             else if (q >= 11 && q <= 45) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }];
-            else if (q >= 46 && q <= 55) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }, { label: "E", val: "E" }, { label: "F", val: "F" }];
+            else if (q >= 46 && q <= 55) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }];
             else if (q >= 56 && q <= 65) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }];
             else if (q >= 66 && q <= 85) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }];
             else isTextInput = true;
@@ -4207,9 +4135,7 @@ window.submitPlacementExam = function() {
       if (pkgSelector) pkgSelector.style.pointerEvents = 'auto';
 
       const structure = getExamStructure(currentPlacementPackage);
-      const answerKey = (currentPlacementPackage && currentPlacementPackage.answerKey) 
-        ? currentPlacementPackage.answerKey 
-        : DEFAULT_HSK1_ANSWER_KEY;
+      const answerKey = getExamAnswerKey(currentPlacementPackage);
 
       let listeningCorrect = 0;
       let readingCorrect = 0;
@@ -4221,15 +4147,15 @@ window.submitPlacementExam = function() {
       const readTotal = (readEnd - readStart + 1);
 
       for (let i = listStart; i <= listEnd; i++) {
-        const userAns = (userExamAnswers[i] || "").toString().toUpperCase();
-        const correctAns = (answerKey[i] || answerKey[i.toString()] || "").toString().toUpperCase();
-        if (userAns && userAns === correctAns) listeningCorrect++;
+        const userAns = userExamAnswers[i] || "";
+        const correctAns = answerKey[i] || answerKey[i.toString()] || "";
+        if (checkAnswerMatch(userAns, correctAns)) listeningCorrect++;
       }
 
       for (let i = readStart; i <= readEnd; i++) {
-        const userAns = (userExamAnswers[i] || "").toString().toUpperCase();
-        const correctAns = (answerKey[i] || answerKey[i.toString()] || "").toString().toUpperCase();
-        if (userAns && userAns === correctAns) readingCorrect++;
+        const userAns = userExamAnswers[i] || "";
+        const correctAns = answerKey[i] || answerKey[i.toString()] || "";
+        if (checkAnswerMatch(userAns, correctAns)) readingCorrect++;
       }
 
       const listeningScore = Math.round((listeningCorrect / listTotal) * 100);
@@ -4241,9 +4167,9 @@ window.submitPlacementExam = function() {
         let writeTotal = (writeEnd - writeStart + 1);
         let writeCorrect = 0;
         for (let w = writeStart; w <= writeEnd; w++) {
-          const userAns = (userExamAnswers[w] || "").toString().trim();
-          const correctAns = (answerKey[w] || answerKey[w.toString()] || "").toString().trim();
-          if (userAns && (userAns === correctAns || (correctAns && userAns.toLowerCase() === correctAns.toLowerCase()))) {
+          const userAns = userExamAnswers[w] || "";
+          const correctAns = answerKey[w] || answerKey[w.toString()] || "";
+          if (checkAnswerMatch(userAns, correctAns)) {
             writeCorrect++;
           }
         }
