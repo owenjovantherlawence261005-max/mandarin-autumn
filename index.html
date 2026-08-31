@@ -611,7 +611,7 @@
       overflow-x: auto !important;
       display: block !important;
       text-align: center;
-      padding: 16px 10px 100px 10px;
+      padding: 16px 8px 100px 8px;
       scrollbar-width: thin;
       scrollbar-color: var(--gold-autumn) #180d08;
       position: relative;
@@ -904,7 +904,7 @@
         </div>
       </section>
 
-      <!-- 2. KAMUS HSK 1-6 & 7-9 (FILTER TERINTEGRASI) -->
+      <!-- 2. KAMUS HSK 1-6 & 7-9 -->
       <section id="view-dictionary" class="view-section">
         <div class="header-group">
           <span class="badge">HSK Standard 3.0 Dictionary</span>
@@ -938,7 +938,7 @@
         </div>
       </section>
 
-      <!-- 3. MENULIS HANZI (TIAN ZI GE - FILTER HSK 7-9 TERINTEGRASI) -->
+      <!-- 3. MENULIS HANZI (TIAN ZI GE - FULL RESPONSIVE) -->
       <section id="view-stroke" class="view-section">
         <div class="header-group">
           <span class="badge">Stroke Order & Calligraphy</span>
@@ -1068,7 +1068,7 @@
         <div id="grammar-cards-container"></div>
       </section>
 
-      <!-- 7. SPACED REPETITION FLASHCARDS (SRS) -->
+      <!-- 7. SPACED REPETITION FLASHCARDS (SRS - DENGAN PENYIMPANAN PROGRES PERSISTEN) -->
       <section id="view-srs" class="view-section">
         <div class="header-group">
           <span class="badge">Leitner Memory Engine</span>
@@ -1109,7 +1109,7 @@
           <div class="header-group" style="margin-bottom: 0;">
             <span class="badge">Official Standard Mock Exam</span>
             <h2>HSK Standard Placement & Mock Exam</h2>
-            <p>Ujian penentuan kemampuan resmi dengan sistem penguncian layar fokus dan lembar jawaban digital.</p>
+            <p>Ujian penentuan kemampuan resmi dengan sistem penguncian layar fokus dan lembar jawaban digital adaptif.</p>
           </div>
 
           <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
@@ -1197,6 +1197,7 @@
                 </div>
               </div>
 
+              <!-- VIEWPORT SCROLL TERKALIBRASI RESPONSIF -->
               <div class="pdf-scroll-viewport" id="pdf-scroll-box">
                 <div class="pdf-viewer-outer-wrap" id="pdf-viewer-wrapper">
                   <canvas id="pdf-render-canvas"></canvas>
@@ -1209,16 +1210,17 @@
               </div>
             </div>
 
-            <!-- SISI KANAN: LEMBAR JAWABAN DIGITAL INTERAKTIF -->
+            <!-- SISI KANAN: LEMBAR JAWABAN DIGITAL INTERAKTIF (MENDUKUNG HSK 1 HINGGA 7-9) -->
             <div class="glass-card" style="width: 360px; max-height: 920px; display: flex; flex-direction: column; padding: 18px;">
               <div style="border-bottom: 1px solid var(--amber-border); padding-bottom: 10px; margin-bottom: 12px;">
                 <div style="font-size: 15px; font-weight: 800; color: #fff;">📝 Lembar Jawaban Digital</div>
                 <div style="font-size: 11.5px; color: var(--gold-autumn);">Waktu ujian otomatis berjalan saat Anda memilih jawaban pertama</div>
               </div>
 
-              <div style="display: flex; gap: 6px; margin-bottom: 12px;">
+              <div style="display: flex; gap: 6px; margin-bottom: 12px;" id="ljd-section-tabs">
                 <button class="pill-btn active" id="btn-ljd-listening" style="flex: 1; padding: 6px; font-size: 11.5px;" onclick="switchLjdSection('listening')">🎧 Menyimak</button>
                 <button class="pill-btn" id="btn-ljd-reading" style="flex: 1; padding: 6px; font-size: 11.5px;" onclick="switchLjdSection('reading')">📖 Membaca</button>
+                <button class="pill-btn" id="btn-ljd-writing" style="flex: 1; padding: 6px; font-size: 11.5px; display: none;" onclick="switchLjdSection('writing')">✍️ Menulis</button>
               </div>
 
               <div id="ljd-items-container" style="flex: 1; overflow-y: auto; padding-right: 6px; display: flex; flex-direction: column; gap: 9px; margin-bottom: 14px;"></div>
@@ -1621,7 +1623,7 @@
         scrollBox.appendChild(overlay);
       }
       if (overlay) {
-        overlay.innerHTML = customText || '⏳ Bon ha soal sen emo anlon nyame...';
+        overlay.innerHTML = customText || '⏳ Memuat lembar soal...';
         overlay.style.display = show ? 'block' : 'none';
       }
     }
@@ -1655,6 +1657,9 @@
     window.addEventListener('resize', function() {
       if (document.getElementById('view-stroke') && document.getElementById('view-stroke').classList.contains('active')) {
         renderMultiTianZiGe(currentPracticeWord);
+      }
+      if (document.getElementById('view-placement') && document.getElementById('view-placement').classList.contains('active') && examPdfDoc) {
+        renderPdfAndDrawPage(currentPdfPageNum);
       }
     });
 
@@ -2775,7 +2780,6 @@
       }, 200);
     };
 
-    // LOGIKA FILTER TIAN ZI GE TERINTEGRASI HSK 7-9
     function initPracticeCharacters(lvl) {
       var container = document.getElementById('char-selector-box');
       if (!container) return; 
@@ -2983,7 +2987,6 @@
       checkTurnAndAct(false); 
     };
 
-    // LOGIKA ADAPTIF KONTROL TOMBOL BICARA AI BERDASARKAN GILIRAN
     function checkTurnAndAct(shouldSpeakAi) {
       var display = document.getElementById('transcript-display');
       var btnAi = document.getElementById('btn-trigger-ai');
@@ -3000,7 +3003,6 @@
       highlightChatBubble(currentDialogueStep);
 
       if (isAiTurn) {
-        // GILIRAN AI: Tampilkan tombol Bicara AI
         if (btnAi) {
           btnAi.style.display = 'inline-block';
           btnAi.innerHTML = '▶️ Mulai / Bicara AI';
@@ -3017,7 +3019,6 @@
           if (display) display.innerHTML = `🤖 Giliran <b>${currentLine.speaker} (AI)</b>. Klik tombol <b>▶️ Mulai / Bicara AI</b> untuk mendengarkan.`;
         }
       } else {
-        // GILIRAN PENGGUNA: Sembunyikan tombol Bicara AI agar tidak membingungkan
         if (btnAi) {
           btnAi.style.display = 'none';
         }
@@ -3211,99 +3212,98 @@
       }
     };
 
-   function initSrsEngine() {
-  if (allVocabularies && allVocabularies.length > 0) {
-    srsCardsQueue = [...allVocabularies];
-  } else {
-    srsCardsQueue = [
-      { hanzi: "我", pinyin: "wǒ", indonesian: "Saya / Aku", partOfSpeech: "Kata Ganti", level: "1", hskLevel: "HSK 1" },
-      { hanzi: "你", pinyin: "nǐ", indonesian: "Kamu / Anda", partOfSpeech: "Kata Ganti", level: "1", hskLevel: "HSK 1" },
-      { hanzi: "好", pinyin: "hǎo", indonesian: "Baik / Bagus", partOfSpeech: "Kata Sifat", level: "1", hskLevel: "HSK 1" }
-    ];
-  }
+    function initSrsEngine() {
+      if (allVocabularies && allVocabularies.length > 0) {
+        srsCardsQueue = [...allVocabularies];
+      } else {
+        srsCardsQueue = [
+          { hanzi: "我", pinyin: "wǒ", indonesian: "Saya / Aku", partOfSpeech: "Kata Ganti", level: "1", hskLevel: "HSK 1" },
+          { hanzi: "你", pinyin: "nǐ", indonesian: "Kamu / Anda", partOfSpeech: "Kata Ganti", level: "1", hskLevel: "HSK 1" },
+          { hanzi: "好", pinyin: "hǎo", indonesian: "Baik / Bagus", partOfSpeech: "Kata Sifat", level: "1", hskLevel: "HSK 1" }
+        ];
+      }
 
-  // Muat indeks terakhir yang tersimpan berdasarkan username pengguna
-  var userKey = 'pakbujan_srs_idx_' + (sessionUser.username || 'default');
-  var savedIdx = 0;
-  try {
-    var rawIdx = localStorage.getItem(userKey);
-    if (rawIdx !== null) {
-      savedIdx = parseInt(rawIdx, 10);
+      var userKey = 'pakbujan_srs_idx_' + (sessionUser.username || 'default');
+      var savedIdx = 0;
+      try {
+        var rawIdx = localStorage.getItem(userKey);
+        if (rawIdx !== null) {
+          savedIdx = parseInt(rawIdx, 10);
+        }
+      } catch (e) {
+        savedIdx = 0;
+      }
+
+      if (!isNaN(savedIdx) && savedIdx >= 0 && savedIdx < srsCardsQueue.length) {
+        currentSrsIndex = savedIdx;
+      } else {
+        currentSrsIndex = 0;
+      }
+
+      renderCurrentSrsCard();
     }
-  } catch (e) {
-    savedIdx = 0;
-  }
 
-  if (!isNaN(savedIdx) && savedIdx >= 0 && savedIdx < srsCardsQueue.length) {
-    currentSrsIndex = savedIdx;
-  } else {
-    currentSrsIndex = 0;
-  }
-
-  renderCurrentSrsCard();
-}
     function saveSrsProgress() {
-  var userKey = 'pakbujan_srs_idx_' + (sessionUser.username || 'default');
-  try {
-    localStorage.setItem(userKey, currentSrsIndex.toString());
-  } catch (e) {}
-}
-
-function renderCurrentSrsCard() {
-  if (!srsCardsQueue || srsCardsQueue.length === 0) return;
-  if (currentSrsIndex >= srsCardsQueue.length) currentSrsIndex = 0;
-  
-  var card = srsCardsQueue[currentSrsIndex];
-  var elCard = document.getElementById('srs-card-element');
-  if (elCard) elCard.classList.remove('flipped');
-
-  var elHz = document.getElementById('srs-card-hz');
-  var elPy = document.getElementById('srs-card-py');
-  var elIn = document.getElementById('srs-card-in');
-  var elPos = document.getElementById('srs-card-pos');
-  var elLvl = document.getElementById('srs-card-level');
-  var elBar = document.getElementById('srs-progress-bar');
-
-  if (elHz) elHz.innerText = card.hanzi || '我';
-  if (elPy) elPy.innerText = card.pinyin || '';
-  if (elIn) elIn.innerText = card.indonesian || card.indo || '';
-  if (elPos) elPos.innerText = '[' + (card.partOfSpeech || 'Kosakata') + ']';
-  
-  var rawLevel = (card.hskLevel || card.level || '1').toString().toUpperCase().trim();
-  if (rawLevel.includes('7-9') || rawLevel.includes('7') || rawLevel.includes('8') || rawLevel.includes('9')) {
-    if (elLvl) elLvl.innerText = 'HSK 7-9';
-  } else {
-    if (elLvl) elLvl.innerText = card.hskLevel || ('HSK ' + (card.level || '1'));
-  }
-
-  if (elBar) {
-    var pct = Math.round(((currentSrsIndex + 1) / srsCardsQueue.length) * 100);
-    elBar.style.width = Math.min(100, Math.max(0, pct)) + '%';
-  }
-}
-
-window.flipFlashcard = function() {
-  var elCard = document.getElementById('srs-card-element');
-  if (elCard) elCard.classList.toggle('flipped');
-};
-
-window.answerSrs = function(isKnown) {
-  if (!srsCardsQueue || srsCardsQueue.length === 0) return;
-  if (isKnown) {
-    currentSrsIndex++;
-    if (currentSrsIndex >= srsCardsQueue.length) {
-      alert("🎉 Selamat! Anda telah menyelesaikan semua sesi pengulangan flashcards!");
-      currentSrsIndex = 0;
+      var userKey = 'pakbujan_srs_idx_' + (sessionUser.username || 'default');
+      try {
+        localStorage.setItem(userKey, currentSrsIndex.toString());
+      } catch (e) {}
     }
-  } else {
-    var item = srsCardsQueue.splice(currentSrsIndex, 1)[0];
-    srsCardsQueue.push(item);
-  }
-  
-  // Simpan progres ke storage lokal setiap kali tombol ditekan
-  saveSrsProgress();
-  renderCurrentSrsCard();
-};
+
+    function renderCurrentSrsCard() {
+      if (!srsCardsQueue || srsCardsQueue.length === 0) return;
+      if (currentSrsIndex >= srsCardsQueue.length) currentSrsIndex = 0;
+      
+      var card = srsCardsQueue[currentSrsIndex];
+      var elCard = document.getElementById('srs-card-element');
+      if (elCard) elCard.classList.remove('flipped');
+
+      var elHz = document.getElementById('srs-card-hz');
+      var elPy = document.getElementById('srs-card-py');
+      var elIn = document.getElementById('srs-card-in');
+      var elPos = document.getElementById('srs-card-pos');
+      var elLvl = document.getElementById('srs-card-level');
+      var elBar = document.getElementById('srs-progress-bar');
+
+      if (elHz) elHz.innerText = card.hanzi || '我';
+      if (elPy) elPy.innerText = card.pinyin || '';
+      if (elIn) elIn.innerText = card.indonesian || card.indo || '';
+      if (elPos) elPos.innerText = '[' + (card.partOfSpeech || 'Kosakata') + ']';
+      
+      var rawLevel = (card.hskLevel || card.level || '1').toString().toUpperCase().trim();
+      if (rawLevel.includes('7-9') || rawLevel.includes('7') || rawLevel.includes('8') || rawLevel.includes('9')) {
+        if (elLvl) elLvl.innerText = 'HSK 7-9';
+      } else {
+        if (elLvl) elLvl.innerText = card.hskLevel || ('HSK ' + (card.level || '1'));
+      }
+
+      if (elBar) {
+        var pct = Math.round(((currentSrsIndex + 1) / srsCardsQueue.length) * 100);
+        elBar.style.width = Math.min(100, Math.max(0, pct)) + '%';
+      }
+    }
+
+    window.flipFlashcard = function() {
+      var elCard = document.getElementById('srs-card-element');
+      if (elCard) elCard.classList.toggle('flipped');
+    };
+
+    window.answerSrs = function(isKnown) {
+      if (!srsCardsQueue || srsCardsQueue.length === 0) return;
+      if (isKnown) {
+        currentSrsIndex++;
+        if (currentSrsIndex >= srsCardsQueue.length) {
+          alert("🎉 Selamat! Anda telah menyelesaikan semua sesi pengulangan flashcards!");
+          currentSrsIndex = 0;
+        }
+      } else {
+        var item = srsCardsQueue.splice(currentSrsIndex, 1)[0];
+        srsCardsQueue.push(item);
+      }
+      
+      saveSrsProgress();
+      renderCurrentSrsCard();
+    };
 
     window.requestCertificatePdf = function() {
       var name = (document.getElementById('cert-user-name') ? document.getElementById('cert-user-name').value.trim() : '') || sessionUser.username || 'Siswa PakBujan';
@@ -3386,38 +3386,84 @@ window.answerSrs = function(isKnown) {
     // =========================================================================
     function getExamStructure(pkg) {
       const rawLvl = (pkg && pkg.hskLevel ? pkg.hskLevel : (sessionUser.currentHsk || 'HSK 1')).toString().toUpperCase();
+      if (rawLvl.includes('7') || rawLvl.includes('8') || rawLvl.includes('9')) {
+        return {
+          levelName: 'HSK 7-9',
+          totalQuestions: 100,
+          listeningRange: [1, 40],
+          readingRange: [41, 85],
+          writingRange: [86, 100],
+          hasWriting: true,
+          passScore: 180,
+          maxScore: 300
+        };
+      }
       const numLvl = parseInt(rawLvl.replace(/[^0-9]/g, '')) || 1;
 
       if (numLvl === 2) {
         return {
+          levelName: 'HSK 2',
           totalQuestions: 60,
           listeningRange: [1, 35],
           readingRange: [36, 60],
+          writingRange: null,
+          hasWriting: false,
           passScore: 120,
           maxScore: 200
         };
       } else if (numLvl === 3) {
         return {
+          levelName: 'HSK 3',
           totalQuestions: 80,
           listeningRange: [1, 40],
           readingRange: [41, 70],
+          writingRange: [71, 80],
+          hasWriting: true,
           passScore: 180,
           maxScore: 300
         };
-      } else if (numLvl >= 4) {
+      } else if (numLvl === 4) {
         return {
+          levelName: 'HSK 4',
           totalQuestions: 100,
           listeningRange: [1, 45],
           readingRange: [46, 85],
+          writingRange: [86, 100],
+          hasWriting: true,
+          passScore: 180,
+          maxScore: 300
+        };
+      } else if (numLvl === 5) {
+        return {
+          levelName: 'HSK 5',
+          totalQuestions: 100,
+          listeningRange: [1, 45],
+          readingRange: [46, 90],
+          writingRange: [91, 100],
+          hasWriting: true,
+          passScore: 180,
+          maxScore: 300
+        };
+      } else if (numLvl >= 6) {
+        return {
+          levelName: 'HSK 6',
+          totalQuestions: 101,
+          listeningRange: [1, 50],
+          readingRange: [51, 100],
+          writingRange: [101, 101],
+          hasWriting: true,
           passScore: 180,
           maxScore: 300
         };
       }
       
       return {
+        levelName: 'HSK 1',
         totalQuestions: 40,
         listeningRange: [1, 20],
         readingRange: [21, 40],
+        writingRange: null,
+        hasWriting: false,
         passScore: 120,
         maxScore: 200
       };
@@ -3426,8 +3472,18 @@ window.answerSrs = function(isKnown) {
     function updateLjdTabButtons(structure) {
       const bList = document.getElementById('btn-ljd-listening');
       const bRead = document.getElementById('btn-ljd-reading');
+      const bWrite = document.getElementById('btn-ljd-writing');
       if (bList) bList.innerText = `🎧 Menyimak (${structure.listeningRange[0]}-${structure.listeningRange[1]})`;
       if (bRead) bRead.innerText = `📖 Membaca (${structure.readingRange[0]}-${structure.readingRange[1]})`;
+      if (bWrite) {
+        if (structure.hasWriting && structure.writingRange) {
+          bWrite.style.display = 'inline-block';
+          bWrite.innerText = `✍️ Menulis (${structure.writingRange[0]}-${structure.writingRange[1]})`;
+        } else {
+          bWrite.style.display = 'none';
+          if (activeLjdSection === 'writing') activeLjdSection = 'listening';
+        }
+      }
     }
 
     window.startPlacementExamSession = function() {
@@ -3484,7 +3540,7 @@ window.answerSrs = function(isKnown) {
     function resetExamTimer() {
       clearInterval(examTimerInterval);
       isExamTimerRunning = false;
-      examTimeRemaining = 7200; // 2 Jam = 120 Menit
+      examTimeRemaining = 7200;
       updateExamTimerUI();
     }
 
@@ -3656,7 +3712,7 @@ window.answerSrs = function(isKnown) {
 
     async function loadPdfFromUrlOrData(urlOrData) {
       try {
-        showPdfLoadingNotice(true, "⏳ Bon ha soal sen emo anlon nyame...");
+        showPdfLoadingNotice(true, "⏳ Memuat lembar soal...");
         examPdfDoc = await pdfjsLib.getDocument(urlOrData).promise;
         totalPdfPages = await detectMaxQuestionPage(examPdfDoc);
         currentPdfPageNum = 1; 
@@ -3689,8 +3745,10 @@ window.answerSrs = function(isKnown) {
         "答案",
         "卷听力材料",
         "样卷听力材料",
+        "试卷听力材料",
         "听力材料",
         "听力文本",
+        "听力录音文本",
         "ANSWERKEY",
         "ANSWERS"
       ];
@@ -3709,7 +3767,6 @@ window.answerSrs = function(isKnown) {
           const isForbiddenPage = blockKeywords.some(keyword => pageCleanText.includes(keyword));
 
           if (isForbiddenPage) {
-            console.log(`[Security] Kunci/Naskah '${pageCleanText.slice(0, 30)}...' terdeteksi di hal ${pageNum}. Membatasi akses soal sampai hal ${pageNum - 1}.`);
             return Math.max(1, pageNum - 1);
           }
         } catch (err) {
@@ -3731,12 +3788,15 @@ window.answerSrs = function(isKnown) {
       const renderCanvas = document.getElementById('pdf-render-canvas');
       const drawCanvas = document.getElementById('pdf-draw-canvas');
       const scrollBox = document.getElementById('pdf-scroll-box');
+      const wrapper = document.getElementById('pdf-viewer-wrapper');
       const ctxRender = renderCanvas.getContext('2d');
 
-      const containerWidth = (scrollBox && scrollBox.clientWidth > 100) ? (scrollBox.clientWidth - 40) : 650;
+      const containerWidth = (scrollBox && scrollBox.clientWidth > 50) ? (scrollBox.clientWidth - 20) : 600;
       const unscaledViewport = page.getViewport({ scale: 1.0 });
-      let dynamicScale = (containerWidth / unscaledViewport.width) * currentPdfScale;
-      dynamicScale = Math.max(0.75, Math.min(dynamicScale, 1.6));
+      
+      let baseScale = containerWidth / unscaledViewport.width;
+      let dynamicScale = baseScale * currentPdfScale;
+      dynamicScale = Math.max(0.35, Math.min(dynamicScale, 3.0));
 
       const viewport = page.getViewport({ scale: dynamicScale });
 
@@ -3745,19 +3805,25 @@ window.answerSrs = function(isKnown) {
       drawCanvas.width = viewport.width;
       drawCanvas.height = viewport.height;
 
+      if (wrapper) {
+        wrapper.style.width = viewport.width + 'px';
+        wrapper.style.height = viewport.height + 'px';
+      }
+
       const renderContext = { canvasContext: ctxRender, viewport: viewport };
       await page.render(renderContext).promise;
 
       const ctxDraw = drawCanvas.getContext('2d');
       ctxDraw.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
       if (drawingsPerPage[pageNum]) {
-        const img = new Image(); img.onload = function() { ctxDraw.drawImage(img, 0, 0); }; img.src = drawingsPerPage[pageNum];
+        const img = new Image();
+        img.onload = function() { ctxDraw.drawImage(img, 0, 0); };
+        img.src = drawingsPerPage[pageNum];
       }
 
       initPdfDrawListeners(drawCanvas);
       const pageNumEl = document.getElementById('pdf-page-num');
       if (pageNumEl) pageNumEl.innerText = 'Hal ' + pageNum + ' / ' + totalPdfPages;
-      if (scrollBox) scrollBox.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function initPdfDrawListeners(drawCanvas) {
@@ -3883,13 +3949,23 @@ window.answerSrs = function(isKnown) {
       const structure = getExamStructure(currentPlacementPackage);
       updateLjdTabButtons(structure);
 
-      const isListening = (activeLjdSection === 'listening');
-      const startQ = isListening ? structure.listeningRange[0] : structure.readingRange[0];
-      const endQ = isListening ? structure.listeningRange[1] : structure.readingRange[1];
+      let startQ = 1, endQ = 20;
+      if (activeLjdSection === 'listening') {
+        startQ = structure.listeningRange[0];
+        endQ = structure.listeningRange[1];
+      } else if (activeLjdSection === 'reading') {
+        startQ = structure.readingRange[0];
+        endQ = structure.readingRange[1];
+      } else if (activeLjdSection === 'writing' && structure.writingRange) {
+        startQ = structure.writingRange[0];
+        endQ = structure.writingRange[1];
+      }
 
       const answerKey = (currentPlacementPackage && currentPlacementPackage.answerKey) 
         ? currentPlacementPackage.answerKey 
         : DEFAULT_HSK1_ANSWER_KEY;
+
+      const numLvl = parseInt((currentPlacementPackage && currentPlacementPackage.hskLevel ? currentPlacementPackage.hskLevel : '1').replace(/[^0-9]/g, '')) || 1;
 
       for (let q = startQ; q <= endQ; q++) {
         const row = document.createElement('div');
@@ -3913,6 +3989,7 @@ window.answerSrs = function(isKnown) {
         optionsDiv.style.gap = '4px';
 
         let optionsList = [];
+        let isTextInput = false;
         const targetKey = (answerKey[q] || answerKey[q.toString()] || "").toString().trim().toUpperCase();
 
         if (targetKey === "TRUE" || targetKey === "FALSE" || targetKey === "√" || targetKey === "✕") {
@@ -3921,8 +3998,9 @@ window.answerSrs = function(isKnown) {
           optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }, { label: "E", val: "E" }, { label: "F", val: "F" }];
         } else if (targetKey === "A" || targetKey === "B" || targetKey === "C") {
           optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }];
+        } else if (targetKey.length > 1 && !["TRUE", "FALSE"].includes(targetKey)) {
+          isTextInput = true;
         } else {
-          const numLvl = parseInt((currentPlacementPackage && currentPlacementPackage.hskLevel ? currentPlacementPackage.hskLevel : 'HSK 1').replace(/[^0-9]/g, '')) || 1;
           if (numLvl === 1) {
             if ((q >= 1 && q <= 5) || (q >= 21 && q <= 25)) optionsList = [{ label: "√", val: "TRUE" }, { label: "✕", val: "FALSE" }];
             else if ((q >= 6 && q <= 10) || (q >= 16 && q <= 20)) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }];
@@ -3931,26 +4009,62 @@ window.answerSrs = function(isKnown) {
             if ((q >= 1 && q <= 10) || (q >= 36 && q <= 40)) optionsList = [{ label: "√", val: "TRUE" }, { label: "✕", val: "FALSE" }];
             else if ((q >= 11 && q <= 20) || (q >= 41 && q <= 50)) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }];
             else optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }];
+          } else if (numLvl === 3) {
+            if (q >= 1 && q <= 10) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }, { label: "E", val: "E" }, { label: "F", val: "F" }];
+            else if (q >= 11 && q <= 20) optionsList = [{ label: "√", val: "TRUE" }, { label: "✕", val: "FALSE" }];
+            else if (q >= 21 && q <= 40) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }];
+            else if (q >= 41 && q <= 60) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }, { label: "E", val: "E" }, { label: "F", val: "F" }];
+            else if (q >= 61 && q <= 70) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }];
+            else isTextInput = true;
+          } else if (numLvl === 4) {
+            if (q >= 1 && q <= 10) optionsList = [{ label: "√", val: "TRUE" }, { label: "✕", val: "FALSE" }];
+            else if (q >= 11 && q <= 45) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }];
+            else if (q >= 46 && q <= 55) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }, { label: "E", val: "E" }, { label: "F", val: "F" }];
+            else if (q >= 56 && q <= 65) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }];
+            else if (q >= 66 && q <= 85) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }];
+            else isTextInput = true;
+          } else if (numLvl === 5) {
+            if (q >= 1 && q <= 90) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }];
+            else isTextInput = true;
           } else {
-            optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }];
+            if (q <= 100) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }];
+            else isTextInput = true;
           }
         }
 
-        optionsList.forEach(function(opt) {
-          const btn = document.createElement('button');
-          btn.className = 'pill-btn' + (userExamAnswers[q] === opt.val ? ' active' : '');
-          btn.style.padding = '4px 8px';
-          btn.style.fontSize = '11px';
-          btn.style.minWidth = '28px';
-          btn.innerText = opt.label;
-          btn.onclick = function() {
-            userExamAnswers[q] = opt.val;
-            const parentBtns = optionsDiv.querySelectorAll('.pill-btn');
-            parentBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+        if (isTextInput) {
+          const inTxt = document.createElement('input');
+          inTxt.type = 'text';
+          inTxt.placeholder = 'Jawaban Anda...';
+          inTxt.value = userExamAnswers[q] || '';
+          inTxt.style.background = '#281810';
+          inTxt.style.border = '1px solid var(--amber-border)';
+          inTxt.style.color = '#fff';
+          inTxt.style.borderRadius = '6px';
+          inTxt.style.padding = '4px 8px';
+          inTxt.style.fontSize = '12px';
+          inTxt.style.width = '160px';
+          inTxt.oninput = function() {
+            userExamAnswers[q] = inTxt.value.trim();
           };
-          optionsDiv.appendChild(btn);
-        });
+          optionsDiv.appendChild(inTxt);
+        } else {
+          optionsList.forEach(function(opt) {
+            const btn = document.createElement('button');
+            btn.className = 'pill-btn' + (userExamAnswers[q] === opt.val ? ' active' : '');
+            btn.style.padding = '4px 8px';
+            btn.style.fontSize = '11px';
+            btn.style.minWidth = '28px';
+            btn.innerText = opt.label;
+            btn.onclick = function() {
+              userExamAnswers[q] = opt.val;
+              const parentBtns = optionsDiv.querySelectorAll('.pill-btn');
+              parentBtns.forEach(b => b.classList.remove('active'));
+              btn.classList.add('active');
+            };
+            optionsDiv.appendChild(btn);
+          });
+        }
 
         row.appendChild(optionsDiv);
         container.appendChild(row);
@@ -3961,10 +4075,10 @@ window.answerSrs = function(isKnown) {
       activeLjdSection = sec;
       const bList = document.getElementById('btn-ljd-listening');
       const bRead = document.getElementById('btn-ljd-reading');
-      if (bList && bRead) {
-        bList.classList.toggle('active', sec === 'listening');
-        bRead.classList.toggle('active', sec === 'reading');
-      }
+      const bWrite = document.getElementById('btn-ljd-writing');
+      if (bList) bList.classList.toggle('active', sec === 'listening');
+      if (bRead) bRead.classList.toggle('active', sec === 'reading');
+      if (bWrite) bWrite.classList.toggle('active', sec === 'writing');
       renderLjdItems();
     };
 
@@ -3984,6 +4098,7 @@ window.answerSrs = function(isKnown) {
 
       let listeningCorrect = 0;
       let readingCorrect = 0;
+      let writingScore = 0;
 
       const listStart = structure.listeningRange[0], listEnd = structure.listeningRange[1];
       const readStart = structure.readingRange[0], readEnd = structure.readingRange[1];
@@ -4004,7 +4119,23 @@ window.answerSrs = function(isKnown) {
 
       const listeningScore = Math.round((listeningCorrect / listTotal) * 100);
       const readingScore = Math.round((readingCorrect / readTotal) * 100);
-      const totalScore = listeningScore + readingScore;
+      
+      let totalScore = listeningScore + readingScore;
+      if (structure.hasWriting && structure.writingRange) {
+        let writeStart = structure.writingRange[0], writeEnd = structure.writingRange[1];
+        let writeTotal = (writeEnd - writeStart + 1);
+        let writeCorrect = 0;
+        for (let w = writeStart; w <= writeEnd; w++) {
+          const userAns = (userExamAnswers[w] || "").toString().trim();
+          const correctAns = (answerKey[w] || answerKey[w.toString()] || "").toString().trim();
+          if (userAns && (userAns === correctAns || (correctAns && userAns.toLowerCase() === correctAns.toLowerCase()))) {
+            writeCorrect++;
+          }
+        }
+        writingScore = Math.round((writeCorrect / writeTotal) * 100);
+        totalScore += writingScore;
+      }
+
       const isPassed = totalScore >= structure.passScore;
 
       const resBox = document.getElementById('exam-score-result');
@@ -4016,7 +4147,8 @@ window.answerSrs = function(isKnown) {
           </div>
           <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
             Menyimak (听力): <b>${listeningScore}/100</b> (${listeningCorrect}/${listTotal} soal)<br>
-            Membaca (阅读): <b>${readingScore}/100</b> (${readingCorrect}/${readTotal} soal)
+            Membaca (阅读): <b>${readingScore}/100</b> (${readingCorrect}/${readTotal} soal)<br>
+            ${structure.hasWriting ? `Menulis (书写): <b>${writingScore}/100</b><br>` : ''}
           </div>
           <div style="font-size: 15px; color: var(--gold-autumn); font-weight: 800;">
             Total Skor: ${totalScore} / ${structure.maxScore}
