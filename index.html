@@ -1054,11 +1054,29 @@
       </section>
 
       <!-- 6. ENSIKLOPEDIA TATA BAHASA -->
-      <section id="view-grammar" class="view-section">
+     <section id="view-grammar" class="view-section">
         <div class="header-group">
           <span class="badge">Comprehensive Grammar Encyclopedia</span>
           <h2>Ensiklopedia Tata Bahasa & Pola Kalimat</h2>
-          <p>Panduan mendalam struktur kalimat esensial: modal kata kerja, aspek partikel, pola kalimat 是 dan 有.</p>
+          <p>Panduan mendalam struktur kalimat esensial HSK 1 sampai HSK 7-9 dari database Spreadsheet.</p>
+        </div>
+
+        <!-- TOOLBAR PENCARIAN & FILTER HSK 1-6 & 7-9 -->
+        <div class="toolbar-row">
+          <div class="search-input-wrap">
+            <span class="search-icon-abs">🔍</span>
+            <input type="text" id="grammar-search-input" placeholder="Cari pola kalimat / rumus / topik..." oninput="handleGrammarSearchDebounce()">
+          </div>
+          <div class="filter-pills" id="grammar-level-pills">
+            <button class="pill-btn active" onclick="filterGrammarLevel('ALL', this)">Semua HSK</button>
+            <button class="pill-btn" onclick="filterGrammarLevel('1', this)">HSK 1</button>
+            <button class="pill-btn" onclick="filterGrammarLevel('2', this)">HSK 2</button>
+            <button class="pill-btn" onclick="filterGrammarLevel('3', this)">HSK 3</button>
+            <button class="pill-btn" onclick="filterGrammarLevel('4', this)">HSK 4</button>
+            <button class="pill-btn" onclick="filterGrammarLevel('5', this)">HSK 5</button>
+            <button class="pill-btn" onclick="filterGrammarLevel('6', this)">HSK 6</button>
+            <button class="pill-btn" onclick="filterGrammarLevel('7-9', this)">HSK 7-9</button>
+          </div>
         </div>
 
         <div id="grammar-cards-container"></div>
@@ -2913,39 +2931,122 @@
       switchTab('stroke'); 
       setTimeout(function() { renderMultiTianZiGe(currentPracticeWord); }, 60);
     };
+    
+    var allGrammarList = [];
+    var currentGrammarLevel = 'ALL';
+    var currentGrammarSearch = '';
+    var grammarSearchDebounceTimer = null;
 
-    function loadGrammarGuidesFast() {
+  function loadGrammarGuidesFast() {
       try {
         var cached = localStorage.getItem('cache_grammar');
-        if (cached) renderGrammarGuides(JSON.parse(cached));
+        if (cached) {
+          allGrammarList = JSON.parse(cached);
+          renderGrammarGuides();
+        }
       } catch(e){}
 
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
         fetch(SCRIPT_URL + "?action=getGrammar&level=ALL")
           .then(res => res.json())
           .then(data => {
-            try { localStorage.setItem('cache_grammar', JSON.stringify(data)); } catch(e){}
-            renderGrammarGuides(data);
+            allGrammarList = data || [];
+            try { localStorage.setItem('cache_grammar', JSON.stringify(allGrammarList)); } catch(e){}
+            renderGrammarGuides();
           })
           .catch(() => {});
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run.withSuccessHandler(function(data) {
-          try { localStorage.setItem('cache_grammar', JSON.stringify(data)); } catch(e){}
-          renderGrammarGuides(data);
+          allGrammarList = data || [];
+          try { localStorage.setItem('cache_grammar', JSON.stringify(allGrammarList)); } catch(e){}
+          renderGrammarGuides();
         }).getGrammarGuides('ALL');
       }
     }
 
     function renderGrammarGuides(guides) {
-      var container = document.getElementById('grammar-cards-container'); if (!container) return; container.innerHTML = '';
-      if (!guides || guides.length === 0) { container.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 30px;">Belum ada data materi di sheet GRAMMAR_GUIDE.</div>'; return; }
-      guides.forEach(function(g) {
-        var card = document.createElement('div'); card.className = 'glass-card';
-        var exHtml = ''; if (g.examples) { g.examples.forEach(function(ex) { exHtml += '<div style="margin-bottom: 6px;"><b>' + ex.hanzi + '</b> <span style="color:var(--gold-autumn);">(' + ex.pinyin + ')</span> : ' + ex.indo + '</div>'; }); }
-        card.innerHTML = '<div style="display:flex; justify-content:space-between; margin-bottom: 8px;"><span class="badge">' + g.hskLevel + ' - ' + g.topic + '</span></div><h3 style="font-size: 18px; color: #fff; margin-bottom: 8px;">' + g.ruleTitle + '</h3><div style="background: rgba(20, 11, 7, 0.6); padding: 10px; border-radius: 6px; border-left: 3px solid var(--gold-autumn); font-family: monospace; font-size: 13px; color: #fed7aa; margin-bottom: 12px;">' + g.formula + '</div><p style="font-size: 13.5px; color: var(--text-main); margin-bottom: 14px; line-height: 1.6;">' + g.explanationIndo + '</p><div style="background: rgba(40, 24, 16, 0.6); padding: 12px; border-radius: 8px; font-size: 12.5px; color: var(--text-muted);">' + exHtml + '</div>';
+      if (guides && Array.isArray(guides)) allGrammarList = guides;
+      var container = document.getElementById('grammar-cards-container'); 
+      if (!container) return; 
+      container.innerHTML = '';
+      
+      var targetLvl = currentGrammarLevel.toString().trim().toUpperCase();
+      var isHsk79Filter = (targetLvl === '7-9' || targetLvl === 'HSK 7-9' || targetLvl === '79');
+      var sTerm = currentGrammarSearch.toLowerCase().trim();
+
+      var filtered = allGrammarList.filter(function(g) {
+        var rawV = (g.hskLevel || '').toString().trim().toUpperCase();
+        var vNum = rawV.replace(/[^0-9]/g, '');
+        var matchLvl = false;
+
+        if (targetLvl === 'ALL' || targetLvl === '') {
+          matchLvl = true;
+        } else if (isHsk79Filter) {
+          matchLvl = (rawV.includes('7-9') || rawV.includes('7') || rawV.includes('8') || rawV.includes('9') || vNum === '7' || vNum === '8' || vNum === '9' || vNum === '79' || vNum === '789');
+        } else {
+          var targetNum = targetLvl.replace(/[^0-9]/g, '');
+          matchLvl = (vNum === targetNum || rawV === targetLvl || rawV === ('HSK ' + targetNum));
+        }
+
+        var matchSearch = (!sTerm || 
+          (g.ruleTitle && g.ruleTitle.toLowerCase().includes(sTerm)) || 
+          (g.topic && g.topic.toLowerCase().includes(sTerm)) || 
+          (g.formula && g.formula.toLowerCase().includes(sTerm)) || 
+          (g.explanationIndo && g.explanationIndo.toLowerCase().includes(sTerm))
+        );
+        return matchLvl && matchSearch;
+      });
+
+      if (filtered.length === 0) { 
+        container.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 40px;">Belum ada materi tata bahasa untuk level ini di database.</div>'; 
+        return; 
+      }
+
+      filtered.forEach(function(g) {
+        var card = document.createElement('div'); 
+        card.className = 'glass-card';
+        var exHtml = ''; 
+        if (g.examples && Array.isArray(g.examples)) { 
+          g.examples.forEach(function(ex) { 
+            exHtml += '<div style="margin-bottom: 6px; padding: 4px 0; border-bottom: 1px dashed rgba(245, 158, 11, 0.15);">' +
+                        '<b style="font-family: var(--font-hanzi); font-size: 15px; color: #fff;">' + (ex.hanzi || '') + '</b> ' +
+                        '<span style="color:var(--gold-autumn); font-size: 12.5px;">(' + (ex.pinyin || '') + ')</span> : ' +
+                        '<span style="color: #fed7aa; font-size: 13px;">' + (ex.indo || ex.translation || '') + '</span>' +
+                      '</div>'; 
+          }); 
+        }
+        card.innerHTML = '<div style="display:flex; justify-content:space-between; align-items: center; margin-bottom: 8px;">' +
+                           '<span class="badge">' + (g.hskLevel || 'HSK') + ' • ' + (g.topic || 'Umum') + '</span>' +
+                         '</div>' +
+                         '<h3 style="font-size: 18px; color: #fff; margin-bottom: 8px;">' + (g.ruleTitle || 'Pola Kalimat') + '</h3>' +
+                         '<div style="background: rgba(20, 11, 7, 0.6); padding: 10px 14px; border-radius: 8px; border-left: 3px solid var(--gold-autumn); font-family: monospace; font-size: 13.5px; color: #fed7aa; margin-bottom: 12px; font-weight: 700;">' + (g.formula || '') + '</div>' +
+                         '<p style="font-size: 13.5px; color: var(--text-main); margin-bottom: 14px; line-height: 1.6;">' + (g.explanationIndo || '') + '</p>' +
+                         '<div style="background: rgba(40, 24, 16, 0.6); padding: 12px 14px; border-radius: 8px; font-size: 12.5px;">' +
+                           '<div style="font-size: 11px; font-weight: 700; color: var(--gold-autumn); text-transform: uppercase; margin-bottom: 6px;">Contoh Kalimat:</div>' +
+                           exHtml +
+                         '</div>';
         container.appendChild(card);
       });
     }
+
+    window.filterGrammarLevel = function(lvl, btn) {
+      currentGrammarLevel = lvl;
+      if (btn && btn.parentElement) {
+        var buttons = btn.parentElement.querySelectorAll('.pill-btn');
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
+      renderGrammarGuides();
+    };
+
+    window.handleGrammarSearchDebounce = function() {
+      clearTimeout(grammarSearchDebounceTimer);
+      grammarSearchDebounceTimer = setTimeout(function() {
+        var inSearch = document.getElementById('grammar-search-input');
+        currentGrammarSearch = inSearch ? inSearch.value : '';
+        renderGrammarGuides();
+      }, 250);
+    };
 
     function loadSpeakingDialoguesFast(preferredId) {
       var selectEl = document.getElementById('speaking-scenario-select');
