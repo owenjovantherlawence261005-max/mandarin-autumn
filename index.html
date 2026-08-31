@@ -1761,6 +1761,48 @@
   </div>
 
   <script>
+    window.openGuideModal = function(defaultTab) {
+      var modal = document.getElementById('guide-modal-overlay');
+      if (modal) {
+        modal.style.display = 'flex';
+        switchGuideTab(defaultTab || 'nav');
+      }
+    };
+
+    window.closeGuideModal = function() {
+      var modal = document.getElementById('guide-modal-overlay');
+      if (modal) modal.style.display = 'none';
+    };
+
+    window.handleGuideOverlayClick = function(event) {
+      if (event.target.id === 'guide-modal-overlay') {
+        closeGuideModal();
+      }
+    };
+
+    window.switchGuideTab = function(tabKey) {
+      var tabs = ['nav', 'stroke', 'speak', 'exam', 'srs'];
+      tabs.forEach(function(k) {
+        var btn = document.getElementById('gtab-' + k);
+        var content = document.getElementById('guide-content-' + k);
+        if (btn) btn.classList.toggle('active', k === tabKey);
+        if (content) content.style.display = (k === tabKey ? 'block' : 'none');
+      });
+    };
+
+    window.hideMobileNavHintOnce = function() {
+      var hint = document.getElementById('mobile-nav-hint');
+      if (hint && hint.style.display !== 'none') {
+        hint.style.opacity = '0';
+        hint.style.transition = 'opacity 0.4s ease';
+        setTimeout(function() { hint.style.display = 'none'; }, 400);
+      }
+    };
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeGuideModal();
+    });
+    
     window.handleCrudPlacementKeyPdfUpload = async function(event) {
       const file = event.target.files[0];
       const statusEl = document.getElementById('crud-plc-pdf-status');
