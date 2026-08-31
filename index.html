@@ -8,7 +8,7 @@
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
-  <!-- CEK SESI INSTAN SEBELUM RENDER (ANTI KEDIP LOGIN) -->
+  <!-- CEK SESI INSTAN SEBELUM RENDER -->
   <script>
     (function() {
       try {
@@ -48,12 +48,8 @@
       position: relative;
     }
 
-    html.is-authenticated #login-overlay {
-      display: none !important;
-    }
-    html.is-authenticated .app-container {
-      visibility: visible !important;
-    }
+    html.is-authenticated #login-overlay { display: none !important; }
+    html.is-authenticated .app-container { visibility: visible !important; }
 
     #login-overlay {
       position: fixed;
@@ -343,7 +339,7 @@
     }
     .icon-action-btn:hover { background: var(--terracotta); color: #fff; border-color: var(--terracotta); }
 
-    /* TIAN ZI GE MOBILE & MULTI-CANVAS */
+    /* TIAN ZI GE */
     .canvas-multi-grid {
       display: flex;
       flex-wrap: wrap;
@@ -561,7 +557,7 @@
     .btn-pass { background: rgba(22, 163, 74, 0.25); border: 1px solid #16a34a; color: #86efac; }
     .btn-pass:hover { background: #16a34a; color: #fff; }
 
-    /* BOTTOM NAV HORIZONTAL SCROLL */
+    /* BOTTOM NAV */
     .bottom-nav {
       display: none;
       position: fixed;
@@ -599,7 +595,7 @@
     .bottom-nav-btn.active { color: var(--gold-autumn); }
     .bottom-nav-btn span.icon { font-size: 17px; }
 
-    /* PDF SCROLL VIEWPORT & CANVAS CONTAINER */
+    /* PDF SCROLL VIEWPORT & CANVAS */
     .pdf-scroll-viewport {
       background: #180d08;
       border: 1px solid var(--amber-border);
@@ -1103,7 +1099,7 @@
         </div>
       </section>
 
-      <!-- 8. HSK DIAGNOSTIC & MOCK PLACEMENT TEST (LOBBY + FULL FOCUS LOCK) -->
+      <!-- 8. HSK DIAGNOSTIC & MOCK PLACEMENT TEST -->
       <section id="view-placement" class="view-section">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
           <div class="header-group" style="margin-bottom: 0;">
@@ -1576,17 +1572,6 @@
     var examTimerInterval = null;
     var examTimeRemaining = 7200;
     var isExamTimerRunning = false;
-
-    const DEFAULT_HSK1_ANSWER_KEY = {
-      1: "TRUE", 2: "FALSE", 3: "FALSE", 4: "FALSE", 5: "TRUE",
-      6: "A", 7: "A", 8: "C", 9: "A", 10: "C",
-      11: "D", 12: "B", 13: "A", 14: "E", 15: "F",
-      16: "B", 17: "B", 18: "C", 19: "C", 20: "B",
-      21: "TRUE", 22: "TRUE", 23: "FALSE", 24: "FALSE", 25: "TRUE",
-      26: "D", 27: "F", 28: "C", 29: "A", 30: "B",
-      31: "C", 32: "D", 33: "A", 34: "B", 35: "E",
-      36: "F", 37: "B", 38: "E", 39: "A", 40: "C"
-    };
 
     var srsCardsQueue = [];
     var currentSrsIndex = 0;
@@ -2787,7 +2772,7 @@
     function initPracticeCharacters(lvl) {
       var container = document.getElementById('char-selector-box');
       if (!container) return; 
-      container.innerHTML = '';
+      container.innerHTML = ''; 
       
       var selectedLvl = (lvl || currentStrokeLevel || '1').toString().toUpperCase().trim();
       var isHsk79Filter = (selectedLvl === '7-9' || selectedLvl === 'HSK 7-9' || selectedLvl === '79');
@@ -3386,7 +3371,7 @@
     };
 
     // =========================================================================
-    // 8. PLACEMENT TEST ENGINE
+    // 8. PLACEMENT TEST ENGINE & DINAMIK PDF PARSER
     // =========================================================================
     function getExamStructure(pkg) {
       const rawLvl = (pkg && pkg.hskLevel ? pkg.hskLevel : (sessionUser.currentHsk || 'HSK 1')).toString().toUpperCase();
@@ -3575,7 +3560,7 @@
         if (!allPlacementPackages || allPlacementPackages.length === 0) {
           allPlacementPackages = [{
             testId: "PLC-DEFAULT", hskLevel: "HSK 1", testTitle: "Simulasi Ujian Resmi HSK 1 (H10901)",
-            pdfUrl: "./placement_test/HSK1.pdf", audioUrl: "./placement_test/HSK1.mp3", answerKey: DEFAULT_HSK1_ANSWER_KEY
+            pdfUrl: "./placement_test/HSK1.pdf", audioUrl: "./placement_test/HSK1.mp3"
           }];
         }
 
@@ -3714,7 +3699,7 @@
       document.body.removeChild(link);
     };
 
-    // FUNGSI ANTI-CONTEK: MEMOTONG HALAMAN KUNCI JAWABAN & NASKAH AUDIO DARI TAMPILAN
+    // PROTEKSI: MEMOTONG HALAMAN KUNCI JAWABAN & NASKAH DARI TAMPILAN SISWA
     async function detectMaxQuestionPage(pdfDoc) {
       if (!pdfDoc) return 1;
       const totalPages = pdfDoc.numPages;
@@ -3729,6 +3714,7 @@
             str.includes("卷听力材料") || 
             str.includes("卷答案") || 
             str.includes("参考答案") || 
+            str.includes("试卷答案") ||
             str.includes("听力录音文本") ||
             str.includes("听力文本")
           ) {
@@ -3739,41 +3725,123 @@
       return totalPages;
     }
 
+    // EKSTRAKTOR KUNCI JAWABAN OTOMATIS DARI PDF DENGAN DUKUNGAN HSK 1-9 (SEMUA SET)
     async function extractAnswerKeyFromPdf(pdfDoc) {
       if (!pdfDoc) return {};
       const totalPages = pdfDoc.numPages;
       const extractedKey = {};
-      let fullKeyText = "";
+      let allTextLines = [];
 
-      for (let p = Math.max(1, totalPages - 5); p <= totalPages; p++) {
+      for (let p = 1; p <= totalPages; p++) {
         try {
           const page = await pdfDoc.getPage(p);
           const content = await page.getTextContent();
-          const pageStr = content.items.map(item => item.str).join(" ");
-          fullKeyText += " " + pageStr;
+          let currentLine = "";
+          let lastY = null;
+          const pageLines = [];
+
+          content.items.forEach(item => {
+            if (lastY !== null && Math.abs(item.transform[5] - lastY) > 5) {
+              if (currentLine.trim()) pageLines.push(currentLine.trim());
+              currentLine = item.str;
+            } else {
+              currentLine += " " + item.str;
+            }
+            lastY = item.transform[5];
+          });
+          if (currentLine.trim()) pageLines.push(currentLine.trim());
+
+          allTextLines.push({ pageNum: p, fullStr: pageLines.join("\n"), lines: pageLines });
         } catch (e) {}
       }
 
-      // 1. Ekstrak Pilihan Ganda (A-F) & Benar/Salah (TRUE/FALSE)
-      const mcqRegex = /(?:^|\s|第|No\.?|★)?\s*([0-9]{1,3})\s*[\.、\s\-\:]*\s*([A-F]|TRUE|FALSE|√|✕|对|错|正确|错误|X|V)(?=\s|[0-9]{1,3}[\.、\s\:]|$)/gi;
-      let match;
-      while ((match = mcqRegex.exec(fullKeyText)) !== null) {
-        const qNum = parseInt(match[1], 10);
-        let ans = match[2].toUpperCase().trim();
-        if (ans === "对" || ans === "正确" || ans === "V") ans = "TRUE";
-        if (ans === "错" || ans === "错误" || ans === "X") ans = "FALSE";
-        if (qNum > 0 && qNum <= 120 && !extractedKey[qNum]) {
-          extractedKey[qNum] = ans;
+      let answerLines = [];
+      let isAnswerSection = false;
+
+      for (let pData of allTextLines) {
+        const text = pData.fullStr;
+        if (
+          text.includes("答案") || 
+          text.includes("参考答案") || 
+          text.includes("试卷答案") ||
+          text.includes("听力材料") ||
+          pData.pageNum >= (totalPages - 4)
+        ) {
+          isAnswerSection = true;
+        }
+        if (isAnswerSection) {
+          answerLines.push(...pData.lines);
         }
       }
 
-      // 2. Ekstrak Soal Isian Hanzi / Susun Kalimat (Bagian Menulis)
-      const textAnsRegex = /(?:^|\s|第|No\.?)\s*([0-9]{1,3})\s*[\.、\s\-\:]+\s*([\u4e00-\u9fa5A-Za-z0-9，。！？\s\/]+?)(?=\s+(?:[0-9]{1,3}[\.、\s\-\:]|第二部分|三、|听力材料|H[0-9]|$))/gi;
-      while ((match = textAnsRegex.exec(fullKeyText)) !== null) {
-        const qNum = parseInt(match[1], 10);
-        const ans = match[2].trim();
-        if (qNum > 0 && qNum <= 120 && ans.length > 0 && !extractedKey[qNum]) {
-          extractedKey[qNum] = ans;
+      if (answerLines.length === 0) {
+        allTextLines.slice(Math.max(0, allTextLines.length - 4)).forEach(p => answerLines.push(...p.lines));
+      }
+
+      // Normalisasi karakter fullwidth, tanda baca, simbol benar/salah
+      const cleanLines = answerLines.map(line => {
+        return line
+          .replace(/[\uFF10-\uFF19]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
+          .replace(/[\uFF21-\uFF3A]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
+          .replace(/[\uFF41-\uFF5A]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0))
+          .replace(/[．。、]/g, ".")
+          .replace(/[：]/g, ":")
+          .replace(/[×✕✗✘]/g, " FALSE ")
+          .replace(/[√✓✔]/g, " TRUE ")
+          .trim();
+      });
+
+      const fullBlock = cleanLines.join("\n");
+
+      // 1. Ekstraksi format rentang (misal: "1-5 A B C D E" atau "1-5: TRUE FALSE TRUE ...")
+      const rangeRegex = /(?:^|\n|\s)([0-9]{1,3})\s*[-—~～]\s*([0-9]{1,3})\s*[:\.]?\s*([A-FTRUEFALSE\s\.\,\/]+)(?=\n|$)/gi;
+      let rMatch;
+      while ((rMatch = rangeRegex.exec(fullBlock)) !== null) {
+        const startQ = parseInt(rMatch[1], 10);
+        const endQ = parseInt(rMatch[2], 10);
+        const tokens = rMatch[3].trim().split(/\s+/).filter(t => t.length > 0);
+        if (tokens.length === (endQ - startQ + 1)) {
+          for (let i = 0; i < tokens.length; i++) {
+            const q = startQ + i;
+            let val = tokens[i].toUpperCase().replace(/[^A-FTRUEFALSE]/g, '');
+            if (val === "V" || val === "对" || val === "正确") val = "TRUE";
+            if (val === "X" || val === "错" || val === "错误") val = "FALSE";
+            if (val && !extractedKey[q]) extractedKey[q] = val;
+          }
+        }
+      }
+
+      // 2. Ekstraksi butir soal individu & teks isian Hanzi / kalimat menulis
+      const itemRegex = /(?:^|\s|第|No\.?)\s*([0-9]{1,3})\s*[\.\s\:\-]+\s*([^\s0-9\.\:\n][^\n]*?)(?=\s+(?:[0-9]{1,3}[\.\s\:\-]|第二部分|第三部分|第四部分|一、|二、|三、|四、|听力材料|录音文本|H[0-9]|$))/gi;
+      let iMatch;
+      while ((iMatch = itemRegex.exec(fullBlock)) !== null) {
+        const qNum = parseInt(iMatch[1], 10);
+        let rawVal = iMatch[2].trim().replace(/\s*(?:第二部分|第三部分|第四部分|一、|二、|三、).*$/, '').trim();
+
+        if (qNum > 0 && qNum <= 120 && rawVal.length > 0) {
+          let upper = rawVal.toUpperCase();
+          if (upper === "TRUE" || upper === "对" || upper === "正确" || upper === "V") {
+            extractedKey[qNum] = "TRUE";
+          } else if (upper === "FALSE" || upper === "错" || upper === "错误" || upper === "X") {
+            extractedKey[qNum] = "FALSE";
+          } else if (/^[A-F]$/.test(upper)) {
+            extractedKey[qNum] = upper;
+          } else {
+            extractedKey[qNum] = rawVal;
+          }
+        }
+      }
+
+      // 3. Fallback pemindai inline ketat
+      const tightRegex = /([0-9]{1,3})\s*[\.\:\s]\s*([A-F]|TRUE|FALSE|对|错|正确|错误)/gi;
+      let tMatch;
+      while ((tMatch = tightRegex.exec(fullBlock)) !== null) {
+        const qNum = parseInt(tMatch[1], 10);
+        let val = tMatch[2].toUpperCase().trim();
+        if (val === "对" || val === "正确") val = "TRUE";
+        if (val === "错" || val === "错误") val = "FALSE";
+        if (qNum > 0 && qNum <= 120 && !extractedKey[qNum]) {
+          extractedKey[qNum] = val;
         }
       }
 
@@ -3781,7 +3849,7 @@
     }
 
     function getExamAnswerKey(pkg) {
-      if (!pkg) return DEFAULT_HSK1_ANSWER_KEY;
+      if (!pkg) return {};
       let raw = pkg.answerKey || pkg.answerKeyJson || pkg.correct_answer || pkg.answer_key;
       if (typeof raw === 'string' && raw.trim().startsWith('{')) {
         try { 
@@ -3791,17 +3859,14 @@
       } else if (typeof raw === 'object' && raw !== null && Object.keys(raw).length > 0) {
         return raw;
       }
-      
-      if (pkg.autoExtractedKey && Object.keys(pkg.autoExtractedKey).length > 0) {
-        return pkg.autoExtractedKey;
-      }
-      return DEFAULT_HSK1_ANSWER_KEY;
+      return pkg.autoExtractedKey || {};
     }
 
     function normalizeTextAnswer(str) {
       if (!str) return "";
       return str.toString().trim()
-        .replace(/[\s\u3000\.\,\。\，\！\!\？\?\、\“\”\"\'\(\)\（\）]/g, '')
+        .replace(/[\s\u3000\.\,\。\，\！\!\？\?\、\“\”\"\'\(\)\（\）\—\-\_]/g, '')
+        .replace(/\([a-zA-Z0-9\sāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]+\)/g, '')
         .toUpperCase();
     }
 
@@ -3812,7 +3877,8 @@
       if (u === c) return true;
 
       const uNorm = normalizeTextAnswer(userVal);
-      if (!uNorm) return false;
+      const cNorm = normalizeTextAnswer(correctVal);
+      if (uNorm && uNorm === cNorm) return true;
 
       const options = correctVal.toString().split(/[\/,|]/);
       for (let opt of options) {
@@ -3826,13 +3892,13 @@
         showPdfLoadingNotice(true, "⏳ Memuat lembar soal & mendeteksi kunci...");
         examPdfDoc = await pdfjsLib.getDocument(urlOrData).promise;
         
-        // Ekstrak kunci jawaban otomatis dari halaman naskah & kunci
+        // 1. Ekstrak kunci jawaban otomatis dari halaman PDF
         const autoKey = await extractAnswerKeyFromPdf(examPdfDoc);
         if (currentPlacementPackage) {
           currentPlacementPackage.autoExtractedKey = autoKey;
         }
 
-        // Batasi tampilan hanya pada halaman soal saja (anti-contek)
+        // 2. Potong batas halaman agar siswa tidak melihat kunci jawaban
         totalPdfPages = await detectMaxQuestionPage(examPdfDoc);
 
         currentPdfPageNum = 1; 
@@ -4084,7 +4150,7 @@
           } else if (numLvl === 4) {
             if (q >= 1 && q <= 10) optionsList = [{ label: "√", val: "TRUE" }, { label: "✕", val: "FALSE" }];
             else if (q >= 11 && q <= 45) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }];
-            else if (q >= 46 && q <= 55) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }];
+            else if (q >= 46 && q <= 55) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }];
             else if (q >= 56 && q <= 65) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }];
             else if (q >= 66 && q <= 85) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }];
             else isTextInput = true;
