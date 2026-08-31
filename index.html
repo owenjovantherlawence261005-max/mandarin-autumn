@@ -4206,12 +4206,14 @@ async function extractAnswerKeyFromPdf(pdfDoc) {
       for (let q = startQ; q <= endQ; q++) {
         const row = document.createElement('div');
         row.style.background = '#1a0f0a';
-        row.style.padding = '8px 10px';
+        row.style.padding = '10px 12px';
         row.style.borderRadius = '8px';
         row.style.border = '1px solid var(--amber-border)';
         row.style.display = 'flex';
-        row.style.alignItems = 'center';
+        row.style.flexDirection = (numLvl >= 5 && activeLjdSection === 'writing' && q >= 99) ? 'column' : 'row';
+        row.style.alignItems = (numLvl >= 5 && activeLjdSection === 'writing' && q >= 99) ? 'stretch' : 'center';
         row.style.justifyContent = 'space-between';
+        row.style.gap = '8px';
 
         const qLabel = document.createElement('span');
         qLabel.style.fontWeight = '700';
@@ -4222,13 +4224,19 @@ async function extractAnswerKeyFromPdf(pdfDoc) {
 
         const optionsDiv = document.createElement('div');
         optionsDiv.style.display = 'flex';
-        optionsDiv.style.gap = '4px';
+        optionsDiv.style.flexDirection = (numLvl >= 5 && activeLjdSection === 'writing' && q >= 99) ? 'column' : 'row';
+        optionsDiv.style.gap = '6px';
+        optionsDiv.style.flex = '1';
+        optionsDiv.style.justifyContent = 'flex-end';
 
         let optionsList = [];
         let isTextInput = false;
+        let isEssayInput = (numLvl >= 5 && activeLjdSection === 'writing' && q >= 99);
         const targetKey = (answerKey[q] || answerKey[q.toString()] || "").toString().trim().toUpperCase();
 
-        if (targetKey === "TRUE" || targetKey === "FALSE" || targetKey === "√" || targetKey === "✕") {
+        if (isEssayInput) {
+          isTextInput = true;
+        } else if (targetKey === "TRUE" || targetKey === "FALSE" || targetKey === "√" || targetKey === "✕") {
           optionsList = [{ label: "√", val: "TRUE" }, { label: "✕", val: "FALSE" }];
         } else if (targetKey === "D" || targetKey === "E" || targetKey === "F") {
           optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }, { label: "E", val: "E" }, { label: "F", val: "F" }];
@@ -4260,7 +4268,7 @@ async function extractAnswerKeyFromPdf(pdfDoc) {
             else if (q >= 66 && q <= 85) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }];
             else isTextInput = true;
           } else if (numLvl === 5) {
-            if (q >= 1 && q <= 90) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }];
+            if (q <= 90) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }];
             else isTextInput = true;
           } else {
             if (q <= 100) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }];
@@ -4268,7 +4276,38 @@ async function extractAnswerKeyFromPdf(pdfDoc) {
           }
         }
 
-       if (isTextInput) {
+        if (isEssayInput) {
+          const area = document.createElement('textarea');
+          area.setAttribute('data-q', q);
+          area.rows = (numLvl === 6) ? 7 : 4;
+          area.placeholder = (numLvl === 6) ? 'Tuliskan judul & ringkasan ±400 karakter di sini...' : 'Tuliskan karangan pendek ±80 karakter di sini...';
+          area.value = userExamAnswers[q] || '';
+          area.style.background = '#281810';
+          area.style.border = '1px solid var(--amber-border)';
+          area.style.color = '#fff';
+          area.style.borderRadius = '6px';
+          area.style.padding = '8px';
+          area.style.fontSize = '12.5px';
+          area.style.width = '100%';
+          area.style.fontFamily = 'var(--font-sans)';
+
+          const countLbl = document.createElement('div');
+          countLbl.style.fontSize = '11px';
+          countLbl.style.color = 'var(--gold-autumn)';
+          countLbl.style.textAlign = 'right';
+          countLbl.innerText = 'Jumlah Karakter: ' + (area.value.length) + (numLvl === 6 ? ' / 400' : ' / 80');
+
+          const syncArea = function() {
+            userExamAnswers[q] = area.value.trim();
+            countLbl.innerText = 'Jumlah Karakter: ' + (area.value.length) + (numLvl === 6 ? ' / 400' : ' / 80');
+          };
+          area.oninput = syncArea;
+          area.onchange = syncArea;
+          area.onblur = syncArea;
+
+          optionsDiv.appendChild(area);
+          optionsDiv.appendChild(countLbl);
+        } else if (isTextInput) {
           const inTxt = document.createElement('input');
           inTxt.type = 'text';
           inTxt.setAttribute('data-q', q);
@@ -4322,10 +4361,10 @@ async function extractAnswerKeyFromPdf(pdfDoc) {
     };
 
    window.submitPlacementExam = function() {
-      // 1. PAKSA BACA SELURUH INPUT TEKS DARI DOM KE userExamAnswers
+      // 1. SINKRONISASI SEMUA INPUT & TEXTAREA DARI DOM KE STATE JAWABAN
       const container = document.getElementById('ljd-items-container');
       if (container) {
-        const textInputs = container.querySelectorAll('input[type="text"]');
+        const textInputs = container.querySelectorAll('input[type="text"], textarea');
         textInputs.forEach(inp => {
           const qNum = inp.getAttribute('data-q');
           if (qNum && inp.value !== undefined) {
@@ -4344,24 +4383,25 @@ async function extractAnswerKeyFromPdf(pdfDoc) {
 
       const structure = getExamStructure(currentPlacementPackage);
       const answerKey = getExamAnswerKey(currentPlacementPackage);
+      const numLvl = parseInt((currentPlacementPackage && currentPlacementPackage.hskLevel ? currentPlacementPackage.hskLevel : '1').replace(/[^0-9]/g, '')) || 1;
 
       let listeningCorrect = 0;
       let readingCorrect = 0;
-      let writingCorrect = 0;
       let writingScore = 0;
-      let writeTotal = 0;
 
       const listStart = structure.listeningRange[0], listEnd = structure.listeningRange[1];
       const readStart = structure.readingRange[0], readEnd = structure.readingRange[1];
       const listTotal = (listEnd - listStart + 1);
       const readTotal = (readEnd - readStart + 1);
 
+      // Menghitung Menyimak (Skala 100)
       for (let i = listStart; i <= listEnd; i++) {
         const userAns = userExamAnswers[i] || "";
         const correctAns = answerKey[i] || answerKey[i.toString()] || "";
         if (checkAnswerMatch(userAns, correctAns)) listeningCorrect++;
       }
 
+      // Menghitung Membaca (Skala 100)
       for (let i = readStart; i <= readEnd; i++) {
         const userAns = userExamAnswers[i] || "";
         const correctAns = answerKey[i] || answerKey[i.toString()] || "";
@@ -4370,24 +4410,70 @@ async function extractAnswerKeyFromPdf(pdfDoc) {
 
       const listeningScore = Math.round((listeningCorrect / listTotal) * 100);
       const readingScore = Math.round((readingCorrect / readTotal) * 100);
-      
       let totalScore = listeningScore + readingScore;
+
+      // Menghitung Menulis (Skala 100 Penuh)
       if (structure.hasWriting && structure.writingRange) {
-        let writeStart = structure.writingRange[0], writeEnd = structure.writingRange[1];
-        writeTotal = (writeEnd - writeStart + 1);
-        for (let w = writeStart; w <= writeEnd; w++) {
-          const userAns = userExamAnswers[w] || "";
-          const correctAns = answerKey[w] || answerKey[w.toString()] || "";
-          if (checkAnswerMatch(userAns, correctAns)) {
-            writingCorrect++;
+        if (numLvl === 3) {
+          // HSK 3: 10 butir soal * 10 poin
+          let wCorrect = 0;
+          for (let w = 71; w <= 80; w++) {
+            if (checkAnswerMatch(userExamAnswers[w] || "", answerKey[w] || answerKey[w.toString()] || "")) wCorrect++;
           }
+          writingScore = wCorrect * 10;
+        } else if (numLvl === 4) {
+          // HSK 4: No. 86-95 (5 poin) + No. 96-100 (10 poin)
+          let wPoints = 0;
+          for (let w = 86; w <= 95; w++) {
+            if (checkAnswerMatch(userExamAnswers[w] || "", answerKey[w] || answerKey[w.toString()] || "")) wPoints += 5;
+          }
+          for (let w = 96; w <= 100; w++) {
+            const txt = (userExamAnswers[w] || "").trim();
+            if (checkAnswerMatch(txt, answerKey[w] || answerKey[w.toString()] || "") || txt.length >= 4) wPoints += 10;
+          }
+          writingScore = Math.min(100, wPoints);
+        } else if (numLvl === 5) {
+          // HSK 5: No. 91-98 (5 poin) + No. 99 (30 poin) + No. 100 (30 poin)
+          let wPoints = 0;
+          for (let w = 91; w <= 98; w++) {
+            if (checkAnswerMatch(userExamAnswers[w] || "", answerKey[w] || answerKey[w.toString()] || "")) wPoints += 5;
+          }
+          // Evaluasi No. 99 (5 Kata Wajib + Panjang Karakter)
+          const ans99 = userExamAnswers[99] || "";
+          let wordsCount = 0;
+          const sampleWords = ["结账", "干脆", "感谢", "临时", "海鲜"];
+          sampleWords.forEach(wd => { if (ans99.includes(wd)) wordsCount++; });
+          wPoints += (wordsCount * 3); // maks 15 poin
+          if (ans99.length >= 60) wPoints += 15;
+          else if (ans99.length >= 30) wPoints += 8;
+
+          // Evaluasi No. 100 (Gambar + Panjang Karakter)
+          const ans100 = userExamAnswers[100] || "";
+          if (ans100.length >= 60) wPoints += 20;
+          else if (ans100.length >= 30) wPoints += 10;
+          if (ans100.includes("。") || ans100.includes("，") || ans100.length >= 20) wPoints += 10;
+
+          writingScore = Math.min(100, wPoints);
+        } else if (numLvl === 6) {
+          // HSK 6: No. 101 (Ringkasan 400 Karakter = 100 Poin)
+          const ans101 = userExamAnswers[101] || "";
+          let wPoints = 0;
+          if (ans101.includes("《") || ans101.includes("》") || ans101.split("\n").length >= 2) wPoints += 20; // Judul
+          if (ans101.length >= 300) wPoints += 50; // Panjang Karakter
+          else if (ans101.length >= 200) wPoints += 35;
+          else if (ans101.length >= 100) wPoints += 20;
+          else if (ans101.length >= 30) wPoints += 10;
+
+          if (ans101.includes("。") && ans101.includes("，")) wPoints += 30; // Struktur Kalimat
+          writingScore = Math.min(100, wPoints);
+        } else {
+          writingScore = 0;
         }
-        writingScore = Math.round((writingCorrect / writeTotal) * 100);
+
         totalScore += writingScore;
       }
 
       const isPassed = totalScore >= structure.passScore;
-
       const resBox = document.getElementById('exam-score-result');
       if (resBox) {
         resBox.style.display = 'block';
@@ -4398,7 +4484,7 @@ async function extractAnswerKeyFromPdf(pdfDoc) {
           <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.6;">
             Menyimak (听力): <b>${listeningScore}/100</b> (${listeningCorrect}/${listTotal} soal)<br>
             Membaca (阅读): <b>${readingScore}/100</b> (${readingCorrect}/${readTotal} soal)<br>
-            ${structure.hasWriting ? `Menulis (书写): <b>${writingScore}/100</b> (${writingCorrect}/${writeTotal} soal)<br>` : ''}
+            ${structure.hasWriting ? `Menulis (书写): <b>${writingScore}/100</b><br>` : ''}
           </div>
           <div style="font-size: 15px; color: var(--gold-autumn); font-weight: 800;">
             Total Skor: ${totalScore} / ${structure.maxScore}
@@ -4409,9 +4495,9 @@ async function extractAnswerKeyFromPdf(pdfDoc) {
           const passedLvl = currentPlacementPackage.hskLevel || 'HSK 1';
           resBox.innerHTML += `<div style="font-size: 11.5px; color: #86efac; background: rgba(22, 163, 74, 0.2); padding: 8px; border-radius: 6px; margin-top: 8px;">Selamat! Anda telah menyelesaikan level <b>${passedLvl}</b>. Track level Anda berhasil diperbarui ke tingkat selanjutnya! Silakan unduh sertifikat resmi Anda.</div>`;
           
-          const numLvl = parseInt(passedLvl.replace(/[^0-9]/g, ''));
-          if (!isNaN(numLvl) && numLvl < 6) {
-            sessionUser.currentHsk = 'HSK ' + (numLvl + 1);
+          const numLvlParsed = parseInt(passedLvl.replace(/[^0-9]/g, ''));
+          if (!isNaN(numLvlParsed) && numLvlParsed < 6) {
+            sessionUser.currentHsk = 'HSK ' + (numLvlParsed + 1);
             pingTrackLevel('placement');
 
             const elTrackHsk = document.getElementById('track-hsk-badge');
@@ -4420,7 +4506,7 @@ async function extractAnswerKeyFromPdf(pdfDoc) {
             if (elTrackDesc) elTrackDesc.innerText = 'Selesaikan Placement Test untuk naik ke level berikutnya';
           }
         } else {
-          resBox.innerHTML += `<div style="font-size: 11px; color: #fed7aa; margin-top: 6px;">Batas kelulusan resmi: ${structure.passScore} poin. Silakan unduh PDF soal lengkap untuk mencocokkan jawaban dengan kunci di halaman terakhir, pelajari lagi materi yang belum dipahami dan coba kembali.</div>`;
+          resBox.innerHTML += `<div style="font-size: 11px; color: #fed7aa; margin-top: 6px;">Batas kelulusan resmi: ${structure.passScore} poin. Silakan unduh PDF soal lengkap untuk mencocokkan karangan Anda dengan contoh model di halaman terakhir, pelajari lagi materi yang belum dipahami dan coba kembali.</div>`;
         }
 
         resBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
