@@ -987,7 +987,7 @@
         </div>
       </div>
       <ul class="nav-list">
-        <li class="nav-item"><button class="active" onclick="switchTab('dashboard')"><span class="nav-icon">🍂</span> Beranda</button></li>
+        <li class="nav-item"><button class="active" onclick="switchTab('')"><span class="nav-icon">🍂</span> Beranda</button></li>
         <li class="nav-item"><button onclick="switchTab('dictionary')"><span class="nav-icon">📖</span> Kamus HSK 1-9</button></li>
         <li class="nav-item"><button onclick="switchTab('stroke')"><span class="nav-icon">✍️</span> Menulis Hanzi</button></li>
         <li class="nav-item"><button onclick="switchTab('workbook')"><span class="nav-icon">📝</span> Tugas Interaktif</button></li>
@@ -1007,17 +1007,17 @@
 
     <main class="main-viewport">
 
-      <!-- 1. DASHBOARD -->
+     <!-- 1. DASHBOARD -->
       <section id="view-dashboard" class="view-section active">
-        
-        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-           <button class="pill-btn" style="border-color: var(--gold-autumn); color: var(--gold-autumn); padding: 10px 16px; font-weight: 700;" onclick="openGuideModal()">
-            📖 Panduan Penggunaan
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
+          <div class="header-group" style="margin-bottom: 0;">
+            <span class="badge">Selamat Datang di Musim Belajar</span>
+            <h2 id="dashboard-welcome-text">Halo, Pelajar Tangguh! 🍁</h2>
+            <p>Kuasai kurikulum Mandarin HSK 1 sampai HSK 7-9 dengan metode terstruktur, simulasi percakapan AI, dan SRS Leitner.</p>
+          </div>
+          <button class="pill-btn" style="padding: 8px 14px; font-size: 12.5px; border-color: var(--gold-autumn); color: var(--gold-autumn); display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; margin-top: 4px;" onclick="openGuideModal()">
+            <span>📖</span> Panduan Penggunaan
           </button>
-        <div class="header-group">
-          <span class="badge">Selamat Datang di Musim Belajar</span>
-          <h2 id="dashboard-welcome-text">Halo, Pelajar Tangguh! 🍁</h2>
-          <p>Kuasai kurikulum Mandarin HSK 1 sampai HSK 7-9 dengan metode terstruktur, simulasi percakapan AI, dan SRS Leitner.</p>
         </div>
 
         <div class="glass-card" style="margin-bottom: 20px; background: linear-gradient(135deg, rgba(59, 29, 17, 0.9), rgba(40, 24, 16, 0.8)); border-left: 4px solid var(--gold-autumn);">
@@ -1045,7 +1045,7 @@
           <div style="display: flex; gap: 12px; flex-wrap: wrap;">
             <button class="btn-autumn-primary" onclick="switchTab('speaking')">Simulasi Speaking AI</button>
             <button class="pill-btn" onclick="switchTab('dictionary')">Buka Kamus Kosakata</button>
-            <button class="pill-btn" onclick="switchTab('workbook')">Kerjakan Workbook</button>
+            <button class="pill-btn" onclick="switchTab('workbook')">Kerjakan Tugas</button>
           </div>
         </div>
       </section>
