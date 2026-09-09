@@ -1142,24 +1142,110 @@
       </section>
 
       <!-- 4. WORKBOOK INTERAKTIF -->
-      <section id="view-workbook" class="view-section">
-        <div class="header-group">
-          <span class="badge">Official Standard Workbook</span>
-          <h2>Tugas Interaktif per Level</h2>
-          <p>Uji pemahaman kosakata, tata bahasa, dan dialog rumpang dari database Spreadsheet.</p>
-        </div>
+    <section id="view-workbook" class="view-section">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
+          <div class="header-group" style="margin-bottom: 0;">
+            <span class="badge">Official Standard Workbook</span>
+            <h2>Tugas Interaktif & Latihan Soal HSK</h2>
+            <p>Latihan mandiri lembar kerja resmi dengan coretan pensil PDF, audio menyimak, dan lembar jawaban digital tanpa batas waktu.</p>
+          </div>
 
-        <div class="toolbar-row">
-          <div class="filter-pills">
-            <button class="pill-btn active" onclick="loadWorkbookQuestionsFast('ALL', this)">Semua Soal</button>
-            <button class="pill-btn" onclick="loadWorkbookQuestionsFast('HSK 1', this)">HSK 1</button>
-            <button class="pill-btn" onclick="loadWorkbookQuestionsFast('HSK 2', this)">HSK 2</button>
-            <button class="pill-btn" onclick="loadWorkbookQuestionsFast('HSK 3', this)">HSK 3</button>
-            <button class="pill-btn" onclick="loadWorkbookQuestionsFast('HSK 4', this)">HSK 4</button>
+          <div style="display: flex; align-items: center; gap: 10px; background: rgba(40, 24, 16, 0.85); padding: 10px 16px; border-radius: 12px; border: 1px solid var(--amber-border); box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
+            <label for="wb-package-select" style="font-size: 12.5px; font-weight: 700; color: var(--gold-autumn); white-space: nowrap; display: flex; align-items: center; gap: 6px;">
+              <span>📝</span> Pilih Workbook:
+            </label>
+            <select id="wb-package-select" onchange="handleWorkbookPackageChange(this.value)" style="background: #180d08; color: #fff; border: 1px solid var(--amber-border); padding: 8px 14px; border-radius: 8px; font-size: 13.5px; font-weight: 600; outline: none; cursor: pointer; min-width: 230px; transition: border-color 0.2s ease;">
+              <option value="">Memuat workbook dari database...</option>
+            </select>
           </div>
         </div>
 
-        <div id="workbook-cards-container"></div>
+        <!-- AUDIO PLAYER WORKBOOK -->
+        <div class="glass-card" style="margin-bottom: 20px; padding: 16px 20px;" id="wb-audio-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 26px;">🎧</span>
+              <div>
+                <div style="font-size: 15px; font-weight: 800; color: #fff;" id="wb-audio-title">Audio Menyimak (听力录音)</div>
+                <div style="font-size: 11.5px; color: var(--gold-autumn);">Putar rekaman saat mengerjakan Bagian Menyimak</div>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <audio id="wb-audio-player" controls style="height: 38px; border-radius: 8px; outline: none;"></audio>
+              <button class="pill-btn" style="padding: 8px 14px; border-color: var(--gold-autumn); font-size: 12px;" onclick="downloadCurrentWbAudio()">⬇️ Unduh Audio (MP3)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- WORKSPACE: PDF VIEWER & LJD -->
+        <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start;">
+          
+          <div class="glass-card" style="flex: 1; min-width: 320px; padding: 18px;" id="wb-pdf-container-card">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; background: rgba(20, 11, 7, 0.6); padding: 10px 14px; border-radius: 10px; border: 1px solid var(--amber-border);">
+              
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <button class="pill-btn" style="padding: 5px 10px; font-size: 11.5px;" onclick="changeWbPdfPage(-1)">◀ Sebelumnya</button>
+                <span id="wb-pdf-page-num" style="font-size: 12px; font-weight: 700; color: #fff; min-width: 70px; text-align: center;">Hal 1 / 1</span>
+                <button class="pill-btn" style="padding: 5px 10px; font-size: 11.5px;" onclick="changeWbPdfPage(1)">Berikutnya ▶</button>
+                
+                <button class="pill-btn" style="padding: 5px 8px; font-size: 11px; margin-left: 6px;" onclick="adjustWbPdfZoom(-0.1)" title="Perkecil Lembar Soal">🔍 -</button>
+                <button class="pill-btn" style="padding: 5px 8px; font-size: 11px;" onclick="adjustWbPdfZoom(0.1)" title="Perbesar Lembar Soal">🔍 +</button>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <button class="pill-btn active" id="wb-btn-tool-pen" style="padding: 5px 10px; font-size: 11.5px;" onclick="setWbAnnotationTool('pen')">✏️ Pensil</button>
+                <button class="pill-btn" id="wb-btn-tool-eraser" style="padding: 5px 10px; font-size: 11.5px;" onclick="setWbAnnotationTool('eraser')">🧹 Penghapus</button>
+
+                <div style="display: flex; gap: 5px; align-items: center; margin: 0 4px;">
+                  <span class="color-swatch-btn active" style="background: #ef4444;" onclick="setWbAnnotationColor('#ef4444', this)" title="Merah"></span>
+                  <span class="color-swatch-btn" style="background: #3b82f6;" onclick="setWbAnnotationColor('#3b82f6', this)" title="Biru"></span>
+                  <span class="color-swatch-btn" style="background: #f59e0b;" onclick="setWbAnnotationColor('#f59e0b', this)" title="Oranye Gold"></span>
+                  <span class="color-swatch-btn" style="background: #1e293b;" onclick="setWbAnnotationColor('#1e293b', this)" title="Hitam"></span>
+                </div>
+
+                <button class="pill-btn" style="padding: 5px 10px; font-size: 11.5px; border-color: var(--maple-red);" onclick="clearCurrentWbPageDrawings()">🔄 Hapus Coretan Hal Ini</button>
+                <button class="btn-autumn-primary" style="padding: 6px 12px; font-size: 11.5px;" onclick="downloadFullWbPdf()">📥 Unduh PDF Soal Lengkap</button>
+              </div>
+            </div>
+
+            <div class="pdf-scroll-viewport" id="wb-pdf-scroll-box">
+              <div class="pdf-viewer-outer-wrap" id="wb-pdf-viewer-wrapper">
+                <canvas id="wb-pdf-render-canvas"></canvas>
+                <canvas id="wb-pdf-draw-canvas"></canvas>
+              </div>
+            </div>
+            
+            <div style="margin-top: 10px; font-size: 11.5px; color: var(--text-muted); text-align: center;">
+              💡 <i>Gunakan mouse scroll atau geser layar untuk membaca lembar kerja. Modul latihan ini tidak memiliki batas waktu ujian.</i>
+            </div>
+          </div>
+
+          <!-- LEMBAR JAWABAN DIGITAL INTERAKTIF WORKBOOK -->
+          <div class="glass-card" style="width: 360px; max-height: 920px; display: flex; flex-direction: column; padding: 18px;">
+            <div style="border-bottom: 1px solid var(--amber-border); padding-bottom: 10px; margin-bottom: 12px;">
+              <div style="font-size: 15px; font-weight: 800; color: #fff;">📝 Lembar Jawaban Latihan</div>
+              <div style="font-size: 11.5px; color: var(--gold-autumn);">Pilih jawaban latihan Anda untuk pengecekan mandiri</div>
+            </div>
+
+            <div style="display: flex; gap: 6px; margin-bottom: 12px;" id="wb-ljd-section-tabs">
+              <button class="pill-btn active" id="btn-wb-ljd-listening" style="flex: 1; padding: 6px; font-size: 11.5px;" onclick="switchWbLjdSection('listening')">🎧 Menyimak</button>
+              <button class="pill-btn" id="btn-wb-ljd-reading" style="flex: 1; padding: 6px; font-size: 11.5px;" onclick="switchWbLjdSection('reading')">📖 Membaca</button>
+              <button class="pill-btn" id="btn-wb-ljd-writing" style="flex: 1; padding: 6px; font-size: 11.5px; display: none;" onclick="switchWbLjdSection('writing')">✍️ Menulis</button>
+            </div>
+
+            <div id="wb-ljd-items-container" style="flex: 1; overflow-y: auto; padding-right: 6px; display: flex; flex-direction: column; gap: 9px; margin-bottom: 14px;"></div>
+
+            <div style="border-top: 1px solid var(--amber-border); padding-top: 12px;">
+              <button class="btn-autumn-primary" style="width: 100%; padding: 12px;" onclick="submitWorkbookPractice()">📊 Cek Hasil & Hitung Skor</button>
+              <button class="pill-btn" style="width: 100%; margin-top: 8px; padding: 8px; font-size: 12px; border-color: var(--gold-autumn);" onclick="downloadUserWbAnswerSheet()">📥 Unduh Lembar Jawaban Saya (.txt)</button>
+              
+              <div id="wb-practice-score-result" style="display: none; margin-top: 12px; padding: 12px; border-radius: 8px; text-align: center; background: rgba(234, 88, 12, 0.15); border: 1px solid var(--gold-autumn);"></div>
+            </div>
+          </div>
+
+        </div>
       </section>
 
       <!-- 5. SPEAKING AI ROLEPLAY -->
@@ -1928,7 +2014,20 @@
     var recognition = null;
     var isListening = false;
 
-    var allWorkbookQuestions = [];
+    var allWorkbookPackages = [];
+    var currentWorkbookPackage = null;
+    var wbPdfDoc = null;
+    var currentWbPdfPageNum = 1;
+    var totalWbPdfPages = 1;
+    var currentWbPdfScale = 1.0;
+    var activeWbLjdSection = 'listening';
+    var userWbAnswers = {};
+    var wbDrawingsPerPage = {};
+    var currentWbDrawTool = 'pen';
+    var currentWbPenColor = '#ef4444';
+    var currentWbPenWidth = 3;
+    var isDrawingOnWbPdf = false;
+    var lastWbPdfX = 0, lastWbPdfY = 0;
 
     var allPlacementPackages = [];
     var currentPlacementPackage = null;
@@ -2209,7 +2308,7 @@
       }
     }
 
-    window.switchTab = function(viewId) {
+   window.switchTab = function(viewId) {
       if (isExamActive && viewId !== 'placement') {
         var leave = confirm("Hahaha kamu nyontek yaa? 😜\nSesi ujian Anda masih aktif! Apakah Anda yakin ingin membatalkan dan keluar dari ujian?");
         if (!leave) return;
@@ -2248,7 +2347,15 @@
       var elTrackTab = document.getElementById('track-last-tab-display');
       if (elTrackTab) elTrackTab.innerText = viewId.toUpperCase();
 
-      if (viewId === 'workbook') loadWorkbookQuestionsFast(sessionUser.currentHsk);
+      if (viewId === 'workbook') {
+        loadWorkbookPackagesFast();
+        requestAnimationFrame(function() {
+          setTimeout(function() {
+            if (wbPdfDoc) renderWbPdfAndDrawPage(currentWbPdfPageNum);
+          }, 60);
+        });
+      }
+
       if (viewId === 'stroke') {
         requestAnimationFrame(function() {
           setTimeout(function() {
@@ -2462,55 +2569,484 @@
       });
     }
 
-    function loadWorkbookTable() {
-      var tbody = document.getElementById('crud-wb-table-body');
-      if (!tbody) return;
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--gold-autumn); padding: 14px;">Memuat data soal...</td></tr>';
+   function loadWorkbookPackagesFast(preferredId) {
+      var selectEl = document.getElementById('wb-package-select');
+
+      function applyWbPackages(packages) {
+        allWorkbookPackages = packages || [];
+        if (!allWorkbookPackages || allWorkbookPackages.length === 0) {
+          allWorkbookPackages = [{
+            workbookId: "WB-0001", testId: "WB-0001", hskLevel: "HSK 1",
+            workbookTitle: "Latihan Soal Workbook HSK 1 (H11003)", testTitle: "Latihan Soal Workbook HSK 1 (H11003)",
+            pdfUrl: "./workbook/HSK1-WorkBook.pdf", audioUrl: "./workbook/HSK1-WorkBook.mp3"
+          }];
+        }
+
+        if (selectEl) {
+          selectEl.innerHTML = '';
+          allWorkbookPackages.forEach(function(pkg) {
+            var rawLvl = pkg.hskLevel || 'HSK 1';
+            var lvlStr = rawLvl.toUpperCase().includes('HSK') ? rawLvl : ('HSK ' + rawLvl);
+            var opt = document.createElement('option');
+            opt.value = pkg.workbookId || pkg.testId;
+            opt.innerText = (pkg.workbookTitle || pkg.testTitle || 'Paket Workbook') + ' (' + lvlStr + ')';
+            selectEl.appendChild(opt);
+          });
+        }
+
+        var targetPkg = null;
+        if (preferredId) targetPkg = allWorkbookPackages.find(p => (p.workbookId || p.testId) === preferredId);
+        if (!targetPkg) targetPkg = allWorkbookPackages[0];
+
+        if (selectEl && targetPkg) selectEl.value = (targetPkg.workbookId || targetPkg.testId);
+        selectWorkbookPackage(targetPkg);
+      }
+
+      try {
+        var cached = localStorage.getItem('cache_workbook_pkg');
+        if (cached) applyWbPackages(JSON.parse(cached));
+      } catch(e){}
 
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
         fetch(SCRIPT_URL + "?action=getWorkbook&level=ALL")
           .then(res => res.json())
           .then(data => {
-            allWorkbookQuestions = data || [];
-            try { localStorage.setItem('cache_workbook_all', JSON.stringify(allWorkbookQuestions)); } catch(e){}
-            renderWorkbookTable(allWorkbookQuestions);
+            try { localStorage.setItem('cache_workbook_pkg', JSON.stringify(data)); } catch(e){}
+            applyWbPackages(data);
           })
-          .catch(() => renderWorkbookTable(allWorkbookQuestions));
+          .catch(() => {});
       } else if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run.withSuccessHandler(function(data) {
-          allWorkbookQuestions = data || [];
-          try { localStorage.setItem('cache_workbook_all', JSON.stringify(allWorkbookQuestions)); } catch(e){}
-          renderWorkbookTable(allWorkbookQuestions);
+          try { localStorage.setItem('cache_workbook_pkg', JSON.stringify(data)); } catch(e){}
+          applyWbPackages(data);
         }).getWorkbookQuestions('ALL');
+      }
+    }
+
+    window.handleWorkbookPackageChange = function(wbId) {
+      if (!wbId) return;
+      var found = allWorkbookPackages.find(p => (p.workbookId || p.testId) === wbId);
+      if (found) selectWorkbookPackage(found);
+    };
+
+    function selectWorkbookPackage(pkg) {
+      if (!pkg) return;
+      currentWorkbookPackage = pkg;
+      wbDrawingsPerPage = {};
+      userWbAnswers = {};
+
+      var elTitle = document.getElementById('wb-audio-title');
+      var audioPlayer = document.getElementById('wb-audio-player');
+      var audioCard = document.getElementById('wb-audio-card');
+      var audioSrc = formatRelativeAssetPath(pkg.audioUrl);
+
+      if (audioSrc && audioSrc.trim() !== "") {
+        if (elTitle) elTitle.innerText = 'Audio Menyimak: ' + (pkg.workbookTitle || pkg.testTitle || 'Workbook');
+        if (audioPlayer) {
+          audioPlayer.src = audioSrc;
+          audioPlayer.preload = "auto";
+          audioPlayer.style.display = "block";
+        }
+        if (audioCard) audioCard.style.opacity = "1";
       } else {
-        renderWorkbookTable(allWorkbookQuestions);
+        if (elTitle) elTitle.innerText = 'Audio Menyimak: (Paket ini tidak memerlukan audio)';
+        if (audioPlayer) {
+          audioPlayer.removeAttribute('src');
+          audioPlayer.load();
+        }
+      }
+
+      var resBox = document.getElementById('wb-practice-score-result');
+      if (resBox) resBox.style.display = 'none';
+
+      if (pkg.pdfUrl) {
+        loadWbPdfFromUrlOrData(formatRelativeAssetPath(pkg.pdfUrl));
+      }
+      renderWbLjdItems();
+    }
+
+    // MEMUAT PDF DENGAN PEMOTONGAN HALAMAN KUNCI/NASKAH OTOMATIS
+    async function loadWbPdfFromUrlOrData(urlOrData) {
+      try {
+        wbPdfDoc = await pdfjsLib.getDocument(urlOrData).promise;
+        
+        // Ekstraksi kunci dari dokumen
+        const autoKey = await extractAnswerKeyFromPdf(wbPdfDoc);
+        if (currentWorkbookPackage) {
+          currentWorkbookPackage.autoExtractedKey = autoKey;
+        }
+
+        // POTONG HALAMAN: Siswa tidak akan bisa scroll ke lembar naskah/kunci di belakang
+        totalWbPdfPages = await detectMaxQuestionPage(wbPdfDoc);
+        currentWbPdfPageNum = 1;
+
+        renderWbPdfAndDrawPage(currentWbPdfPageNum);
+        renderWbLjdItems();
+      } catch (err) {
+        console.error("Gagal membuka PDF Workbook:", err);
       }
     }
 
-    function renderWorkbookTable(questions) {
-      var tbody = document.getElementById('crud-wb-table-body');
-      if (!tbody) return;
-      if (!questions || questions.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 14px;">Belum ada butir soal.</td></tr>';
-        return;
+    async function renderWbPdfAndDrawPage(pageNum) {
+      if (!wbPdfDoc) return;
+      const page = await wbPdfDoc.getPage(pageNum);
+      const renderCanvas = document.getElementById('wb-pdf-render-canvas');
+      const drawCanvas = document.getElementById('wb-pdf-draw-canvas');
+      const scrollBox = document.getElementById('wb-pdf-scroll-box');
+      const wrapper = document.getElementById('wb-pdf-viewer-wrapper');
+      const ctxRender = renderCanvas.getContext('2d');
+
+      const containerWidth = (scrollBox && scrollBox.clientWidth > 50) ? (scrollBox.clientWidth - 20) : 600;
+      const unscaledViewport = page.getViewport({ scale: 1.0 });
+      
+      let baseScale = containerWidth / unscaledViewport.width;
+      let dynamicScale = baseScale * currentWbPdfScale;
+      dynamicScale = Math.max(0.35, Math.min(dynamicScale, 3.0));
+
+      const viewport = page.getViewport({ scale: dynamicScale });
+
+      renderCanvas.width = viewport.width;
+      renderCanvas.height = viewport.height;
+      drawCanvas.width = viewport.width;
+      drawCanvas.height = viewport.height;
+
+      if (wrapper) {
+        wrapper.style.width = viewport.width + 'px';
+        wrapper.style.height = viewport.height + 'px';
       }
-      tbody.innerHTML = '';
-      questions.forEach(function(q) {
-        var tr = document.createElement('tr');
-        var rawLvl = q.hskLevel || 'HSK 1';
-        var displayLvl = rawLvl.toUpperCase().includes('HSK') ? rawLvl : ('HSK ' + rawLvl);
-        tr.innerHTML = '<td style="font-weight: 700; color: var(--gold-autumn);">' + (q.questionId || '-') + '</td>' +
-          '<td><span class="badge" style="font-size: 10px; padding: 2px 6px; margin: 0;">' + displayLvl + '</span></td>' +
-          '<td style="color: var(--gold-autumn); font-size: 11.5px;">' + (q.questionType || 'Umum') + '</td>' +
-          '<td>' + ((q.questionPrompt || '').substring(0, 45) + '...') + '</td>' +
-          '<td style="text-align: center;">' +
-            '<button class="table-action-btn btn-tbl-edit" onclick="editWorkbookQuestion(\'' + q.questionId + '\')">✏️ Edit</button>' +
-            '<button class="table-action-btn btn-tbl-delete" onclick="deleteWorkbookQuestionBtn(\'' + q.questionId + '\')">🗑️ Hapus</button>' +
-          '</td>';
-        tbody.appendChild(tr);
-      });
+
+      await page.render({ canvasContext: ctxRender, viewport: viewport }).promise;
+
+      const ctxDraw = drawCanvas.getContext('2d');
+      ctxDraw.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+      if (wbDrawingsPerPage[pageNum]) {
+        const img = new Image();
+        img.onload = function() { ctxDraw.drawImage(img, 0, 0); };
+        img.src = wbDrawingsPerPage[pageNum];
+      }
+
+      initWbPdfDrawListeners(drawCanvas);
+      const pageNumEl = document.getElementById('wb-pdf-page-num');
+      if (pageNumEl) pageNumEl.innerText = 'Hal ' + pageNum + ' / ' + totalWbPdfPages;
     }
 
+    function initWbPdfDrawListeners(drawCanvas) {
+      const ctx = drawCanvas.getContext('2d');
+      const scrollBox = document.getElementById('wb-pdf-scroll-box');
+
+      if (!drawCanvas._hasWheel) {
+        drawCanvas.addEventListener('wheel', function(e) {
+          if (scrollBox) scrollBox.scrollTop += e.deltaY;
+        }, { passive: true });
+        drawCanvas._hasWheel = true;
+      }
+
+      function getPos(e) {
+        const rect = drawCanvas.getBoundingClientRect();
+        const scaleX = drawCanvas.width / rect.width;
+        const scaleY = drawCanvas.height / rect.height;
+        return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+      }
+
+      drawCanvas.onpointerdown = function(e) {
+        if (e.button !== 0) return;
+        isDrawingOnWbPdf = true;
+        const pos = getPos(e);
+        lastWbPdfX = pos.x; lastWbPdfY = pos.y;
+        ctx.beginPath();
+        if (currentWbDrawTool === 'eraser') {
+          ctx.globalCompositeOperation = 'destination-out';
+          ctx.arc(pos.x, pos.y, 14, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.arc(pos.x, pos.y, currentWbPenWidth / 2, 0, Math.PI * 2);
+          ctx.fillStyle = currentWbPenColor;
+          ctx.fill();
+        }
+      };
+
+      drawCanvas.onpointermove = function(e) {
+        if (!isDrawingOnWbPdf) return;
+        const pos = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(lastWbPdfX, lastWbPdfY);
+        ctx.lineTo(pos.x, pos.y);
+        if (currentWbDrawTool === 'eraser') {
+          ctx.globalCompositeOperation = 'destination-out';
+          ctx.lineWidth = 26;
+        } else {
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.strokeStyle = currentWbPenColor;
+          ctx.lineWidth = currentWbPenWidth;
+        }
+        ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
+        lastWbPdfX = pos.x; lastWbPdfY = pos.y;
+      };
+
+      function stopWbDraw() {
+        if (isDrawingOnWbPdf) {
+          isDrawingOnWbPdf = false;
+          wbDrawingsPerPage[currentWbPdfPageNum] = drawCanvas.toDataURL();
+        }
+      }
+
+      drawCanvas.onpointerup = stopWbDraw;
+      drawCanvas.onpointercancel = stopWbDraw;
+      drawCanvas.onpointerleave = stopWbDraw;
+    }
+
+    window.changeWbPdfPage = function(delta) {
+      if (!wbPdfDoc) return;
+      const targetPage = currentWbPdfPageNum + delta;
+      if (targetPage >= 1 && targetPage <= totalWbPdfPages) {
+        const drawCanvas = document.getElementById('wb-pdf-draw-canvas');
+        if (drawCanvas) wbDrawingsPerPage[currentWbPdfPageNum] = drawCanvas.toDataURL();
+        currentWbPdfPageNum = targetPage;
+        renderWbPdfAndDrawPage(currentWbPdfPageNum);
+      }
+    };
+
+    window.adjustWbPdfZoom = function(delta) {
+      currentWbPdfScale = Math.max(0.5, Math.min(currentWbPdfScale + delta, 2.5));
+      renderWbPdfAndDrawPage(currentWbPdfPageNum);
+    };
+
+    window.setWbAnnotationTool = function(tool) {
+      currentWbDrawTool = tool;
+      const btnPen = document.getElementById('wb-btn-tool-pen');
+      const btnEraser = document.getElementById('wb-btn-tool-eraser');
+      if (btnPen && btnEraser) {
+        btnPen.classList.toggle('active', tool === 'pen');
+        btnEraser.classList.toggle('active', tool === 'eraser');
+      }
+    };
+
+    window.setWbAnnotationColor = function(color, el) {
+      currentWbPenColor = color;
+      currentWbDrawTool = 'pen';
+      const btnPen = document.getElementById('wb-btn-tool-pen');
+      const btnEraser = document.getElementById('wb-btn-tool-eraser');
+      if (btnPen && btnEraser) {
+        btnPen.classList.add('active');
+        btnEraser.classList.remove('active');
+      }
+      const swatches = document.querySelectorAll('#wb-pdf-container-card .color-swatch-btn');
+      swatches.forEach(s => s.classList.remove('active'));
+      if (el) el.classList.add('active');
+    };
+
+    window.clearCurrentWbPageDrawings = function() {
+      const drawCanvas = document.getElementById('wb-pdf-draw-canvas');
+      if (!drawCanvas) return;
+      drawCanvas.getContext('2d').clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+      delete wbDrawingsPerPage[currentWbPdfPageNum];
+    };
+
+    window.downloadCurrentWbAudio = function() {
+      var audioPlayer = document.getElementById('wb-audio-player');
+      if (!audioPlayer || !audioPlayer.src) { alert("Paket workbook ini tidak menggunakan file audio rekaman."); return; }
+      var link = document.createElement('a'); link.href = audioPlayer.src; link.download = (currentWorkbookPackage ? currentWorkbookPackage.workbookTitle : 'Audio_Workbook') + '.mp3'; link.click();
+    };
+
+    window.downloadFullWbPdf = function() {
+      var rawPath = (currentWorkbookPackage && currentWorkbookPackage.pdfUrl) ? currentWorkbookPackage.pdfUrl : "./workbook/HSK1-WorkBook.pdf";
+      var pdfSrc = formatRelativeAssetPath(rawPath);
+      var link = document.createElement('a');
+      link.href = pdfSrc;
+      link.download = (currentWorkbookPackage ? (currentWorkbookPackage.workbookTitle || currentWorkbookPackage.testTitle) : 'Workbook_HSK') + '_Lengkap.pdf';
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+
+    window.downloadUserWbAnswerSheet = function() {
+      if (!currentWorkbookPackage) return;
+      const structure = getExamStructure(currentWorkbookPackage);
+      const title = currentWorkbookPackage.workbookTitle || currentWorkbookPackage.testTitle || "HSK Workbook";
+      const user = sessionUser.username || "Siswa";
+      const today = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+      let text = `=====================================================\n`;
+      text += `LEMBAR JAWABAN LATIHAN WORKBOOK - PAKBUJAN ACADEMY\n`;
+      text += `=====================================================\n`;
+      text += `Nama Peserta  : ${user}\n`;
+      text += `Paket Latihan : ${title} (${currentWorkbookPackage.hskLevel || 'HSK'})\n`;
+      text += `Waktu Selesai : ${today}\n`;
+      text += `-----------------------------------------------------\n`;
+      for (let q = 1; q <= structure.totalQuestions; q++) {
+        text += `No. ${q.toString().padEnd(3)} : ${(userWbAnswers[q] || "-").toString().toUpperCase()}\n`;
+      }
+      text += `=====================================================\n`;
+
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `Lembar_Workbook_${user}_${title.replace(/\s+/g, '_')}.txt`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+
+    // RENDER LEMBAR JAWABAN DIGITAL (JUMLAH SOAL SAMA PERSIS DENGAN PLACEMENT TEST)
+    function renderWbLjdItems() {
+      const container = document.getElementById('wb-ljd-items-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      // Menggunakan struktur jenjang resmi yang sama persis dengan Placement Test
+      const structure = getExamStructure(currentWorkbookPackage);
+      const bList = document.getElementById('btn-wb-ljd-listening');
+      const bRead = document.getElementById('btn-wb-ljd-reading');
+      const bWrite = document.getElementById('btn-wb-ljd-writing');
+      if (bList) bList.innerText = `🎧 Menyimak (${structure.listeningRange[0]}-${structure.listeningRange[1]})`;
+      if (bRead) bRead.innerText = `📖 Membaca (${structure.readingRange[0]}-${structure.readingRange[1]})`;
+      if (bWrite) {
+        if (structure.hasWriting && structure.writingRange) {
+          bWrite.style.display = 'inline-block';
+          bWrite.innerText = `✍️ Menulis (${structure.writingRange[0]}-${structure.writingRange[1]})`;
+        } else {
+          bWrite.style.display = 'none';
+          if (activeWbLjdSection === 'writing') activeWbLjdSection = 'listening';
+        }
+      }
+
+      let startQ = 1, endQ = 20;
+      if (activeWbLjdSection === 'listening') {
+        startQ = structure.listeningRange[0]; endQ = structure.listeningRange[1];
+      } else if (activeWbLjdSection === 'reading') {
+        startQ = structure.readingRange[0]; endQ = structure.readingRange[1];
+      } else if (activeWbLjdSection === 'writing' && structure.writingRange) {
+        startQ = structure.writingRange[0]; endQ = structure.writingRange[1];
+      }
+
+      const answerKey = getExamAnswerKey(currentWorkbookPackage);
+      const numLvl = parseInt((currentWorkbookPackage && currentWorkbookPackage.hskLevel ? currentWorkbookPackage.hskLevel : '1').replace(/[^0-9]/g, '')) || 1;
+
+      for (let q = startQ; q <= endQ; q++) {
+        const row = document.createElement('div');
+        row.style.background = '#1a0f0a'; row.style.padding = '10px 12px'; row.style.borderRadius = '8px'; row.style.border = '1px solid var(--amber-border)';
+        row.style.display = 'flex'; row.style.justifyContent = 'space-between'; row.style.alignItems = 'center'; row.style.gap = '8px';
+
+        const qLabel = document.createElement('span');
+        qLabel.style.fontWeight = '700'; qLabel.style.color = 'var(--gold-autumn)'; qLabel.style.fontSize = '12.5px'; qLabel.innerText = 'No. ' + q;
+        row.appendChild(qLabel);
+
+        const optionsDiv = document.createElement('div');
+        optionsDiv.style.display = 'flex'; optionsDiv.style.gap = '6px'; optionsDiv.style.flex = '1'; optionsDiv.style.justifyContent = 'flex-end';
+
+        let optionsList = [];
+        let isTextInput = false;
+        const targetKey = (answerKey[q] || answerKey[q.toString()] || "").toString().trim().toUpperCase();
+
+        if (targetKey === "TRUE" || targetKey === "FALSE" || targetKey === "√" || targetKey === "✕") {
+          optionsList = [{ label: "√", val: "TRUE" }, { label: "✕", val: "FALSE" }];
+        } else if (targetKey === "D" || targetKey === "E" || targetKey === "F") {
+          optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }, { label: "E", val: "E" }, { label: "F", val: "F" }];
+        } else if (targetKey === "A" || targetKey === "B" || targetKey === "C") {
+          optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }];
+        } else if (targetKey.length > 1 && !["TRUE", "FALSE"].includes(targetKey)) {
+          isTextInput = true;
+        } else {
+          if (numLvl === 1) {
+            if ((q >= 1 && q <= 5) || (q >= 21 && q <= 25)) optionsList = [{ label: "√", val: "TRUE" }, { label: "✕", val: "FALSE" }];
+            else if ((q >= 6 && q <= 10) || (q >= 16 && q <= 20)) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }];
+            else optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }, { label: "E", val: "E" }, { label: "F", val: "F" }];
+          } else if (numLvl === 2) {
+            if ((q >= 1 && q <= 10) || (q >= 36 && q <= 40)) optionsList = [{ label: "√", val: "TRUE" }, { label: "✕", val: "FALSE" }];
+            else if ((q >= 11 && q <= 20) || (q >= 41 && q <= 50)) optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }];
+            else optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }];
+          } else {
+            optionsList = [{ label: "A", val: "A" }, { label: "B", val: "B" }, { label: "C", val: "C" }, { label: "D", val: "D" }];
+          }
+        }
+
+        if (isTextInput) {
+          const inTxt = document.createElement('input');
+          inTxt.type = 'text'; inTxt.setAttribute('data-wb-q', q); inTxt.placeholder = 'Jawaban...';
+          inTxt.value = userWbAnswers[q] || ''; inTxt.style.background = '#281810'; inTxt.style.border = '1px solid var(--amber-border)';
+          inTxt.style.color = '#fff'; inTxt.style.borderRadius = '6px'; inTxt.style.padding = '4px 8px'; inTxt.style.fontSize = '12px'; inTxt.style.width = '140px';
+          inTxt.oninput = function() { userWbAnswers[q] = inTxt.value.trim(); };
+          optionsDiv.appendChild(inTxt);
+        } else {
+          optionsList.forEach(function(opt) {
+            const btn = document.createElement('button');
+            btn.className = 'pill-btn' + (userWbAnswers[q] === opt.val ? ' active' : '');
+            btn.style.padding = '4px 8px'; btn.style.fontSize = '11px'; btn.style.minWidth = '28px'; btn.innerText = opt.label;
+            btn.onclick = function() {
+              userWbAnswers[q] = opt.val;
+              optionsDiv.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+              btn.classList.add('active');
+            };
+            optionsDiv.appendChild(btn);
+          });
+        }
+
+        row.appendChild(optionsDiv);
+        container.appendChild(row);
+      }
+    }
+
+    window.switchWbLjdSection = function(sec) {
+      activeWbLjdSection = sec;
+      const bList = document.getElementById('btn-wb-ljd-listening');
+      const bRead = document.getElementById('btn-wb-ljd-reading');
+      const bWrite = document.getElementById('btn-wb-ljd-writing');
+      if (bList) bList.classList.toggle('active', sec === 'listening');
+      if (bRead) bRead.classList.toggle('active', sec === 'reading');
+      if (bWrite) bWrite.classList.toggle('active', sec === 'writing');
+      renderWbLjdItems();
+    };
+
+    window.submitWorkbookPractice = function() {
+      const container = document.getElementById('wb-ljd-items-container');
+      if (container) {
+        container.querySelectorAll('input[type="text"]').forEach(inp => {
+          const qNum = inp.getAttribute('data-wb-q');
+          if (qNum && inp.value !== undefined) userWbAnswers[qNum] = inp.value.trim();
+        });
+      }
+
+      const structure = getExamStructure(currentWorkbookPackage);
+      const answerKey = getExamAnswerKey(currentWorkbookPackage);
+      let listCorrect = 0, readCorrect = 0;
+
+      const listStart = structure.listeningRange[0], listEnd = structure.listeningRange[1];
+      const readStart = structure.readingRange[0], readEnd = structure.readingRange[1];
+      const listTotal = (listEnd - listStart + 1);
+      const readTotal = (readEnd - readStart + 1);
+
+      for (let i = listStart; i <= listEnd; i++) {
+        if (checkAnswerMatch(userWbAnswers[i] || "", answerKey[i] || answerKey[i.toString()] || "")) listCorrect++;
+      }
+      for (let i = readStart; i <= readEnd; i++) {
+        if (checkAnswerMatch(userWbAnswers[i] || "", answerKey[i] || answerKey[i.toString()] || "")) readCorrect++;
+      }
+
+      const listeningScore = Math.round((listCorrect / listTotal) * 100);
+      const readingScore = Math.round((readCorrect / readTotal) * 100);
+      let totalScore = listeningScore + readingScore;
+
+      const resBox = document.getElementById('wb-practice-score-result');
+      if (resBox) {
+        resBox.style.display = 'block';
+        resBox.innerHTML = `
+          <div style="font-size: 15px; font-weight: 800; color: #86efac; margin-bottom: 6px;">
+            🎉 Hasil Pengecekan Latihan Workbook
+          </div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.6;">
+            Menyimak (听力): <b>${listeningScore}/100</b> (${listCorrect}/${listTotal} soal benar)<br>
+            Membaca (阅读): <b>${readingScore}/100</b> (${readCorrect}/${readTotal} soal benar)<br>
+          </div>
+          <div style="font-size: 14.5px; color: var(--gold-autumn); font-weight: 800;">
+            Total Nilai Latihan: ${totalScore} / ${structure.maxScore}
+          </div>
+        `;
+        resBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    };
+    
     window.handleCrudPdfUpload = async function(event) {
       const file = event.target.files[0];
       const statusEl = document.getElementById('crud-pdf-status');
@@ -2649,69 +3185,7 @@
       }
     };
 
-    window.submitCrudWorkbookQuestion = function() {
-      if (sessionUser.role !== 'admin') { alert("Akses ditolak."); return; }
-      const editId = (document.getElementById('crud-wb-edit-id') ? document.getElementById('crud-wb-edit-id').value.trim() : '');
-      const hskLvl = document.getElementById('crud-wb-hsk').value;
-      const qType = document.getElementById('crud-wb-type').value;
-      const prompt = document.getElementById('crud-wb-prompt').value.trim();
-      const rawOpts = document.getElementById('crud-wb-options').value.trim();
-      const correct = document.getElementById('crud-wb-correct').value.trim();
-      const explain = document.getElementById('crud-wb-explanation').value.trim();
-
-      if (!prompt || !rawOpts || !correct) { alert("Lengkapi data soal."); return; }
-      const options = rawOpts.split(',').map(s => s.trim()).filter(s => s.length > 0);
-
-      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
-        fetch(SCRIPT_URL, {
-          method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ action: "saveWorkbookQuestion", questionId: editId, hskLevel: hskLvl, questionType: qType, questionPrompt: prompt, options: options, correctAnswer: correct, explanation: explain })
-        }).then(res => res.json()).then(res => {
-          alert(editId ? "✅ Soal berhasil diperbarui!" : "✅ Soal berhasil ditambahkan!");
-          cancelEditWorkbookQuestion(); loadWorkbookTable(); loadWorkbookQuestionsFast(hskLvl);
-        }).catch(err => alert("Gagal menyimpan: " + err.message));
-      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run.withSuccessHandler(function() {
-          alert(editId ? "✅ Soal berhasil diperbarui!" : "✅ Soal berhasil ditambahkan!");
-          cancelEditWorkbookQuestion(); loadWorkbookTable(); loadWorkbookQuestionsFast(hskLvl);
-        }).saveOrUpdateWorkbookQuestion(editId, hskLvl, qType, prompt, options, correct, explain);
-      }
-    };
-
-    window.editWorkbookQuestion = function(qId) {
-      if (sessionUser.role !== 'admin') return;
-      var found = allWorkbookQuestions.find(function(q) { return q.questionId === qId; }); if (!found) return;
-      document.getElementById('crud-wb-edit-id').value = found.questionId;
-      document.getElementById('crud-wb-hsk').value = found.hskLevel || 'HSK 1';
-      document.getElementById('crud-wb-type').value = found.questionType || 'Pilihan Ganda';
-      document.getElementById('crud-wb-prompt').value = found.questionPrompt || '';
-      document.getElementById('crud-wb-options').value = (found.options || []).join(', ');
-      document.getElementById('crud-wb-correct').value = found.correctAnswer || '';
-      document.getElementById('crud-wb-explanation').value = found.explanation || '';
-      document.getElementById('btn-save-crud-wb').innerText = '💾 Simpan Perubahan (' + found.questionId + ')';
-      document.getElementById('btn-cancel-edit-wb').style.display = 'block';
-    };
-
-    window.cancelEditWorkbookQuestion = function() {
-      document.getElementById('crud-wb-edit-id').value = '';
-      document.getElementById('crud-wb-prompt').value = '';
-      document.getElementById('crud-wb-options').value = '';
-      document.getElementById('crud-wb-correct').value = '';
-      document.getElementById('crud-wb-explanation').value = '';
-      document.getElementById('btn-save-crud-wb').innerText = '💾 Tambah Soal ke WORKBOOK_BANK';
-      document.getElementById('btn-cancel-edit-wb').style.display = 'none';
-    };
-
-    window.deleteWorkbookQuestionBtn = function(qId) {
-      if (sessionUser.role !== 'admin') { alert("Akses ditolak."); return; }
-      if (!confirm("Hapus soal " + qId + "?")) return;
-      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
-        fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "deleteWorkbookQuestion", questionId: qId }) })
-        .then(res => res.json()).then(res => { alert("✅ Berhasil dihapus!"); loadWorkbookTable(); loadWorkbookQuestionsFast('ALL'); }).catch(err => alert("Gagal: " + err.message));
-      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run.withSuccessHandler(function() { alert("✅ Berhasil dihapus!"); loadWorkbookTable(); loadWorkbookQuestionsFast('ALL'); }).deleteWorkbookQuestion(qId);
-      }
-    };
+  
 
     window.submitCrudPlacementPackage = function() {
       if (sessionUser.role !== 'admin') { alert("Akses ditolak."); return; }
@@ -3639,64 +4113,7 @@
       }
     };
 
-    function loadWorkbookQuestionsFast(hskLevel, btn) {
-      if (btn && btn.parentElement) {
-        var buttons = btn.parentElement.querySelectorAll('.pill-btn');
-        for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove('active');
-        btn.classList.add('active');
-      }
-
-      var cacheKey = 'cache_wb_' + (hskLevel || 'ALL');
-      try {
-        var cached = localStorage.getItem(cacheKey);
-        if (cached) renderWorkbookCards(JSON.parse(cached));
-      } catch(e){}
-      
-      if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
-        fetch(SCRIPT_URL + "?action=getWorkbook&level=" + (hskLevel || "ALL"))
-          .then(res => res.json())
-          .then(data => {
-            try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch(e){}
-            renderWorkbookCards(data);
-          })
-          .catch(() => {});
-      } else if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run.withSuccessHandler(function(data) {
-          try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch(e){}
-          renderWorkbookCards(data);
-        }).getWorkbookQuestions(hskLevel, 'ALL');
-      }
-    }
-
-    function renderWorkbookCards(questions) {
-      var container = document.getElementById('workbook-cards-container'); if (!container) return; container.innerHTML = '';
-      if (!questions || questions.length === 0) { container.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 30px;">Belum ada butir soal di WORKBOOK_BANK untuk level ini. Gunakan panel CRUD untuk menambahkannya!</div>'; return; }
-
-      questions.forEach(function(q) {
-        var card = document.createElement('div'); card.className = 'glass-card';
-        var optHtml = '';
-        if (q.options) { q.options.forEach(function(opt) { optHtml += '<button class="pill-btn" style="text-align:left; padding: 10px 14px;" onclick="checkWorkbookAnswer(\'' + q.questionId + '\', \'' + opt + '\', \'' + q.correctAnswer + '\', this)">' + opt + '</button>'; }); }
-        card.innerHTML = '<div style="display: flex; justify-content: space-between; margin-bottom: 10px;"><span class="badge">' + q.hskLevel + ' - ' + q.questionType + '</span></div><div style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 14px; line-height: 1.5;">' + q.questionPrompt.replace(/\n/g, '<br>') + '</div><div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">' + optHtml + '</div><div id="wb-fb-' + q.questionId + '" style="display:none; padding: 10px; border-radius: 8px; font-size: 13px; margin-top: 10px;"></div>';
-        container.appendChild(card);
-      });
-    }
-
-    window.checkWorkbookAnswer = function(qId, selectedOpt, correctOpt, btnElement) {
-      if (btnElement && btnElement.parentElement) {
-        var buttons = btnElement.parentElement.querySelectorAll('.pill-btn');
-        for (var i = 0; i < buttons.length; i++) buttons[i].disabled = true;
-      }
-      var feedbackBox = document.getElementById('wb-fb-' + qId); if (!feedbackBox) return; feedbackBox.style.display = 'block';
-
-      if (selectedOpt === correctOpt) {
-        if (btnElement) { btnElement.style.background = '#16a34a'; btnElement.style.color = '#fff'; }
-        feedbackBox.style.background = 'rgba(22, 163, 74, 0.2)'; feedbackBox.style.border = '1px solid #16a34a'; feedbackBox.style.color = '#86efac'; feedbackBox.innerHTML = '🎉 <b>Benar Sekali!</b> Jawaban Anda tepat.';
-      } else {
-        if (btnElement) { btnElement.style.background = '#dc2626'; btnElement.style.color = '#fff'; }
-        feedbackBox.style.background = 'rgba(220, 38, 38, 0.2)'; feedbackBox.style.border = '1px solid #dc2626'; feedbackBox.style.color = '#fca5a5'; feedbackBox.innerHTML = '❌ <b>Kurang Tepat.</b> Kunci jawaban: <b>' + correctOpt + '</b>';
-      }
-    };
-
+    
     function initSrsEngine() {
       if (allVocabularies && allVocabularies.length > 0) {
         srsCardsQueue = [...allVocabularies];
