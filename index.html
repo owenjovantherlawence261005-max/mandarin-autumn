@@ -1609,12 +1609,18 @@
         </div>
       </div>
 
-      <!-- TAB 2: CRUD SOAL WORKBOOK -->
+    <!-- TAB 2: CRUD WORKBOOK (PERSIS PLACEMENT TEST) -->
       <div id="crud-section-wb" style="display: none;">
         <input type="hidden" id="crud-wb-edit-id" value="">
 
+        <div class="crud-form-group" style="background: rgba(234, 88, 12, 0.15); padding: 12px; border-radius: 8px; border: 1px dashed var(--gold-autumn); margin-bottom: 14px;">
+          <label style="font-size: 11.5px; color: var(--gold-autumn); font-weight: 700;">📄 Unggah PDF Kunci Jawaban Workbook (Ekstrak Otomatis ke JSON):</label>
+          <input type="file" id="pdf-crud-wb-key-input" accept="application/pdf, text/plain, application/json" onchange="handleCrudWorkbookKeyUpload(event)" style="padding: 6px; font-size: 12px; width: 100%; background: #180d08; border: 1px solid var(--amber-border); border-radius: 6px; color: #fff;">
+          <div id="crud-wb-pdf-status" style="font-size: 11px; color: var(--gold-autumn); margin-top: 6px;">Pilih file PDF kunci jawaban untuk mengekstrak nomor dan kunci jawaban secara instan.</div>
+        </div>
+
         <div style="display: flex; gap: 12px;">
-          <div class="crud-form-group" style="flex: 1;">
+          <div class="crud-form-group" style="width: 140px;">
             <label>Jenjang HSK:</label>
             <select id="crud-wb-hsk">
               <option value="HSK 1">HSK 1</option>
@@ -1627,42 +1633,35 @@
             </select>
           </div>
           <div class="crud-form-group" style="flex: 1;">
-            <label>Tipe Soal:</label>
-            <select id="crud-wb-type">
-              <option value="Pilihan Ganda">Pilihan Ganda</option>
-              <option value="Kalimat Rumpang (选词填空)">Kalimat Rumpang (选词填空)</option>
-              <option value="Menyusun Kalimat (排序组句)">Menyusun Kalimat (排序组句)</option>
-            </select>
+            <label>Judul Paket Workbook (workbook_title):</label>
+            <input type="text" id="crud-wb-title" placeholder="Contoh: Latihan Soal Workbook HSK 1 (H11003)">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="crud-form-group">
+            <label>Path File PDF Workbook (pdf_url):</label>
+            <input type="text" id="crud-wb-pdf-url" placeholder="./workbook/HSK1-WorkBook.pdf">
+          </div>
+
+          <div class="crud-form-group">
+            <label>Path File Audio MP3 (audio_url):</label>
+            <input type="text" id="crud-wb-audio-url" placeholder="./workbook/HSK1-WorkBook.mp3 (Kosongkan jika tidak ada audio)">
           </div>
         </div>
 
         <div class="crud-form-group">
-          <label>Pertanyaan / Soal:</label>
-          <textarea id="crud-wb-prompt" rows="3" placeholder="Contoh: Pilihlah arti yang tepat untuk kata: 苹果 (píngguǒ)"></textarea>
+          <label>Kunci Jawaban JSON (correct_answer):</label>
+          <textarea id="crud-wb-keys" rows="3" style="font-family: monospace; font-size: 11px;" placeholder='{"1":"FALSE","2":"FALSE","6":"A","11":"D", ...}'></textarea>
         </div>
 
-        <div class="crud-form-group">
-          <label>Pilihan Jawaban (Pisahkan dengan tanda koma):</label>
-          <input type="text" id="crud-wb-options" placeholder="Contoh: Apel, Pisang, Jeruk, Mangga">
-        </div>
+        <button class="btn-autumn-primary" id="btn-save-crud-wb" onclick="submitCrudWorkbookPackage()" style="width: 100%; margin-top: 6px;">💾 Simpan Paket ke Sheet WORKBOOK_BANK</button>
+        <button class="pill-btn" id="btn-cancel-edit-wb" onclick="cancelEditWorkbookPackage()" style="width: 100%; margin-top: 6px; display: none; border-color: var(--maple-red);">✕ Batalkan Mode Edit</button>
 
-        <div class="crud-form-group">
-          <label>Kunci Jawaban yang Benar:</label>
-          <input type="text" id="crud-wb-correct" placeholder="Harus sama persis dengan salah satu pilihan di atas (Contoh: Apel)">
-        </div>
-
-        <div class="crud-form-group">
-          <label>Pembahasan / Penjelasan:</label>
-          <input type="text" id="crud-wb-explanation" placeholder="Contoh: 苹果 (píngguǒ) berarti buah apel.">
-        </div>
-
-        <button class="btn-autumn-primary" id="btn-save-crud-wb" onclick="submitCrudWorkbookQuestion()" style="width: 100%;">💾 Tambah Soal ke WORKBOOK_BANK</button>
-        <button class="pill-btn" id="btn-cancel-edit-wb" onclick="cancelEditWorkbookQuestion()" style="width: 100%; margin-top: 8px; display: none; border-color: var(--maple-red);">✕ Batalkan Mode Edit (Kembali ke Tambah Baru)</button>
-
-        <div style="margin-top: 24px; border-top: 1px solid var(--amber-border); padding-top: 16px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <label style="font-size: 12px; font-weight: 700; color: var(--gold-autumn); text-transform: uppercase;">Daftar Soal Database (WORKBOOK_BANK):</label>
-            <button class="pill-btn" style="padding: 4px 10px; font-size: 11px;" onclick="loadWorkbookTable()">🔄 Segarkan Data</button>
+        <div style="margin-top: 20px; border-top: 1px solid var(--amber-border); padding-top: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label style="font-size: 12px; font-weight: 700; color: var(--gold-autumn); text-transform: uppercase;">Daftar Paket Workbook di Database (WORKBOOK_BANK):</label>
+            <button class="pill-btn" style="padding: 3px 8px; font-size: 11px;" onclick="loadWorkbookTable()">🔄 Refresh</button>
           </div>
           <div class="crud-table-wrap">
             <table class="crud-table">
@@ -1670,13 +1669,13 @@
                 <tr>
                   <th style="width: 75px;">ID</th>
                   <th style="width: 65px;">Level</th>
-                  <th style="width: 110px;">Tipe</th>
-                  <th>Soal Pertanyaan</th>
+                  <th>Judul Paket Workbook</th>
+                  <th>Path File Relatif</th>
                   <th style="width: 120px; text-align: center;">Aksi</th>
                 </tr>
               </thead>
               <tbody id="crud-wb-table-body">
-                <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">Memuat data...</td></tr>
+                <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 14px;">Memuat paket workbook...</td></tr>
               </tbody>
             </table>
           </div>
